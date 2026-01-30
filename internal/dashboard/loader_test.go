@@ -14,16 +14,19 @@ func TestLoadDir(t *testing.T) {
 	}
 
 	list := store.List()
-	if len(list) != 2 {
-		t.Fatalf("expected 2 dashboards, got %d", len(list))
+	if len(list) != 3 {
+		t.Fatalf("expected 3 dashboards, got %d", len(list))
 	}
 
 	// Should be sorted by path
-	if list[0].Path != "infra/network" {
-		t.Errorf("expected first dashboard path 'infra/network', got %q", list[0].Path)
+	if list[0].Path != "infra/cloud/sakura" {
+		t.Errorf("expected first dashboard path 'infra/cloud/sakura', got %q", list[0].Path)
 	}
-	if list[1].Path != "overview" {
-		t.Errorf("expected second dashboard path 'overview', got %q", list[1].Path)
+	if list[1].Path != "infra/network" {
+		t.Errorf("expected second dashboard path 'infra/network', got %q", list[1].Path)
+	}
+	if list[2].Path != "overview" {
+		t.Errorf("expected third dashboard path 'overview', got %q", list[2].Path)
 	}
 
 	// Test Get
@@ -44,6 +47,14 @@ func TestLoadDir(t *testing.T) {
 	}
 	if d.Title != "Network" {
 		t.Errorf("expected title 'Network', got %q", d.Title)
+	}
+
+	d = store.Get("infra/cloud/sakura")
+	if d == nil {
+		t.Fatal("expected to find 'infra/cloud/sakura' dashboard")
+	}
+	if d.Title != "Sakura Metrics" {
+		t.Errorf("expected title 'Sakura Metrics', got %q", d.Title)
 	}
 
 	// Test Get non-existent
@@ -94,6 +105,7 @@ func TestValidatePath(t *testing.T) {
 	}{
 		{"overview", false},
 		{"infra/network", false},
+		{"infra/cloud/sakura", false},
 		{"my-dash_1", false},
 		{"../escape", true},
 		{"path/../escape", true},
@@ -126,12 +138,39 @@ func TestBuildTree(t *testing.T) {
 			if node.Path != "" {
 				t.Error("directory node should not have a path")
 			}
-			if len(node.Children) != 1 {
-				t.Errorf("expected 1 child under infra, got %d", len(node.Children))
-			} else if node.Children[0].Name != "network" {
-				t.Errorf("expected child 'network', got %q", node.Children[0].Name)
-			} else if node.Children[0].Path != "infra/network" {
-				t.Errorf("expected path 'infra/network', got %q", node.Children[0].Path)
+			if len(node.Children) != 2 {
+				t.Fatalf("expected 2 children under infra, got %d", len(node.Children))
+			}
+			// Children: "cloud" (directory) and "network" (leaf)
+			var cloudNode, networkNode bool
+			for _, child := range node.Children {
+				switch child.Name {
+				case "cloud":
+					cloudNode = true
+					if child.Path != "" {
+						t.Error("directory node 'cloud' should not have a path")
+					}
+					if len(child.Children) != 1 {
+						t.Fatalf("expected 1 child under cloud, got %d", len(child.Children))
+					}
+					if child.Children[0].Name != "sakura" {
+						t.Errorf("expected child 'sakura', got %q", child.Children[0].Name)
+					}
+					if child.Children[0].Path != "infra/cloud/sakura" {
+						t.Errorf("expected path 'infra/cloud/sakura', got %q", child.Children[0].Path)
+					}
+				case "network":
+					networkNode = true
+					if child.Path != "infra/network" {
+						t.Errorf("expected path 'infra/network', got %q", child.Path)
+					}
+				}
+			}
+			if !cloudNode {
+				t.Error("missing 'cloud' node under infra")
+			}
+			if !networkNode {
+				t.Error("missing 'network' node under infra")
 			}
 		case "overview":
 			overviewNode = &struct{ found bool }{true}

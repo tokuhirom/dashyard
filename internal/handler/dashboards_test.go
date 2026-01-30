@@ -45,8 +45,38 @@ func TestDashboardsList(t *testing.T) {
 		t.Fatalf("failed to parse response: %v", err)
 	}
 
-	if len(result.Dashboards) != 2 {
-		t.Errorf("expected 2 dashboards, got %d", len(result.Dashboards))
+	if len(result.Dashboards) != 3 {
+		t.Errorf("expected 3 dashboards, got %d", len(result.Dashboards))
+	}
+}
+
+func TestDashboardsGetDeepNested(t *testing.T) {
+	store := loadTestStore(t)
+	handler := NewDashboardsHandler(store, "Dashyard", "")
+
+	router := gin.New()
+	router.GET("/api/dashboards/*path", handler.Get)
+
+	req := httptest.NewRequest("GET", "/api/dashboards/infra/cloud/sakura", nil)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	if resp.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", resp.Code, resp.Body.String())
+	}
+
+	var result struct {
+		Title string `json:"title"`
+		Path  string `json:"path"`
+	}
+	if err := json.Unmarshal(resp.Body.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.Title != "Sakura Metrics" {
+		t.Errorf("expected title 'Sakura Metrics', got %q", result.Title)
+	}
+	if result.Path != "infra/cloud/sakura" {
+		t.Errorf("expected path 'infra/cloud/sakura', got %q", result.Path)
 	}
 }
 

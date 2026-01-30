@@ -1,0 +1,8 @@
+title: "Sakura Metrics"
+rows:
+  - title: "Server"
+    panels:
+      - title: "Server CPU"
+        type: "graph"
+        query: "sakura_server_cpu_utilization"
+        unit: "percent"

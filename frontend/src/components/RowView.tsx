@@ -47,6 +47,7 @@ function PanelRenderer({ panel, panelId, timeRange }: PanelRendererProps) {
       data={data}
       unit={panel.unit}
       legend={panel.legend}
+      chartType={panel.chart_type}
       loading={loading}
       error={error}
       id={panelId}
