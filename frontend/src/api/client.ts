@@ -50,4 +50,16 @@ export async function queryPrometheus(
   return request(`/api/query?${params}`);
 }
 
+export async function fetchDashboardSource(path: string): Promise<string> {
+  const resp = await fetch(`/api/dashboard-source/${path}`);
+  if (resp.status === 401) {
+    throw new ApiError(401, 'Unauthorized');
+  }
+  if (!resp.ok) {
+    const body = await resp.text();
+    throw new ApiError(resp.status, body);
+  }
+  return resp.text();
+}
+
 export { ApiError };

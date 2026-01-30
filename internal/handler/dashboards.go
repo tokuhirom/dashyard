@@ -52,3 +52,19 @@ func (h *DashboardsHandler) Get(c *gin.Context) {
 
 	c.JSON(http.StatusOK, d)
 }
+
+// GetSource handles GET /api/dashboard-source/:path - returns raw YAML source.
+func (h *DashboardsHandler) GetSource(c *gin.Context) {
+	path := c.Param("path")
+	if len(path) > 0 && path[0] == '/' {
+		path = path[1:]
+	}
+
+	src, ok := h.store.GetSource(path)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "dashboard not found"})
+		return
+	}
+
+	c.Data(http.StatusOK, "text/plain; charset=utf-8", []byte(src))
+}

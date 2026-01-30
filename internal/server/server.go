@@ -42,6 +42,7 @@ func New(cfg *config.Config, store *dashboard.Store, frontendFS fs.FS) *http.Ser
 	{
 		api.GET("/dashboards", dashboardsHandler.List)
 		api.GET("/dashboards/*path", dashboardsHandler.Get)
+		api.GET("/dashboard-source/*path", dashboardsHandler.GetSource)
 		api.GET("/query", queryHandler.Handle)
 	}
 

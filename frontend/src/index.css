@@ -139,10 +139,52 @@ body {
   max-width: 1400px;
 }
 
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
 .dashboard-title {
   font-size: 22px;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+}
+
+.dashboard-source-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dashboard-source-btn:hover {
+  background: var(--color-bg);
+}
+
+.dashboard-source-btn.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.dashboard-source {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 16px;
+  border-radius: 8px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: auto;
+  max-height: calc(100vh - 160px);
+  white-space: pre;
+  tab-size: 2;
 }
 
 /* Row */

@@ -17,6 +17,7 @@ var validPathRe = regexp.MustCompile(`^[a-zA-Z0-9_\-/]+$`)
 // Store holds loaded dashboards and provides lookup by path.
 type Store struct {
 	dashboards map[string]*model.Dashboard
+	sources    map[string]string
 	list       []*model.Dashboard
 	tree       []*model.DashboardTreeNode
 }
@@ -26,6 +27,7 @@ type Store struct {
 func LoadDir(dir string) (*Store, error) {
 	store := &Store{
 		dashboards: make(map[string]*model.Dashboard),
+		sources:    make(map[string]string),
 	}
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -65,6 +67,7 @@ func LoadDir(dir string) (*Store, error) {
 		d.Path = dashPath
 
 		store.dashboards[dashPath] = &d
+		store.sources[dashPath] = string(data)
 		store.list = append(store.list, &d)
 		return nil
 	})
@@ -94,6 +97,12 @@ func (s *Store) List() []*model.Dashboard {
 // Tree returns the hierarchical dashboard navigation tree.
 func (s *Store) Tree() []*model.DashboardTreeNode {
 	return s.tree
+}
+
+// GetSource returns the raw YAML source for a dashboard by path.
+func (s *Store) GetSource(path string) (string, bool) {
+	src, ok := s.sources[path]
+	return src, ok
 }
 
 func validatePath(path string) error {
