@@ -2,6 +2,8 @@
 
 A lightweight Prometheus metrics dashboard. Define dashboards in YAML, drop them in a directory, and view metrics through a simple web UI.
 
+![alt text](screenshot.png)
+
 ## Features
 
 - **Dashboard as Code** -- YAML-defined dashboards, Git-manageable
