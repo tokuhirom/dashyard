@@ -67,6 +67,12 @@
           "description": "Unit for formatting values on the Y axis.",
           "enum": ["bytes", "percent", "count"]
         },
+        "chart_type": {
+          "type": "string",
+          "description": "Chart visualization type. Defaults to 'line' if omitted.",
+          "enum": ["line", "bar", "area", "scatter", "pie", "doughnut"],
+          "default": "line"
+        },
         "legend": {
           "type": "string",
           "description": "Go template string for formatting legend labels. Metric label names can be used as placeholders (e.g. \"{{device}} {{direction}}\")."

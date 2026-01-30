@@ -1,6 +1,7 @@
 export interface Panel {
   title: string;
   type: 'graph' | 'markdown';
+  chart_type?: 'line' | 'bar' | 'area' | 'scatter' | 'pie' | 'doughnut';
   query?: string;
   unit?: 'bytes' | 'percent' | 'count';
   legend?: string;

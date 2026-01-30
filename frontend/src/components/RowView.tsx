@@ -7,13 +7,14 @@ interface RowViewProps {
   row: Row;
   rowIndex: number;
   timeRange: TimeRange;
+  columns: number;
 }
 
-export function RowView({ row, rowIndex, timeRange }: RowViewProps) {
+export function RowView({ row, rowIndex, timeRange, columns }: RowViewProps) {
   return (
     <div className="row">
       <h2 className="row-title">{row.title}</h2>
-      <div className="row-panels">
+      <div className="row-panels" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
         {row.panels.map((panel, idx) => {
           const panelId = `panel-${rowIndex}-${idx}`;
           return (
@@ -47,6 +48,7 @@ function PanelRenderer({ panel, panelId, timeRange }: PanelRendererProps) {
       data={data}
       unit={panel.unit}
       legend={panel.legend}
+      chartType={panel.chart_type}
       loading={loading}
       error={error}
       id={panelId}

@@ -1,0 +1,26 @@
+title: "Sakura Cloud Metrics"
+rows:
+  - title: "Server"
+    panels:
+      - title: "CPU Utilization"
+        type: "graph"
+        query: "sakura_server_cpu_utilization"
+        unit: "percent"
+      - title: "Network In"
+        type: "graph"
+        chart_type: "area"
+        query: "sakura_server_network_in_bytes"
+        unit: "bytes"
+  - title: "Summary"
+    panels:
+      - title: "CPU Distribution (Pie)"
+        type: "graph"
+        chart_type: "pie"
+        query: "sakura_server_cpu_utilization"
+        unit: "percent"
+      - title: "About"
+        type: "markdown"
+        content: |
+          ## Sakura Cloud Metrics
+          This is a **nested dashboard** example located at `infra/cloud/sakura`.
+          It demonstrates 2-level directory nesting in Dashyard.

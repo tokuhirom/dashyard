@@ -8,9 +8,10 @@ interface DashboardViewProps {
   path: string;
   timeRange: TimeRange;
   onAuthError: () => void;
+  columns: number;
 }
 
-export function DashboardView({ path, timeRange, onAuthError }: DashboardViewProps) {
+export function DashboardView({ path, timeRange, onAuthError, columns }: DashboardViewProps) {
   const { dashboard, loading, error } = useDashboardDetail(path, onAuthError);
   const [showSource, setShowSource] = useState(false);
   const [source, setSource] = useState<string | null>(null);
@@ -66,7 +67,7 @@ export function DashboardView({ path, timeRange, onAuthError }: DashboardViewPro
         )
       ) : (
         dashboard.rows.map((row, idx) => (
-          <RowView key={idx} row={row} rowIndex={idx} timeRange={timeRange} />
+          <RowView key={idx} row={row} rowIndex={idx} timeRange={timeRange} columns={columns} />
         ))
       )}
     </div>

@@ -69,6 +69,22 @@ body {
   font-weight: 600;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.column-selector {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #374151;
+  background: #374151;
+  color: var(--color-header-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .time-range-selector {
   padding: 4px 8px;
   border-radius: 4px;
@@ -139,7 +155,7 @@ body {
 
 /* Dashboard */
 .dashboard {
-  max-width: 1400px;
+  max-width: 100%;
 }
 
 .dashboard-header {
@@ -203,15 +219,14 @@ body {
 }
 
 .row-panels {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
-  flex-wrap: wrap;
 }
 
 /* Panel */
 .panel {
-  flex: 1;
-  min-width: 300px;
+  min-width: 0;
   background: var(--color-surface);
   border-radius: 8px;
   border: 1px solid var(--color-border);
@@ -252,6 +267,7 @@ body {
 
 .panel-chart {
   position: relative;
+  overflow: hidden;
 }
 
 .panel-loading,

@@ -36,6 +36,7 @@ function App() {
   const [authenticated, setAuthenticated] = useState(true); // Optimistic; API calls will detect 401
   const [currentPath, setCurrentPath] = useState<string | null>(parseDashboardPath);
   const [timeRange, setTimeRange] = useState<TimeRange>(parseTimeRange);
+  const [columns, setColumns] = useState(2);
 
   const handleAuthError = useCallback(() => {
     setAuthenticated(false);
@@ -113,11 +114,14 @@ function App() {
       onNavigate={onNavigate}
       siteTitle={dashboardsData.site_title}
       headerColor={dashboardsData.header_color}
+      columns={columns}
+      onColumnsChange={setColumns}
     >
       <DashboardView
         path={activePath}
         timeRange={timeRange}
         onAuthError={handleAuthError}
+        columns={columns}
       />
     </Layout>
   );

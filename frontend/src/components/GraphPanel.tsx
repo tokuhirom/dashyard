@@ -1,14 +1,17 @@
-import { Line } from 'react-chartjs-2';
+import { Line, Bar, Scatter, Pie, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
   TimeScale,
+  Filler,
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import type { PrometheusResponse } from '../types';
@@ -19,10 +22,13 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
   TimeScale,
+  Filler,
 );
 
 interface GraphPanelProps {
@@ -30,6 +36,7 @@ interface GraphPanelProps {
   data: PrometheusResponse | null;
   unit?: string;
   legend?: string;
+  chartType?: 'line' | 'bar' | 'area' | 'scatter' | 'pie' | 'doughnut';
   loading: boolean;
   error: string | null;
   id?: string;
@@ -51,7 +58,7 @@ function buildLabel(metric: Record<string, string>, legend?: string): string {
   return entries.map(([k, v]) => `${k}="${v}"`).join(', ');
 }
 
-export function GraphPanel({ title, data, unit, legend, loading, error, id }: GraphPanelProps) {
+export function GraphPanel({ title, data, unit, legend, chartType, loading, error, id }: GraphPanelProps) {
   const titleContent = (
     <h3 className="panel-title">
       {title}
@@ -86,6 +93,52 @@ export function GraphPanel({ title, data, unit, legend, loading, error, id }: Gr
     );
   }
 
+  const effectiveType = chartType || 'line';
+
+  if (effectiveType === 'pie' || effectiveType === 'doughnut') {
+    const labels = data.data.result.map((result) => buildLabel(result.metric, legend));
+    const values = data.data.result.map((result) => {
+      const lastValue = result.values[result.values.length - 1];
+      return lastValue ? parseFloat(lastValue[1]) : 0;
+    });
+    const backgroundColors = data.data.result.map((_, idx) => COLORS[idx % COLORS.length]);
+
+    const chartData = {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: backgroundColors,
+        borderWidth: 1,
+      }],
+    };
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 2.5,
+      plugins: {
+        legend: {
+          position: 'bottom' as const,
+          labels: {
+            boxWidth: 12,
+            usePointStyle: true,
+          },
+        },
+      },
+    };
+
+    const ChartComponent = effectiveType === 'pie' ? Pie : Doughnut;
+
+    return (
+      <div className="panel graph-panel" id={id}>
+        {titleContent}
+        <div className="panel-chart">
+          <ChartComponent data={chartData} options={options} />
+        </div>
+      </div>
+    );
+  }
+
   const datasets = data.data.result.map((result, idx) => ({
     label: buildLabel(result.metric, legend),
     data: result.values.map(([ts, val]) => ({
@@ -95,9 +148,9 @@ export function GraphPanel({ title, data, unit, legend, loading, error, id }: Gr
     borderColor: COLORS[idx % COLORS.length],
     backgroundColor: COLORS[idx % COLORS.length] + '20',
     borderWidth: 1.5,
-    pointRadius: 0,
+    pointRadius: effectiveType === 'scatter' ? 3 : 0,
     tension: 0.1,
-    fill: false,
+    fill: effectiveType === 'area',
   }));
 
   const tickCallback = getYAxisTickCallback(unit);
@@ -138,11 +191,20 @@ export function GraphPanel({ title, data, unit, legend, loading, error, id }: Gr
     },
   };
 
+  let chart;
+  if (effectiveType === 'bar') {
+    chart = <Bar data={{ datasets }} options={options} />;
+  } else if (effectiveType === 'scatter') {
+    chart = <Scatter data={{ datasets }} options={options} />;
+  } else {
+    chart = <Line data={{ datasets }} options={options} />;
+  }
+
   return (
     <div className="panel graph-panel" id={id}>
       {titleContent}
       <div className="panel-chart">
-        <Line data={{ datasets }} options={options} />
+        {chart}
       </div>
     </div>
   );

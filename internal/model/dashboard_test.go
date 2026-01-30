@@ -166,6 +166,67 @@ func TestDashboardJSON(t *testing.T) {
 	}
 }
 
+func TestPanelChartTypeYAMLUnmarshal(t *testing.T) {
+	input := `
+title: "CPU Bar"
+type: "graph"
+chart_type: "bar"
+query: "rate(cpu[5m])"
+unit: "percent"
+`
+	var p Panel
+	if err := yaml.Unmarshal([]byte(input), &p); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if p.ChartType != "bar" {
+		t.Errorf("expected chart_type 'bar', got %q", p.ChartType)
+	}
+}
+
+func TestPanelChartTypeOmittedYAML(t *testing.T) {
+	input := `
+title: "CPU Usage"
+type: "graph"
+query: "rate(cpu[5m])"
+`
+	var p Panel
+	if err := yaml.Unmarshal([]byte(input), &p); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if p.ChartType != "" {
+		t.Errorf("expected empty chart_type when omitted, got %q", p.ChartType)
+	}
+}
+
+func TestPanelChartTypeJSON(t *testing.T) {
+	p := Panel{Title: "Test", Type: "graph", Query: "up", ChartType: "scatter"}
+	data, err := json.Marshal(p)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded map[string]interface{}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if decoded["chart_type"] != "scatter" {
+		t.Errorf("expected chart_type 'scatter', got %v", decoded["chart_type"])
+	}
+
+	// Verify chart_type is omitted from JSON when empty
+	p2 := Panel{Title: "Test", Type: "graph", Query: "up"}
+	data2, err := json.Marshal(p2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded2 map[string]interface{}
+	if err := json.Unmarshal(data2, &decoded2); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, ok := decoded2["chart_type"]; ok {
+		t.Errorf("expected chart_type to be omitted from JSON when empty")
+	}
+}
+
 func TestDashboardTreeNodeJSON(t *testing.T) {
 	node := DashboardTreeNode{
 		Name: "infra",

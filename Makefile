@@ -1,4 +1,4 @@
-.PHONY: all frontend backend build test clean dev-frontend dev-backend dev-dummyprom
+.PHONY: all frontend backend build test test-e2e clean dev-frontend dev-backend dev-dummyprom
 
 all: build
 
@@ -12,6 +12,9 @@ build: backend
 
 test:
 	go test ./...
+
+test-e2e:
+	cd frontend && npx playwright test
 
 dev-frontend:
 	cd frontend && npm run dev
