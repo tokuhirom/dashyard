@@ -112,6 +112,7 @@ function App() {
       onTimeRangeChange={onTimeRangeChange}
       onNavigate={onNavigate}
       siteTitle={dashboardsData.site_title}
+      headerColor={dashboardsData.header_color}
     >
       <DashboardView
         path={activePath}

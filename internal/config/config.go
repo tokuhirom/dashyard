@@ -36,7 +36,8 @@ type DashboardsConfig struct {
 
 // Config is the top-level application configuration.
 type Config struct {
-	SiteTitle  string           `yaml:"site_title"`
+	SiteTitle   string           `yaml:"site_title"`
+	HeaderColor string           `yaml:"header_color"`
 	Server     ServerConfig     `yaml:"server"`
 	Prometheus PrometheusConfig `yaml:"prometheus"`
 	Dashboards DashboardsConfig `yaml:"dashboards"`

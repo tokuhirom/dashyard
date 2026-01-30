@@ -9,13 +9,14 @@ interface LayoutProps {
   onTimeRangeChange: (range_: TimeRange) => void;
   onNavigate: (path: string) => void;
   siteTitle: string;
+  headerColor: string;
   children: React.ReactNode;
 }
 
-export function Layout({ tree, currentPath, timeRange, onTimeRangeChange, onNavigate, siteTitle, children }: LayoutProps) {
+export function Layout({ tree, currentPath, timeRange, onTimeRangeChange, onNavigate, siteTitle, headerColor, children }: LayoutProps) {
   return (
     <div className="layout">
-      <Header timeRange={timeRange} onTimeRangeChange={onTimeRangeChange} siteTitle={siteTitle} />
+      <Header timeRange={timeRange} onTimeRangeChange={onTimeRangeChange} siteTitle={siteTitle} headerColor={headerColor} />
       <div className="layout-body">
         <Sidebar tree={tree} currentPath={currentPath} onNavigate={onNavigate} />
         <main className="layout-main">

@@ -8,6 +8,7 @@ import (
 func TestParseFullConfig(t *testing.T) {
 	input := []byte(`
 site_title: "My Monitoring"
+header_color: "#dc2626"
 
 server:
   host: "127.0.0.1"
@@ -35,6 +36,9 @@ users:
 
 	if cfg.SiteTitle != "My Monitoring" {
 		t.Errorf("expected site_title 'My Monitoring', got %q", cfg.SiteTitle)
+	}
+	if cfg.HeaderColor != "#dc2626" {
+		t.Errorf("expected header_color '#dc2626', got %q", cfg.HeaderColor)
 	}
 	if cfg.Server.Host != "127.0.0.1" {
 		t.Errorf("expected host '127.0.0.1', got %q", cfg.Server.Host)
@@ -72,6 +76,9 @@ func TestParseDefaults(t *testing.T) {
 
 	if cfg.SiteTitle != "Dashyard" {
 		t.Errorf("expected default site_title 'Dashyard', got %q", cfg.SiteTitle)
+	}
+	if cfg.HeaderColor != "" {
+		t.Errorf("expected default header_color '', got %q", cfg.HeaderColor)
 	}
 	if cfg.Server.Host != "0.0.0.0" {
 		t.Errorf("expected default host '0.0.0.0', got %q", cfg.Server.Host)

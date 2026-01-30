@@ -33,6 +33,7 @@ export interface DashboardsResponse {
   dashboards: DashboardListItem[];
   tree: DashboardTreeNode[];
   site_title: string;
+  header_color: string;
 }
 
 export interface PrometheusResult {
