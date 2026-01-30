@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tokuhirom/dashyard/schemas/dashboard.schema.json",
+  "title": "Dashyard Dashboard",
+  "description": "A dashboard definition file for Dashyard.",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Display title of the dashboard."
+    },
+    "rows": {
+      "type": "array",
+      "description": "Horizontal rows of panels.",
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    }
+  },
+  "required": ["title", "rows"],
+  "additionalProperties": false,
+  "$defs": {
+    "row": {
+      "type": "object",
+      "description": "A horizontal row containing one or more panels.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Display title of the row."
+        },
+        "panels": {
+          "type": "array",
+          "description": "Panels within this row.",
+          "items": {
+            "$ref": "#/$defs/panel"
+          }
+        }
+      },
+      "required": ["title", "panels"],
+      "additionalProperties": false
+    },
+    "panel": {
+      "type": "object",
+      "description": "A single visualization panel.",
+      "oneOf": [
+        { "$ref": "#/$defs/graphPanel" },
+        { "$ref": "#/$defs/markdownPanel" }
+      ]
+    },
+    "graphPanel": {
+      "type": "object",
+      "description": "A Prometheus graph panel.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Display title of the panel."
+        },
+        "type": {
+          "const": "graph"
+        },
+        "query": {
+          "type": "string",
+          "description": "PromQL query expression."
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit for formatting values on the Y axis.",
+          "enum": ["bytes", "percent", "count"]
+        },
+        "legend": {
+          "type": "string",
+          "description": "Go template string for formatting legend labels. Metric label names can be used as placeholders (e.g. \"{{device}} {{direction}}\")."
+        }
+      },
+      "required": ["title", "type", "query"],
+      "additionalProperties": false
+    },
+    "markdownPanel": {
+      "type": "object",
+      "description": "A panel that renders Markdown content.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Display title of the panel."
+        },
+        "type": {
+          "const": "markdown"
+        },
+        "content": {
+          "type": "string",
+          "description": "Markdown text to render."
+        }
+      },
+      "required": ["title", "type", "content"],
+      "additionalProperties": false
+    }
+  }
+}
