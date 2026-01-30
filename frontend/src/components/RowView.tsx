@@ -41,6 +41,7 @@ function PanelRenderer({ panel, timeRange }: PanelRendererProps) {
       title={panel.title}
       data={data}
       unit={panel.unit}
+      legend={panel.legend}
       loading={loading}
       error={error}
     />

@@ -3,6 +3,7 @@ export interface Panel {
   type: 'graph' | 'markdown';
   query?: string;
   unit?: 'bytes' | 'percent' | 'count';
+  legend?: string;
   content?: string;
 }
 

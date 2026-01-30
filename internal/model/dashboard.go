@@ -6,6 +6,7 @@ type Panel struct {
 	Type    string `yaml:"type" json:"type"`       // "graph" or "markdown"
 	Query   string `yaml:"query,omitempty" json:"query,omitempty"`
 	Unit    string `yaml:"unit,omitempty" json:"unit,omitempty"` // "bytes", "percent", "count"
+	Legend  string `yaml:"legend,omitempty" json:"legend,omitempty"`
 	Content string `yaml:"content,omitempty" json:"content,omitempty"`
 }
 

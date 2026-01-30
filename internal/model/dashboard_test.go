@@ -79,6 +79,67 @@ rows:
 	}
 }
 
+func TestPanelLegendYAMLUnmarshal(t *testing.T) {
+	input := `
+title: "Bytes Received"
+type: "graph"
+query: 'rate(system_network_io_bytes_total{direction="receive"}[5m])'
+unit: "bytes"
+legend: "{device} {direction}"
+`
+	var p Panel
+	if err := yaml.Unmarshal([]byte(input), &p); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if p.Legend != "{device} {direction}" {
+		t.Errorf("expected legend '{device} {direction}', got %q", p.Legend)
+	}
+}
+
+func TestPanelLegendOmittedYAML(t *testing.T) {
+	input := `
+title: "CPU Usage"
+type: "graph"
+query: "rate(cpu[5m])"
+`
+	var p Panel
+	if err := yaml.Unmarshal([]byte(input), &p); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if p.Legend != "" {
+		t.Errorf("expected empty legend when omitted, got %q", p.Legend)
+	}
+}
+
+func TestPanelLegendJSON(t *testing.T) {
+	p := Panel{Title: "Test", Type: "graph", Query: "up", Legend: "{instance}"}
+	data, err := json.Marshal(p)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded map[string]interface{}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if decoded["legend"] != "{instance}" {
+		t.Errorf("expected legend '{instance}', got %v", decoded["legend"])
+	}
+
+	// Verify legend is omitted from JSON when empty
+	p2 := Panel{Title: "Test", Type: "graph", Query: "up"}
+	data2, err := json.Marshal(p2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded2 map[string]interface{}
+	if err := json.Unmarshal(data2, &decoded2); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, ok := decoded2["legend"]; ok {
+		t.Errorf("expected legend to be omitted from JSON when empty")
+	}
+}
+
 func TestDashboardJSON(t *testing.T) {
 	d := Dashboard{
 		Title: "Test",

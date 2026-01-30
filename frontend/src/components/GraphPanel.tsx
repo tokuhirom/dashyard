@@ -29,6 +29,7 @@ interface GraphPanelProps {
   title: string;
   data: PrometheusResponse | null;
   unit?: string;
+  legend?: string;
   loading: boolean;
   error: string | null;
 }
@@ -38,7 +39,10 @@ const COLORS = [
   '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1',
 ];
 
-function buildLabel(metric: Record<string, string>): string {
+function buildLabel(metric: Record<string, string>, legend?: string): string {
+  if (legend) {
+    return legend.replace(/\{([^}]+)\}/g, (_, key) => metric[key] ?? '');
+  }
   const entries = Object.entries(metric).filter(([k]) => k !== '__name__');
   if (entries.length === 0) {
     return metric['__name__'] || 'value';
@@ -46,7 +50,7 @@ function buildLabel(metric: Record<string, string>): string {
   return entries.map(([k, v]) => `${k}="${v}"`).join(', ');
 }
 
-export function GraphPanel({ title, data, unit, loading, error }: GraphPanelProps) {
+export function GraphPanel({ title, data, unit, legend, loading, error }: GraphPanelProps) {
   if (loading) {
     return (
       <div className="panel graph-panel">
@@ -75,7 +79,7 @@ export function GraphPanel({ title, data, unit, loading, error }: GraphPanelProp
   }
 
   const datasets = data.data.result.map((result, idx) => ({
-    label: buildLabel(result.metric),
+    label: buildLabel(result.metric, legend),
     data: result.values.map(([ts, val]) => ({
       x: ts * 1000,
       y: parseFloat(val),
