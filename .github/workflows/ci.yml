@@ -44,6 +44,50 @@ jobs:
       - name: Build binary
         run: go build -o dashyard .
 
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+      - name: Build frontend
+        run: cd frontend && npm run build
+      - name: Install Playwright browsers
+        run: cd frontend && npx playwright install chromium --with-deps
+      - name: Start dummyprom
+        run: go run ./cmd/dummyprom &
+      - name: Start backend
+        run: go run . -config examples/config.yaml &
+      - name: Start Vite dev server
+        run: cd frontend && npm run dev &
+      - name: Wait for services
+        run: |
+          echo "Waiting for dummyprom on :9090..."
+          timeout 30 bash -c 'until curl -sf http://localhost:9090/-/ready 2>/dev/null || curl -sf http://localhost:9090/api/v1/query?query=up 2>/dev/null; do sleep 1; done' || echo "dummyprom may be ready"
+          echo "Waiting for backend on :8080..."
+          timeout 30 bash -c 'until curl -so /dev/null http://localhost:8080/ 2>/dev/null; do sleep 1; done'
+          echo "Waiting for Vite on :5173..."
+          timeout 30 bash -c 'until curl -sf http://localhost:5173/ 2>/dev/null; do sleep 1; done'
+      - name: Run Playwright tests
+        run: cd frontend && npx playwright test
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
+
   docker:
     name: Docker build
     runs-on: ubuntu-latest
