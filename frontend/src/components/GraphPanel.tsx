@@ -32,6 +32,7 @@ interface GraphPanelProps {
   legend?: string;
   loading: boolean;
   error: string | null;
+  id?: string;
 }
 
 const COLORS = [
@@ -50,11 +51,18 @@ function buildLabel(metric: Record<string, string>, legend?: string): string {
   return entries.map(([k, v]) => `${k}="${v}"`).join(', ');
 }
 
-export function GraphPanel({ title, data, unit, legend, loading, error }: GraphPanelProps) {
+export function GraphPanel({ title, data, unit, legend, loading, error, id }: GraphPanelProps) {
+  const titleContent = (
+    <h3 className="panel-title">
+      {title}
+      {id && <a href={`#${id}`} className="panel-anchor">#</a>}
+    </h3>
+  );
+
   if (loading) {
     return (
-      <div className="panel graph-panel">
-        <h3 className="panel-title">{title}</h3>
+      <div className="panel graph-panel" id={id}>
+        {titleContent}
         <div className="panel-loading">Loading...</div>
       </div>
     );
@@ -62,8 +70,8 @@ export function GraphPanel({ title, data, unit, legend, loading, error }: GraphP
 
   if (error) {
     return (
-      <div className="panel graph-panel">
-        <h3 className="panel-title">{title}</h3>
+      <div className="panel graph-panel" id={id}>
+        {titleContent}
         <div className="panel-error">{error}</div>
       </div>
     );
@@ -71,8 +79,8 @@ export function GraphPanel({ title, data, unit, legend, loading, error }: GraphP
 
   if (!data || !data.data?.result?.length) {
     return (
-      <div className="panel graph-panel">
-        <h3 className="panel-title">{title}</h3>
+      <div className="panel graph-panel" id={id}>
+        {titleContent}
         <div className="panel-empty">No data</div>
       </div>
     );
@@ -131,8 +139,8 @@ export function GraphPanel({ title, data, unit, legend, loading, error }: GraphP
   };
 
   return (
-    <div className="panel graph-panel">
-      <h3 className="panel-title">{title}</h3>
+    <div className="panel graph-panel" id={id}>
+      {titleContent}
       <div className="panel-chart">
         <Line data={{ datasets }} options={options} />
       </div>

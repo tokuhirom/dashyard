@@ -66,7 +66,7 @@ export function DashboardView({ path, timeRange, onAuthError }: DashboardViewPro
         )
       ) : (
         dashboard.rows.map((row, idx) => (
-          <RowView key={idx} row={row} timeRange={timeRange} />
+          <RowView key={idx} row={row} rowIndex={idx} timeRange={timeRange} />
         ))
       )}
     </div>

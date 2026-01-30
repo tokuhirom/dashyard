@@ -38,13 +38,17 @@ function TreeNode({ node, currentPath, onNavigate, depth = 0 }: TreeNodeProps) {
 
   if (isLeaf) {
     return (
-      <div
+      <a
+        href={`/d/${node.path}`}
         className={`sidebar-item ${isActive ? 'active' : ''}`}
         style={{ paddingLeft: `${(depth + 1) * 12}px` }}
-        onClick={() => onNavigate(node.path!)}
+        onClick={(e) => {
+          e.preventDefault();
+          onNavigate(node.path!);
+        }}
       >
         {node.name}
-      </div>
+      </a>
     );
   }
 
