@@ -1,0 +1,9 @@
+.git
+.devbox
+.claude
+frontend/node_modules
+dashyard
+*.exe
+.DS_Store
+.idea
+.vscode

@@ -1,0 +1,17 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  session_secret: "change-me-in-production"
+
+prometheus:
+  url: "http://localhost:9090"
+  timeout: 30s
+
+dashboards:
+  dir: "examples/dashboards"
+
+# Default user: admin / admin
+# Generate a new hash with: go run ./cmd/genhash <password>
+users:
+  - id: "admin"
+    password_hash: "$6$D/BkIQYiHD.cKL4A$pbAApV8cWXOv3hTyITrHNmlWe3FyfIJyM2CVFuJxbmXwDZPIVbcXKJbM2dxmJqG/ZJZBtrt8e9bVxt0d7rQKK."

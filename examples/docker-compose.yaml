@@ -1,0 +1,20 @@
+services:
+  dashyard:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config-docker.yaml:/etc/dashyard/config.yaml:ro
+      - ./dashboards:/etc/dashyard/dashboards:ro
+    command: ["-config", "/etc/dashyard/config.yaml"]
+    depends_on:
+      - dummyprom
+
+  dummyprom:
+    build:
+      context: ..
+      dockerfile: Dockerfile.dummyprom
+    ports:
+      - "9090:9090"

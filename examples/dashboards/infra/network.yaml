@@ -1,0 +1,22 @@
+title: "Network"
+rows:
+  - title: "Traffic"
+    panels:
+      - title: "Bytes Received"
+        type: "graph"
+        query: 'rate(system_network_io_bytes_total{direction="receive"}[5m])'
+        unit: "bytes"
+      - title: "Bytes Transmitted"
+        type: "graph"
+        query: 'rate(system_network_io_bytes_total{direction="transmit"}[5m])'
+        unit: "bytes"
+  - title: "Disk"
+    panels:
+      - title: "Disk Read Rate"
+        type: "graph"
+        query: 'rate(system_disk_io_bytes_total{direction="read"}[5m])'
+        unit: "bytes"
+      - title: "Disk Write Rate"
+        type: "graph"
+        query: 'rate(system_disk_io_bytes_total{direction="write"}[5m])'
+        unit: "bytes"

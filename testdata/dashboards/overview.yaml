@@ -1,0 +1,23 @@
+title: "System Overview"
+rows:
+  - title: "CPU Usage"
+    panels:
+      - title: "CPU Utilization"
+        type: "graph"
+        query: "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)"
+        unit: "percent"
+      - title: "Load Average"
+        type: "graph"
+        query: "node_load1"
+        unit: "count"
+  - title: "Memory"
+    panels:
+      - title: "Memory Usage"
+        type: "graph"
+        query: "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes"
+        unit: "bytes"
+      - title: "Notes"
+        type: "markdown"
+        content: |
+          ## Memory Monitoring
+          This panel shows the **used memory** calculated as total minus available.

@@ -1,0 +1,26 @@
+# Go
+/dashyard
+*.exe
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+
+# Devbox
+.devbox/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+
+# Build artifacts
+/dist/
+
+# Environment
+.envrc

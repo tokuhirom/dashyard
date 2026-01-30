@@ -1,0 +1,22 @@
+title: "Network"
+rows:
+  - title: "Traffic"
+    panels:
+      - title: "Bytes Received"
+        type: "graph"
+        query: "rate(node_network_receive_bytes_total{device!=\"lo\"}[5m])"
+        unit: "bytes"
+      - title: "Bytes Transmitted"
+        type: "graph"
+        query: "rate(node_network_transmit_bytes_total{device!=\"lo\"}[5m])"
+        unit: "bytes"
+  - title: "Errors"
+    panels:
+      - title: "Receive Errors"
+        type: "graph"
+        query: "rate(node_network_receive_errs_total{device!=\"lo\"}[5m])"
+        unit: "count"
+      - title: "Transmit Errors"
+        type: "graph"
+        query: "rate(node_network_transmit_errs_total{device!=\"lo\"}[5m])"
+        unit: "count"
