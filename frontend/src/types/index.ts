@@ -32,6 +32,7 @@ export interface DashboardTreeNode {
 export interface DashboardsResponse {
   dashboards: DashboardListItem[];
   tree: DashboardTreeNode[];
+  site_title: string;
 }
 
 export interface PrometheusResult {

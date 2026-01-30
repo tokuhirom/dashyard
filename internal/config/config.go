@@ -36,6 +36,7 @@ type DashboardsConfig struct {
 
 // Config is the top-level application configuration.
 type Config struct {
+	SiteTitle  string           `yaml:"site_title"`
 	Server     ServerConfig     `yaml:"server"`
 	Prometheus PrometheusConfig `yaml:"prometheus"`
 	Dashboards DashboardsConfig `yaml:"dashboards"`
@@ -54,6 +55,7 @@ func Load(path string) (*Config, error) {
 // Parse parses YAML config data, applying defaults for missing values.
 func Parse(data []byte) (*Config, error) {
 	cfg := &Config{
+		SiteTitle: "Dashyard",
 		Server: ServerConfig{
 			Host: "0.0.0.0",
 			Port: 8080,

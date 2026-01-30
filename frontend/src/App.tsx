@@ -111,6 +111,7 @@ function App() {
       timeRange={timeRange}
       onTimeRangeChange={onTimeRangeChange}
       onNavigate={onNavigate}
+      siteTitle={dashboardsData.site_title}
     >
       <DashboardView
         path={activePath}

@@ -9,12 +9,13 @@ import (
 
 // DashboardsHandler handles dashboard listing and detail requests.
 type DashboardsHandler struct {
-	store *dashboard.Store
+	store     *dashboard.Store
+	siteTitle string
 }
 
 // NewDashboardsHandler creates a new DashboardsHandler.
-func NewDashboardsHandler(store *dashboard.Store) *DashboardsHandler {
-	return &DashboardsHandler{store: store}
+func NewDashboardsHandler(store *dashboard.Store, siteTitle string) *DashboardsHandler {
+	return &DashboardsHandler{store: store, siteTitle: siteTitle}
 }
 
 // List handles GET /api/dashboards - returns all dashboards with flat list and tree.
@@ -33,6 +34,7 @@ func (h *DashboardsHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"dashboards": items,
 		"tree":       h.store.Tree(),
+		"site_title": h.siteTitle,
 	})
 }
 
