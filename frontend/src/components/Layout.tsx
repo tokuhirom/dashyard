@@ -10,13 +10,15 @@ interface LayoutProps {
   onNavigate: (path: string) => void;
   siteTitle: string;
   headerColor: string;
+  columns: number;
+  onColumnsChange: (n: number) => void;
   children: React.ReactNode;
 }
 
-export function Layout({ tree, currentPath, timeRange, onTimeRangeChange, onNavigate, siteTitle, headerColor, children }: LayoutProps) {
+export function Layout({ tree, currentPath, timeRange, onTimeRangeChange, onNavigate, siteTitle, headerColor, columns, onColumnsChange, children }: LayoutProps) {
   return (
     <div className="layout">
-      <Header timeRange={timeRange} onTimeRangeChange={onTimeRangeChange} siteTitle={siteTitle} headerColor={headerColor} />
+      <Header timeRange={timeRange} onTimeRangeChange={onTimeRangeChange} siteTitle={siteTitle} headerColor={headerColor} columns={columns} onColumnsChange={onColumnsChange} />
       <div className="layout-body">
         <Sidebar tree={tree} currentPath={currentPath} onNavigate={onNavigate} />
         <main className="layout-main">
