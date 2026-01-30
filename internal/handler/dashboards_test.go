@@ -21,7 +21,7 @@ func loadTestStore(t *testing.T) *dashboard.Store {
 
 func TestDashboardsList(t *testing.T) {
 	store := loadTestStore(t)
-	handler := NewDashboardsHandler(store)
+	handler := NewDashboardsHandler(store, "Dashyard", "")
 
 	router := gin.New()
 	router.GET("/api/dashboards", handler.List)
@@ -52,7 +52,7 @@ func TestDashboardsList(t *testing.T) {
 
 func TestDashboardsGet(t *testing.T) {
 	store := loadTestStore(t)
-	handler := NewDashboardsHandler(store)
+	handler := NewDashboardsHandler(store, "Dashyard", "")
 
 	router := gin.New()
 	router.GET("/api/dashboards/*path", handler.Get)
@@ -82,7 +82,7 @@ func TestDashboardsGet(t *testing.T) {
 
 func TestDashboardsGetNested(t *testing.T) {
 	store := loadTestStore(t)
-	handler := NewDashboardsHandler(store)
+	handler := NewDashboardsHandler(store, "Dashyard", "")
 
 	router := gin.New()
 	router.GET("/api/dashboards/*path", handler.Get)
@@ -108,7 +108,7 @@ func TestDashboardsGetNested(t *testing.T) {
 
 func TestDashboardsGetNotFound(t *testing.T) {
 	store := loadTestStore(t)
-	handler := NewDashboardsHandler(store)
+	handler := NewDashboardsHandler(store, "Dashyard", "")
 
 	router := gin.New()
 	router.GET("/api/dashboards/*path", handler.Get)
