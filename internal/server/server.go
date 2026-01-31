@@ -31,6 +31,7 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS) *h
 	loginHandler := handler.NewLoginHandler(cfg.Users, sm)
 	dashboardsHandler := handler.NewDashboardsHandler(holder, cfg.SiteTitle, cfg.HeaderColor)
 	queryHandler := handler.NewQueryHandler(promClient)
+	labelValuesHandler := handler.NewLabelValuesHandler(promClient)
 	staticHandler := handler.NewStaticHandler(frontendFS)
 
 	// Public routes
@@ -44,6 +45,7 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS) *h
 		api.GET("/dashboards/*path", dashboardsHandler.Get)
 		api.GET("/dashboard-source/*path", dashboardsHandler.GetSource)
 		api.GET("/query", queryHandler.Handle)
+		api.GET("/label-values", labelValuesHandler.Handle)
 	}
 
 	// Frontend static files (SPA fallback)

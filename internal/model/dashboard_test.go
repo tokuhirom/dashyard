@@ -227,6 +227,102 @@ func TestPanelChartTypeJSON(t *testing.T) {
 	}
 }
 
+func TestDashboardWithVariablesYAML(t *testing.T) {
+	input := `
+title: "Network by Interface"
+variables:
+  - name: device
+    label: "Network Device"
+    query: "label_values(system_network_io_bytes_total, device)"
+rows:
+  - title: "Traffic for $device"
+    repeat: device
+    panels:
+      - title: "Bytes Received"
+        type: "graph"
+        query: 'rate(system_network_io_bytes_total{device="$device"}[5m])'
+        unit: "bytes"
+`
+	var d Dashboard
+	if err := yaml.Unmarshal([]byte(input), &d); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(d.Variables) != 1 {
+		t.Fatalf("expected 1 variable, got %d", len(d.Variables))
+	}
+	v := d.Variables[0]
+	if v.Name != "device" {
+		t.Errorf("expected variable name 'device', got %q", v.Name)
+	}
+	if v.Label != "Network Device" {
+		t.Errorf("expected variable label 'Network Device', got %q", v.Label)
+	}
+	if v.Query != "label_values(system_network_io_bytes_total, device)" {
+		t.Errorf("expected variable query, got %q", v.Query)
+	}
+	if d.Rows[0].Repeat != "device" {
+		t.Errorf("expected row repeat 'device', got %q", d.Rows[0].Repeat)
+	}
+}
+
+func TestDashboardVariablesJSON(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Variables: []Variable{
+			{Name: "device", Label: "Device", Query: "label_values(m, device)"},
+		},
+		Rows: []Row{
+			{Title: "Row1", Repeat: "device", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}},
+		},
+	}
+	data, err := json.Marshal(d)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded map[string]interface{}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	vars, ok := decoded["variables"].([]interface{})
+	if !ok || len(vars) != 1 {
+		t.Fatalf("expected 1 variable in JSON, got %v", decoded["variables"])
+	}
+	varMap := vars[0].(map[string]interface{})
+	if varMap["name"] != "device" {
+		t.Errorf("expected variable name 'device', got %v", varMap["name"])
+	}
+	rows := decoded["rows"].([]interface{})
+	rowMap := rows[0].(map[string]interface{})
+	if rowMap["repeat"] != "device" {
+		t.Errorf("expected row repeat 'device', got %v", rowMap["repeat"])
+	}
+}
+
+func TestDashboardVariablesOmittedJSON(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows: []Row{
+			{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}},
+		},
+	}
+	data, err := json.Marshal(d)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded map[string]interface{}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, ok := decoded["variables"]; ok {
+		t.Errorf("expected variables to be omitted from JSON when nil")
+	}
+	rows := decoded["rows"].([]interface{})
+	rowMap := rows[0].(map[string]interface{})
+	if _, ok := rowMap["repeat"]; ok {
+		t.Errorf("expected repeat to be omitted from JSON when empty")
+	}
+}
+
 func TestDashboardTreeNodeJSON(t *testing.T) {
 	node := DashboardTreeNode{
 		Name: "infra",

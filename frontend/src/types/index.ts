@@ -10,13 +10,26 @@ export interface Panel {
 
 export interface Row {
   title: string;
+  repeat?: string;
   panels: Panel[];
+}
+
+export interface Variable {
+  name: string;
+  label?: string;
+  query: string;
 }
 
 export interface Dashboard {
   title: string;
+  variables?: Variable[];
   rows: Row[];
   path: string;
+}
+
+export interface LabelValuesResponse {
+  status: string;
+  data: string[];
 }
 
 export interface DashboardListItem {
