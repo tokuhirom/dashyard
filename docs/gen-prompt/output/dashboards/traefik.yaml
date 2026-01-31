@@ -1,0 +1,160 @@
+title: "Traefik"
+rows:
+  - title: "Overview"
+    panels:
+      - title: "About"
+        type: markdown
+        content: |
+          Traefik reverse proxy metrics using the RED method
+          (Rate, Errors, Duration) at entrypoint, router, and service levels.
+      - title: "Open Connections"
+        type: graph
+        query: 'traefik_open_connections'
+        unit: count
+        legend: "{entrypoint}"
+        y_min: 0
+      - title: "Config Reloads Rate"
+        type: graph
+        query: 'rate(traefik_config_reloads_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+      - title: "Last Config Reload Success"
+        type: graph
+        query: 'traefik_config_last_reload_success'
+        unit: count
+        y_min: 0
+        y_max: 1
+
+  - title: "Entrypoint - Rate"
+    panels:
+      - title: "Request Rate"
+        type: graph
+        query: 'sum by (entrypoint) (rate(traefik_entrypoint_requests_total[5m]))'
+        unit: count
+        chart_type: bar
+        legend: "{entrypoint}"
+        y_min: 0
+      - title: "Request Bytes Rate"
+        type: graph
+        query: 'sum by (entrypoint) (rate(traefik_entrypoint_requests_bytes_total[5m]))'
+        unit: bytes
+        legend: "{entrypoint}"
+        y_min: 0
+      - title: "Response Bytes Rate"
+        type: graph
+        query: 'sum by (entrypoint) (rate(traefik_entrypoint_responses_bytes_total[5m]))'
+        unit: bytes
+        legend: "{entrypoint}"
+        y_min: 0
+
+  - title: "Entrypoint - Duration"
+    panels:
+      - title: "Request Duration p99"
+        type: graph
+        query: 'histogram_quantile(0.99, sum by (le) (rate(traefik_entrypoint_request_duration_seconds_bucket[5m])))'
+        unit: seconds
+        y_min: 0
+        thresholds:
+          - value: 1
+            color: "#f59e0b"
+            label: "Slow"
+          - value: 5
+            color: "#ef4444"
+            label: "Very Slow"
+      - title: "Request Duration p75"
+        type: graph
+        query: 'histogram_quantile(0.75, sum by (le) (rate(traefik_entrypoint_request_duration_seconds_bucket[5m])))'
+        unit: seconds
+        y_min: 0
+      - title: "Avg Request Duration"
+        type: graph
+        query: 'rate(traefik_entrypoint_request_duration_seconds_sum[5m]) / (rate(traefik_entrypoint_request_duration_seconds_count[5m]) > 0)'
+        unit: seconds
+        y_min: 0
+
+  - title: "Router - Rate"
+    panels:
+      - title: "Request Rate by Router"
+        type: graph
+        query: 'sum by (router) (rate(traefik_router_requests_total[5m]))'
+        unit: count
+        chart_type: bar
+        legend: "{router}"
+        y_min: 0
+      - title: "Request Bytes Rate by Router"
+        type: graph
+        query: 'sum by (router) (rate(traefik_router_requests_bytes_total[5m]))'
+        unit: bytes
+        legend: "{router}"
+        y_min: 0
+      - title: "Response Bytes Rate by Router"
+        type: graph
+        query: 'sum by (router) (rate(traefik_router_responses_bytes_total[5m]))'
+        unit: bytes
+        legend: "{router}"
+        y_min: 0
+
+  - title: "Router - Duration"
+    panels:
+      - title: "Request Duration p99 by Router"
+        type: graph
+        query: 'histogram_quantile(0.99, sum by (le, router) (rate(traefik_router_request_duration_seconds_bucket[5m])))'
+        unit: seconds
+        legend: "{router}"
+        y_min: 0
+      - title: "Request Duration p75 by Router"
+        type: graph
+        query: 'histogram_quantile(0.75, sum by (le, router) (rate(traefik_router_request_duration_seconds_bucket[5m])))'
+        unit: seconds
+        legend: "{router}"
+        y_min: 0
+      - title: "Avg Request Duration by Router"
+        type: graph
+        query: 'sum by (router) (rate(traefik_router_request_duration_seconds_sum[5m])) / (sum by (router) (rate(traefik_router_request_duration_seconds_count[5m])) > 0)'
+        unit: seconds
+        legend: "{router}"
+        y_min: 0
+
+  - title: "Service - Rate"
+    panels:
+      - title: "Request Rate by Service"
+        type: graph
+        query: 'sum by (service) (rate(traefik_service_requests_total[5m]))'
+        unit: count
+        chart_type: bar
+        legend: "{service}"
+        y_min: 0
+      - title: "Request Bytes Rate by Service"
+        type: graph
+        query: 'sum by (service) (rate(traefik_service_requests_bytes_total[5m]))'
+        unit: bytes
+        legend: "{service}"
+        y_min: 0
+      - title: "Response Bytes Rate by Service"
+        type: graph
+        query: 'sum by (service) (rate(traefik_service_responses_bytes_total[5m]))'
+        unit: bytes
+        legend: "{service}"
+        y_min: 0
+
+  - title: "Service - Duration"
+    panels:
+      - title: "Request Duration p99 by Service"
+        type: graph
+        query: 'histogram_quantile(0.99, sum by (le, service) (rate(traefik_service_request_duration_seconds_bucket[5m])))'
+        unit: seconds
+        legend: "{service}"
+        y_min: 0
+      - title: "Request Duration p75 by Service"
+        type: graph
+        query: 'histogram_quantile(0.75, sum by (le, service) (rate(traefik_service_request_duration_seconds_bucket[5m])))'
+        unit: seconds
+        legend: "{service}"
+        y_min: 0
+      - title: "Avg Request Duration by Service"
+        type: graph
+        query: 'sum by (service) (rate(traefik_service_request_duration_seconds_sum[5m])) / (sum by (service) (rate(traefik_service_request_duration_seconds_count[5m])) > 0)'
+        unit: seconds
+        legend: "{service}"
+        y_min: 0

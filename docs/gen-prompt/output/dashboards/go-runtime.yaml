@@ -1,0 +1,222 @@
+title: "Go Runtime & Process"
+rows:
+  - title: "Overview"
+    panels:
+      - title: "About"
+        type: markdown
+        content: |
+          Go runtime and OS process metrics from the Traefik instance.
+          Covers GC, goroutines, memory allocation, threads, and process resource usage.
+
+  - title: "Process"
+    panels:
+      - title: "Process CPU Usage"
+        type: graph
+        query: 'rate(process_cpu_seconds_total[5m])'
+        unit: count
+        y_min: 0
+      - title: "Resident Memory"
+        type: graph
+        query: 'process_resident_memory_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Virtual Memory"
+        type: graph
+        query: 'process_virtual_memory_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Open vs Max File Descriptors"
+        type: graph
+        query: 'process_open_fds'
+        unit: count
+        y_min: 0
+        thresholds:
+          - value: 1000
+            color: "#f59e0b"
+            label: "Warning"
+
+  - title: "Goroutines & Threads"
+    panels:
+      - title: "Goroutines"
+        type: graph
+        query: 'go_goroutines'
+        unit: count
+        y_min: 0
+      - title: "OS Threads"
+        type: graph
+        query: 'go_threads'
+        unit: count
+        y_min: 0
+
+  - title: "GC"
+    panels:
+      - title: "GC Duration (p75)"
+        type: graph
+        query: 'go_gc_duration_seconds{quantile="0.75"}'
+        unit: seconds
+        y_min: 0
+      - title: "GC Duration (max)"
+        type: graph
+        query: 'go_gc_duration_seconds{quantile="1.0"}'
+        unit: seconds
+        y_min: 0
+      - title: "GC Rate"
+        type: graph
+        query: 'rate(go_gc_duration_seconds_count[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+      - title: "GC Avg Duration"
+        type: graph
+        query: 'rate(go_gc_duration_seconds_sum[5m]) / (rate(go_gc_duration_seconds_count[5m]) > 0)'
+        unit: seconds
+        y_min: 0
+
+  - title: "Heap Memory"
+    panels:
+      - title: "Heap Allocated (In Use)"
+        type: graph
+        query: 'go_memstats_heap_alloc_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Heap In Use"
+        type: graph
+        query: 'go_memstats_heap_inuse_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Heap Idle"
+        type: graph
+        query: 'go_memstats_heap_idle_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Heap Released to OS"
+        type: graph
+        query: 'go_memstats_heap_released_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Heap Objects"
+        type: graph
+        query: 'go_memstats_heap_objects'
+        unit: count
+        y_min: 0
+
+  - title: "Memory Allocation"
+    panels:
+      - title: "Allocation Rate"
+        type: graph
+        query: 'rate(go_memstats_alloc_bytes_total[5m])'
+        unit: bytes
+        y_min: 0
+      - title: "Mallocs Rate"
+        type: graph
+        query: 'rate(go_memstats_mallocs_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+      - title: "Frees Rate"
+        type: graph
+        query: 'rate(go_memstats_frees_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+      - title: "Pointer Lookups Rate"
+        type: graph
+        query: 'rate(go_memstats_lookups_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+
+  - title: "Memory System"
+    panels:
+      - title: "Total System Memory"
+        type: graph
+        query: 'go_memstats_sys_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Heap System Memory"
+        type: graph
+        query: 'go_memstats_heap_sys_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Stack In Use"
+        type: graph
+        query: 'go_memstats_stack_inuse_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Next GC Target"
+        type: graph
+        query: 'go_memstats_next_gc_bytes'
+        unit: bytes
+        y_min: 0
+
+  - title: "Memory Internal Structures"
+    panels:
+      - title: "MSpan In Use"
+        type: graph
+        query: 'go_memstats_mspan_inuse_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "MSpan System"
+        type: graph
+        query: 'go_memstats_mspan_sys_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "MCache In Use"
+        type: graph
+        query: 'go_memstats_mcache_inuse_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "MCache System"
+        type: graph
+        query: 'go_memstats_mcache_sys_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Buck Hash System"
+        type: graph
+        query: 'go_memstats_buck_hash_sys_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "GC System Metadata"
+        type: graph
+        query: 'go_memstats_gc_sys_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Other System"
+        type: graph
+        query: 'go_memstats_other_sys_bytes'
+        unit: bytes
+        y_min: 0
+      - title: "Stack System"
+        type: graph
+        query: 'go_memstats_stack_sys_bytes'
+        unit: bytes
+        y_min: 0
+
+  - title: "Scrape"
+    panels:
+      - title: "Scrape Duration"
+        type: graph
+        query: 'scrape_duration_seconds'
+        unit: seconds
+        y_min: 0
+      - title: "Samples Scraped"
+        type: graph
+        query: 'scrape_samples_scraped'
+        unit: count
+        y_min: 0
+      - title: "Samples Post Relabeling"
+        type: graph
+        query: 'scrape_samples_post_metric_relabeling'
+        unit: count
+        y_min: 0
+      - title: "Series Added"
+        type: graph
+        query: 'scrape_series_added'
+        unit: count
+        y_min: 0
+      - title: "Target Up"
+        type: graph
+        query: 'up'
+        unit: count
+        y_min: 0
+        y_max: 1

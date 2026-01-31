@@ -67,6 +67,13 @@ rows:
         chart_type: bar
         legend: "{direction}"
         y_min: 0
+      - title: "Disk Merged Operations ($disk)"
+        type: graph
+        query: 'rate(system_disk_merged_total{device="$disk"}[5m])'
+        unit: count
+        chart_type: bar
+        legend: "{direction}"
+        y_min: 0
       - title: "Disk Pending Operations ($disk)"
         type: graph
         query: 'system_disk_pending_operations{device="$disk"}'
@@ -84,9 +91,14 @@ rows:
         query: 'rate(system_disk_io_time_seconds_total{device="$disk"}[5m])'
         unit: seconds
         y_min: 0
+      - title: "Disk Weighted I/O Time ($disk)"
+        type: graph
+        query: 'rate(system_disk_weighted_io_time_seconds_total{device="$disk"}[5m])'
+        unit: seconds
+        y_min: 0
       - title: "Disk Avg Operation Time ($disk)"
         type: graph
-        query: 'rate(system_disk_operation_time_seconds_total{device="$disk"}[5m]) / rate(system_disk_operations_total{device="$disk"}[5m])'
+        query: 'rate(system_disk_operation_time_seconds_total{device="$disk"}[5m]) / (rate(system_disk_operations_total{device="$disk"}[5m]) > 0)'
         unit: seconds
         legend: "{direction}"
         y_min: 0
