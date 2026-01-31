@@ -94,7 +94,7 @@ services:
       - gen-prompt
       - http://prometheus:9090
       - -o
-      - /output/example.md
+      - /output/prompt.md
     depends_on:
       prometheus:
         condition: service_healthy
