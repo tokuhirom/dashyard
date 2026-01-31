@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/tokuhirom/dashyard/internal/metrics"
 )
 
 // ClientOption configures optional Client settings.
@@ -68,9 +70,19 @@ func (c *Client) QueryRange(ctx context.Context, query, start, end, step string)
 	}
 	c.applyAuth(req)
 
+	reqStart := time.Now()
 	resp, err := c.httpClient.Do(req)
+	duration := time.Since(reqStart).Seconds()
+	metrics.PrometheusQueryDuration.Observe(duration)
 	if err != nil {
+		metrics.PrometheusQueryTotal.WithLabelValues("error").Inc()
 		return nil, 0, fmt.Errorf("executing request: %w", err)
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		metrics.PrometheusQueryTotal.WithLabelValues("success").Inc()
+	} else {
+		metrics.PrometheusQueryTotal.WithLabelValues("error").Inc()
 	}
 
 	return resp.Body, resp.StatusCode, nil

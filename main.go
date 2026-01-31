@@ -16,6 +16,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/tokuhirom/dashyard/internal/config"
 	"github.com/tokuhirom/dashyard/internal/dashboard"
+	"github.com/tokuhirom/dashyard/internal/metrics"
 	"github.com/tokuhirom/dashyard/internal/server"
 )
 
@@ -30,9 +31,10 @@ var cli struct {
 }
 
 type ServeCmd struct {
-	Config string `help:"Path to config file." default:"config.yaml"`
-	Host   string `help:"Host to listen on." default:"0.0.0.0"`
-	Port   int    `help:"Port to listen on." default:"8080"`
+	Config  string `help:"Path to config file." default:"config.yaml"`
+	Host    string `help:"Host to listen on." default:"0.0.0.0"`
+	Port    int    `help:"Port to listen on." default:"8080"`
+	Metrics bool   `help:"Enable /metrics endpoint exposing Prometheus metrics." default:"false"`
 }
 
 func (cmd *ServeCmd) Run() error {
@@ -50,6 +52,7 @@ func (cmd *ServeCmd) Run() error {
 		os.Exit(1)
 	}
 	slog.Info("loaded dashboards", "count", len(store.List()))
+	metrics.DashboardsLoaded.Set(float64(len(store.List())))
 
 	holder := dashboard.NewStoreHolder(store)
 
@@ -61,7 +64,7 @@ func (cmd *ServeCmd) Run() error {
 	}
 
 	// Create server
-	srv, err := server.New(cfg, holder, frontendFS, cmd.Host, cmd.Port)
+	srv, err := server.New(cfg, holder, frontendFS, cmd.Host, cmd.Port, cmd.Metrics)
 	if err != nil {
 		slog.Error("failed to create server", "error", err)
 		os.Exit(1)
