@@ -158,18 +158,18 @@ Generate a password hash:
 ./dashyard mkpasswd <password>
 ```
 
-Generate a Prometheus metrics reference document (starts dummyprom, queries it, outputs Markdown):
+Generate an LLM prompt for dashboard YAML generation (starts dummyprom, queries it, outputs prompt + labels files):
 
 ```bash
-make metrics-doc                 # Output: examples/metrics-doc-example.md
+make gen-prompt                  # Output: examples/gen-prompt-example.md + examples/gen-prompt-example-labels.md
 ```
 
 Or point at any Prometheus instance directly:
 
 ```bash
-./dashyard metrics-doc http://localhost:9090
-./dashyard metrics-doc https://prom.example.com --bearer-token "eyJ..."
-./dashyard metrics-doc http://localhost:9090 --match "node_.*" -o metrics.md
+./dashyard gen-prompt http://localhost:9090
+./dashyard gen-prompt https://prom.example.com --bearer-token "eyJ..."
+./dashyard gen-prompt http://localhost:9090 --match "node_.*" -o prompt.md
 ```
 
 JSON schema: [`schemas/config.schema.json`](schemas/config.schema.json)

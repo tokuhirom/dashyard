@@ -25,11 +25,12 @@ type MetricMetadataEntry struct {
 
 // MetricInfo aggregates all discovered information about a metric.
 type MetricInfo struct {
-	Name   string
-	Type   string
-	Help   string
-	Unit   string
-	Labels []string
+	Name        string
+	Type        string
+	Help        string
+	Unit        string
+	Labels      []string
+	LabelValues map[string][]string // label name -> values
 }
 
 // doGet performs a GET request to the given Prometheus API path, applies auth,
@@ -125,4 +126,23 @@ func (c *Client) MetricLabels(ctx context.Context, metricName string) ([]string,
 		}
 	}
 	return filtered, nil
+}
+
+// MetricLabelValues returns the values of a specific label for a given metric
+// using /api/v1/label/{label}/values?match[]={__name__="metric"}.
+func (c *Client) MetricLabelValues(ctx context.Context, metricName, labelName string) ([]string, error) {
+	params := url.Values{}
+	params.Set("match[]", metricName)
+
+	path := fmt.Sprintf("/api/v1/label/%s/values", labelName)
+	data, err := c.doGet(ctx, path, params)
+	if err != nil {
+		return nil, fmt.Errorf("fetching label values for %s/%s: %w", metricName, labelName, err)
+	}
+
+	var values []string
+	if err := json.Unmarshal(data, &values); err != nil {
+		return nil, fmt.Errorf("decoding label values for %s/%s: %w", metricName, labelName, err)
+	}
+	return values, nil
 }

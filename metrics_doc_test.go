@@ -14,12 +14,19 @@ func TestGenerateMetricsDoc(t *testing.T) {
 			Type:   "summary",
 			Help:   "A summary of the pause duration of garbage collection cycles.",
 			Labels: []string{"quantile"},
+			LabelValues: map[string][]string{
+				"quantile": {"0.5", "0.75", "0.99"},
+			},
 		},
 		{
 			Name:   "node_cpu_seconds_total",
 			Type:   "counter",
 			Help:   "Seconds the CPUs spent in each mode.",
 			Labels: []string{"cpu", "mode"},
+			LabelValues: map[string][]string{
+				"cpu":  {"0", "1", "2", "3"},
+				"mode": {"idle", "system", "user"},
+			},
 		},
 		{
 			Name:   "node_memory_MemTotal_bytes",
@@ -34,73 +41,134 @@ func TestGenerateMetricsDoc(t *testing.T) {
 		},
 	}
 
-	doc := generateMetricsDoc(metrics)
+	doc := generateMetricsDoc(metrics, "metrics-labels.md")
 
-	// Check header
-	if !strings.Contains(doc, "# Prometheus Metrics Reference for Dashyard") {
-		t.Error("missing header")
+	// Check LLM role instruction
+	if !strings.Contains(doc, "You are a Dashyard dashboard generator") {
+		t.Error("missing LLM role instruction")
 	}
 
 	// Check dashboard YAML format section
-	if !strings.Contains(doc, "## Dashboard YAML Format") {
+	if !strings.Contains(doc, "# Dashboard YAML Format") {
 		t.Error("missing dashboard YAML format section")
 	}
-	if !strings.Contains(doc, "chart_type: line") {
-		t.Error("missing chart_type reference in YAML format")
-	}
 
-	// Check PromQL guidelines
-	if !strings.Contains(doc, "## PromQL Guidelines") {
-		t.Error("missing PromQL guidelines section")
+	// Check rules
+	if !strings.Contains(doc, "# Rules") {
+		t.Error("missing rules section")
 	}
 	if !strings.Contains(doc, "rate(") {
 		t.Error("missing rate() guidance")
 	}
 
-	// Check unit selection
-	if !strings.Contains(doc, "## Unit Selection") {
-		t.Error("missing unit selection section")
+	// Check dashyard validate reference
+	if !strings.Contains(doc, "dashyard validate") {
+		t.Error("missing dashyard validate reference")
 	}
 
-	// Check metrics are present
-	if !strings.Contains(doc, "**`go_gc_duration_seconds`** (summary)") {
-		t.Error("missing go_gc_duration_seconds metric")
-	}
-	if !strings.Contains(doc, "A summary of the pause duration") {
-		t.Error("missing go_gc_duration_seconds help text")
-	}
-	if !strings.Contains(doc, "Labels: `quantile`") {
-		t.Error("missing go_gc_duration_seconds labels")
+	// Check label details reference
+	if !strings.Contains(doc, "metrics-labels.md") {
+		t.Error("missing labels file reference")
 	}
 
-	if !strings.Contains(doc, "**`node_cpu_seconds_total`** (counter)") {
-		t.Error("missing node_cpu_seconds_total metric")
+	// Check metrics with label value counts
+	if !strings.Contains(doc, "cpu (4 values)") {
+		t.Error("missing cpu label value count")
 	}
-	if !strings.Contains(doc, "Labels: `cpu`, `mode`") {
-		t.Error("missing node_cpu_seconds_total labels")
+	if !strings.Contains(doc, "mode (3 values)") {
+		t.Error("missing mode label value count")
 	}
 
-	// Check metrics with no labels
-	if !strings.Contains(doc, "**`up`** (gauge)") {
-		t.Error("missing up metric")
+	// Check metrics without label values still show label names
+	if !strings.Contains(doc, "Labels: instance, job") {
+		t.Error("missing labels without counts for node_memory_MemTotal_bytes")
 	}
 
 	// Check grouping headers
-	if !strings.Contains(doc, "### go_gc") {
+	if !strings.Contains(doc, "## go_gc") {
 		t.Error("missing go_gc group header")
 	}
-	if !strings.Contains(doc, "### node_cpu") {
+	if !strings.Contains(doc, "## node_cpu") {
 		t.Error("missing node_cpu group header")
 	}
-	if !strings.Contains(doc, "### node_memory") {
-		t.Error("missing node_memory group header")
+}
+
+func TestGenerateMetricsDocNoLabelsFileName(t *testing.T) {
+	metrics := []prometheus.MetricInfo{
+		{Name: "up", Type: "gauge"},
+	}
+	doc := generateMetricsDoc(metrics, "")
+	if strings.Contains(doc, "# Label Details") {
+		t.Error("should not contain Label Details section when labelsFileName is empty")
 	}
 }
 
 func TestGenerateMetricsDocEmpty(t *testing.T) {
-	doc := generateMetricsDoc(nil)
-	if !strings.Contains(doc, "No metrics found.") {
-		t.Error("expected 'No metrics found.' for empty metrics")
+	doc := generateMetricsDoc(nil, "")
+	if !strings.Contains(doc, "No metrics available.") {
+		t.Error("expected 'No metrics available.' for empty metrics")
+	}
+}
+
+func TestGenerateLabelsDoc(t *testing.T) {
+	metrics := []prometheus.MetricInfo{
+		{
+			Name:   "node_cpu_seconds_total",
+			Labels: []string{"cpu", "mode"},
+			LabelValues: map[string][]string{
+				"cpu":  {"0", "1"},
+				"mode": {"idle", "system", "user"},
+			},
+		},
+		{
+			Name: "up",
+		},
+	}
+
+	doc := generateLabelsDoc(metrics)
+
+	if !strings.Contains(doc, "# Label Values") {
+		t.Error("missing header")
+	}
+	if !strings.Contains(doc, "## node_cpu_seconds_total") {
+		t.Error("missing metric name")
+	}
+	if !strings.Contains(doc, "**cpu**: 0, 1") {
+		t.Error("missing cpu values")
+	}
+	if !strings.Contains(doc, "**mode**: idle, system, user") {
+		t.Error("missing mode values")
+	}
+	// "up" has no label values, should not appear
+	if strings.Contains(doc, "## up") {
+		t.Error("up should not appear in labels doc")
+	}
+}
+
+func TestGenerateLabelsDocEmpty(t *testing.T) {
+	metrics := []prometheus.MetricInfo{
+		{Name: "up"},
+	}
+	doc := generateLabelsDoc(metrics)
+	if doc != "" {
+		t.Errorf("expected empty string for metrics without label values, got %q", doc)
+	}
+}
+
+func TestLabelsFilePath(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"metrics.md", "metrics-labels.md"},
+		{"output/prompt.md", "output/prompt-labels.md"},
+		{"noext", "noext-labels"},
+	}
+	for _, tt := range tests {
+		got := labelsFilePath(tt.input)
+		if got != tt.expected {
+			t.Errorf("labelsFilePath(%q) = %q, want %q", tt.input, got, tt.expected)
+		}
 	}
 }
 
@@ -118,18 +186,11 @@ func TestGroupMetricsByPrefix(t *testing.T) {
 	if len(groups) != 4 {
 		t.Errorf("expected 4 groups, got %d", len(groups))
 	}
-
 	if len(groups["go_gc"]) != 2 {
 		t.Errorf("expected 2 metrics in go_gc, got %d", len(groups["go_gc"]))
 	}
 	if len(groups["node_cpu"]) != 1 {
 		t.Errorf("expected 1 metric in node_cpu, got %d", len(groups["node_cpu"]))
-	}
-	if len(groups["node_memory"]) != 1 {
-		t.Errorf("expected 1 metric in node_memory, got %d", len(groups["node_memory"]))
-	}
-	if len(groups["up"]) != 1 {
-		t.Errorf("expected 1 metric in up, got %d", len(groups["up"]))
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -18,7 +19,7 @@ type MetricsDocCmd struct {
 	BearerToken string        `help:"Bearer token for authentication." env:"PROMETHEUS_BEARER_TOKEN"`
 	Match       string        `help:"Regex to filter metric names." default:""`
 	Timeout     time.Duration `help:"HTTP timeout." default:"30s"`
-	Output      string        `help:"Output file (default: stdout)." short:"o" default:""`
+	Output      string        `help:"Output file (default: stdout). A labels file is also written alongside." short:"o" default:""`
 }
 
 func (cmd *MetricsDocCmd) Run() error {
@@ -76,7 +77,7 @@ func (cmd *MetricsDocCmd) Run() error {
 			}
 		}
 
-		// Fetch labels (soft failure per metric)
+		// Fetch label names (soft failure per metric)
 		labels, err := client.MetricLabels(ctx, name)
 		if err != nil {
 			slog.Warn("could not fetch labels", "metric", name, "error", err)
@@ -84,23 +85,59 @@ func (cmd *MetricsDocCmd) Run() error {
 			info.Labels = labels
 		}
 
+		// Fetch label values for each label (soft failure per label)
+		if len(info.Labels) > 0 {
+			info.LabelValues = make(map[string][]string)
+			for _, label := range info.Labels {
+				values, err := client.MetricLabelValues(ctx, name, label)
+				if err != nil {
+					slog.Warn("could not fetch label values", "metric", name, "label", label, "error", err)
+				} else {
+					info.LabelValues[label] = values
+				}
+			}
+		}
+
 		metrics = append(metrics, info)
 	}
 
-	// Generate markdown
-	doc := generateMetricsDoc(metrics)
-
-	// Write output
+	// Generate output
 	if cmd.Output != "" {
-		if err := os.WriteFile(cmd.Output, []byte(doc), 0644); err != nil {
+		labelsFile := labelsFilePath(cmd.Output)
+		labelsBaseName := filepath.Base(labelsFile)
+
+		mainDoc := generateMetricsDoc(metrics, labelsBaseName)
+		labelsDoc := generateLabelsDoc(metrics)
+
+		if err := os.WriteFile(cmd.Output, []byte(mainDoc), 0644); err != nil {
 			return fmt.Errorf("writing output file: %w", err)
 		}
-		slog.Info("wrote metrics documentation", "file", cmd.Output)
+		slog.Info("wrote prompt file", "file", cmd.Output)
+
+		if err := os.WriteFile(labelsFile, []byte(labelsDoc), 0644); err != nil {
+			return fmt.Errorf("writing labels file: %w", err)
+		}
+		slog.Info("wrote labels file", "file", labelsFile)
 	} else {
-		fmt.Print(doc)
+		// stdout: output everything in one stream
+		mainDoc := generateMetricsDoc(metrics, "")
+		fmt.Print(mainDoc)
+		labelsDoc := generateLabelsDoc(metrics)
+		if labelsDoc != "" {
+			fmt.Print("\n---\n\n")
+			fmt.Print(labelsDoc)
+		}
 	}
 
 	return nil
+}
+
+// labelsFilePath derives the labels file path from the main output path.
+// e.g., "metrics.md" -> "metrics-labels.md"
+func labelsFilePath(mainPath string) string {
+	ext := filepath.Ext(mainPath)
+	base := strings.TrimSuffix(mainPath, ext)
+	return base + "-labels" + ext
 }
 
 // groupMetricsByPrefix groups metrics by their common prefix (first two underscore-separated segments).
@@ -122,14 +159,17 @@ func metricPrefix(name string) string {
 	return name
 }
 
-func generateMetricsDoc(metrics []prometheus.MetricInfo) string {
+// generateMetricsDoc generates the main prompt file.
+// labelsFileName is the basename of the labels file (empty if stdout mode).
+func generateMetricsDoc(metrics []prometheus.MetricInfo, labelsFileName string) string {
 	var sb strings.Builder
 
-	sb.WriteString("# Prometheus Metrics Reference for Dashyard\n\n")
-	sb.WriteString("This document lists all available Prometheus metrics. Use it as context for generating Dashyard dashboard YAML files.\n\n")
+	// Role and task
+	sb.WriteString("You are a Dashyard dashboard generator. Your task is to create Dashyard dashboard YAML files based on user requests.\n\n")
+	sb.WriteString("When the user asks for a dashboard, generate valid YAML that follows the format and rules below. Choose appropriate metrics from the available metrics list, apply correct PromQL patterns based on metric types, and select suitable units and chart types.\n\n")
 
-	// Dashboard YAML format reference
-	sb.WriteString("## Dashboard YAML Format\n\n")
+	// Dashboard YAML format
+	sb.WriteString("# Dashboard YAML Format\n\n")
 	sb.WriteString("```yaml\n")
 	sb.WriteString(`title: "Dashboard Title"
 variables:                          # optional
@@ -160,32 +200,49 @@ rows:
 `)
 	sb.WriteString("```\n\n")
 
-	// Guidelines
-	sb.WriteString("## PromQL Guidelines\n\n")
-	sb.WriteString("- **counter** metrics: always wrap with `rate(...[5m])` or `increase(...[5m])`\n")
-	sb.WriteString("- **histogram** `_bucket` metrics: use `histogram_quantile(0.99, rate(...[5m]))`\n")
-	sb.WriteString("- **gauge** metrics: use directly, or apply aggregation like `avg()`, `sum()`\n")
-	sb.WriteString("- **summary** `_sum`/`_count` metrics: `rate(sum[5m]) / rate(count[5m])` for average\n")
-	sb.WriteString("- Use `{label=\"value\"}` for filtering, `by (label)` for grouping\n")
-	sb.WriteString("- Use `$variable` syntax to reference dashboard variables in queries\n\n")
+	// Rules
+	sb.WriteString("# Rules\n\n")
+
+	sb.WriteString("## PromQL by Metric Type\n\n")
+	sb.WriteString("- counter: always wrap with `rate(...[5m])` or `increase(...[5m])`. Never use a raw counter.\n")
+	sb.WriteString("- histogram (_bucket): use `histogram_quantile(0.99, rate(...[5m]))`\n")
+	sb.WriteString("- gauge: use directly, or apply `avg()`, `sum()`, `min()`, `max()`\n")
+	sb.WriteString("- summary (_sum/_count): `rate(sum[5m]) / rate(count[5m])` for average\n\n")
+
+	sb.WriteString("## Filtering and Grouping\n\n")
+	sb.WriteString("- Filter with `{label=\"value\"}`, group with `by (label)`\n")
+	sb.WriteString("- Use `$variable` to reference dashboard variables in queries\n\n")
 
 	sb.WriteString("## Unit Selection\n\n")
-	sb.WriteString("- `bytes` — metrics measuring bytes (memory, disk, network I/O)\n")
+	sb.WriteString("- `bytes` — memory, disk, network I/O metrics\n")
 	sb.WriteString("- `percent` — ratios and utilization (0-100 scale)\n")
 	sb.WriteString("- `seconds` — durations and latencies\n")
 	sb.WriteString("- `count` — counts, rates, and dimensionless values\n\n")
 
+	sb.WriteString("## Best Practices\n\n")
+	sb.WriteString("- Group related panels into rows with descriptive titles\n")
+	sb.WriteString("- When a metric has a label with many values (e.g. device, cpu), use a variable with `label_values()` and `$variable` in queries\n")
+	sb.WriteString("- Use `repeat` on a row to auto-expand for each variable value\n")
+	sb.WriteString("- Add `thresholds` for metrics with known warning/critical levels\n")
+	sb.WriteString("- Add a markdown panel to explain what the dashboard monitors\n")
+	sb.WriteString("- Validate generated YAML with `dashyard validate` before deploying\n")
+	sb.WriteString("- Output only the YAML. Do not wrap in a code block unless the user asks.\n\n")
+
+	// Labels file reference
+	if labelsFileName != "" {
+		sb.WriteString(fmt.Sprintf("# Label Details\n\nThe full list of label values for each metric is available in `%s`. Refer to it when you need to know the exact values of a label (e.g. to enumerate devices, CPU cores, or states).\n\n", labelsFileName))
+	}
+
 	// Metrics listing
-	sb.WriteString("## Available Metrics\n\n")
+	sb.WriteString("# Available Metrics\n\n")
 
 	if len(metrics) == 0 {
-		sb.WriteString("No metrics found.\n")
+		sb.WriteString("No metrics available.\n")
 		return sb.String()
 	}
 
 	groups := groupMetricsByPrefix(metrics)
 
-	// Sort group keys
 	groupKeys := make([]string, 0, len(groups))
 	for k := range groups {
 		groupKeys = append(groupKeys, k)
@@ -194,26 +251,70 @@ rows:
 
 	for _, prefix := range groupKeys {
 		group := groups[prefix]
-		sb.WriteString(fmt.Sprintf("### %s\n\n", prefix))
+		sb.WriteString(fmt.Sprintf("## %s\n\n", prefix))
 
 		for _, m := range group {
-			sb.WriteString(fmt.Sprintf("**`%s`**", m.Name))
+			sb.WriteString(fmt.Sprintf("- `%s`", m.Name))
 			if m.Type != "" {
 				sb.WriteString(fmt.Sprintf(" (%s)", m.Type))
 			}
-			sb.WriteString("\n")
-
 			if m.Help != "" {
-				sb.WriteString(fmt.Sprintf("  %s\n", m.Help))
+				sb.WriteString(fmt.Sprintf(" — %s", m.Help))
 			}
+			sb.WriteString("\n")
 			if m.Unit != "" {
 				sb.WriteString(fmt.Sprintf("  Unit: %s\n", m.Unit))
 			}
 			if len(m.Labels) > 0 {
-				sb.WriteString(fmt.Sprintf("  Labels: `%s`\n", strings.Join(m.Labels, "`, `")))
+				var labelParts []string
+				for _, l := range m.Labels {
+					if vals, ok := m.LabelValues[l]; ok && len(vals) > 0 {
+						labelParts = append(labelParts, fmt.Sprintf("%s (%d values)", l, len(vals)))
+					} else {
+						labelParts = append(labelParts, l)
+					}
+				}
+				sb.WriteString(fmt.Sprintf("  Labels: %s\n", strings.Join(labelParts, ", ")))
 			}
-			sb.WriteString("\n")
 		}
+		sb.WriteString("\n")
+	}
+
+	return sb.String()
+}
+
+// generateLabelsDoc generates the label values detail file.
+func generateLabelsDoc(metrics []prometheus.MetricInfo) string {
+	// Check if there are any label values to write
+	hasValues := false
+	for _, m := range metrics {
+		if len(m.LabelValues) > 0 {
+			hasValues = true
+			break
+		}
+	}
+	if !hasValues {
+		return ""
+	}
+
+	var sb strings.Builder
+	sb.WriteString("# Label Values\n\n")
+	sb.WriteString("Full label value listings for each metric.\n\n")
+
+	for _, m := range metrics {
+		if len(m.LabelValues) == 0 {
+			continue
+		}
+
+		sb.WriteString(fmt.Sprintf("## %s\n\n", m.Name))
+		for _, label := range m.Labels {
+			vals, ok := m.LabelValues[label]
+			if !ok || len(vals) == 0 {
+				continue
+			}
+			sb.WriteString(fmt.Sprintf("- **%s**: %s\n", label, strings.Join(vals, ", ")))
+		}
+		sb.WriteString("\n")
 	}
 
 	return sb.String()
