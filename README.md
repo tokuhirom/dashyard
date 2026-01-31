@@ -91,7 +91,7 @@ docker compose -f examples/docker-compose.yaml up
 
 ### Build from source
 
-Requires Go 1.23+ and Node.js 20+.
+Requires Go 1.25+ and Node.js 20+.
 
 ```bash
 git clone https://github.com/tokuhirom/dashyard.git
