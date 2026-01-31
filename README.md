@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.svg" width="128" alt="Dashyard logo">
+</p>
+
 # Dashyard
 
 > **Warning:** This project is under active development. APIs, configuration formats, and features may change without notice.

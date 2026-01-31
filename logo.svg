@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="picket" x1="256" y1="430" x2="256" y2="65" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Horizontal rails -->
+  <rect x="44" y="345" width="424" height="18" rx="6" fill="#0c4a6e"/>
+  <rect x="44" y="390" width="424" height="18" rx="6" fill="#0c4a6e"/>
+
+  <!-- Picket 1 (shortest) -->
+  <path d="M60,430 V290 L100,250 L140,290 V430 Z" fill="url(#picket)"/>
+
+  <!-- Picket 2 -->
+  <path d="M164,430 V220 L204,180 L244,220 V430 Z" fill="url(#picket)"/>
+
+  <!-- Picket 3 -->
+  <path d="M268,430 V160 L308,120 L348,160 V430 Z" fill="url(#picket)"/>
+
+  <!-- Picket 4 (tallest) -->
+  <path d="M372,430 V105 L412,65 L452,105 V430 Z" fill="url(#picket)"/>
+</svg>
