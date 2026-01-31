@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.0.13](https://github.com/tokuhirom/dashyard/compare/v0.0.12...v0.0.13) - 2026-01-31
+- Add gen-prompt subcommand for LLM dashboard generation by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/61
+- Replace dummyprom gen-prompt with real monitoring stack by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/63
+- Remove pie and doughnut chart types by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/68
+- Add seconds unit for duration/latency metrics by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/69
+- Add PromQL division-by-zero guard guidance by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/70
+- Add full_width option for markdown panels by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/71
+- Add make screenshots to CLAUDE.md by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/72
+- Fix gen-prompt: force rebuild Docker image before run by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/73
+- Add make gen-prompt-up to start full monitoring stack by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/74
+- Fix formatBytes showing undefined for fractional values by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/75
+- add auto generated dashboards by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/77
+
 ## [v0.0.12](https://github.com/tokuhirom/dashyard/compare/v0.0.11...v0.0.12) - 2026-01-31
 - Add auto-refresh interval selector for dashboards by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/53
 - Add issue linking convention to CLAUDE.md by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/56
