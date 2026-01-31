@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -44,7 +42,7 @@ func TestGenerateMetricsDoc(t *testing.T) {
 		},
 	}
 
-	doc := generateMetricsDoc(metrics, "metrics-labels.md", prompt.DefaultGuidelines, "")
+	doc := generateMetricsDoc(metrics, "metrics-labels.md", prompt.DefaultGuidelines)
 
 	// Check LLM role instruction (from default guidelines)
 	if !strings.Contains(doc, "You are a Dashyard dashboard generator") {
@@ -139,7 +137,7 @@ func TestGenerateMetricsDocCustomGuidelines(t *testing.T) {
 		{Name: "up", Type: "gauge"},
 	}
 	customGuidelines := "You are a custom dashboard bot. Follow my rules."
-	doc := generateMetricsDoc(metrics, "", customGuidelines, "")
+	doc := generateMetricsDoc(metrics, "", customGuidelines)
 
 	// Custom guidelines should be present
 	if !strings.Contains(doc, "You are a custom dashboard bot") {
@@ -155,36 +153,18 @@ func TestGenerateMetricsDocCustomGuidelines(t *testing.T) {
 	}
 }
 
-func TestGenerateMetricsDocWithExistingDashboards(t *testing.T) {
-	metrics := []prometheus.MetricInfo{
-		{Name: "up", Type: "gauge"},
-	}
-	existing := "## host.yaml\n\n```yaml\ntitle: Host\n```\n\n"
-	doc := generateMetricsDoc(metrics, "", prompt.DefaultGuidelines, existing)
-
-	if !strings.Contains(doc, "# Existing Dashboards") {
-		t.Error("missing existing dashboards section")
-	}
-	if !strings.Contains(doc, "host.yaml") {
-		t.Error("missing existing dashboard content")
-	}
-	if !strings.Contains(doc, "git log -p") {
-		t.Error("missing git log instruction for existing dashboards")
-	}
-}
-
 func TestGenerateMetricsDocNoLabelsFileName(t *testing.T) {
 	metrics := []prometheus.MetricInfo{
 		{Name: "up", Type: "gauge"},
 	}
-	doc := generateMetricsDoc(metrics, "", prompt.DefaultGuidelines, "")
+	doc := generateMetricsDoc(metrics, "", prompt.DefaultGuidelines)
 	if strings.Contains(doc, "# Label Details") {
 		t.Error("should not contain Label Details section when labelsFileName is empty")
 	}
 }
 
 func TestGenerateMetricsDocEmpty(t *testing.T) {
-	doc := generateMetricsDoc(nil, "", prompt.DefaultGuidelines, "")
+	doc := generateMetricsDoc(nil, "", prompt.DefaultGuidelines)
 	if !strings.Contains(doc, "No metrics available.") {
 		t.Error("expected 'No metrics available.' for empty metrics")
 	}
@@ -293,43 +273,3 @@ func TestMetricPrefix(t *testing.T) {
 	}
 }
 
-func TestLoadExistingDashboards(t *testing.T) {
-	dir := t.TempDir()
-
-	// Create test YAML files
-	if err := os.WriteFile(filepath.Join(dir, "host.yaml"), []byte("title: Host\n"), 0644); err != nil {
-		t.Fatal(err)
-	}
-	subdir := filepath.Join(dir, "infra")
-	if err := os.MkdirAll(subdir, 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(subdir, "network.yaml"), []byte("title: Network\n"), 0644); err != nil {
-		t.Fatal(err)
-	}
-	// Non-YAML file should be ignored
-	if err := os.WriteFile(filepath.Join(dir, "readme.txt"), []byte("ignore me"), 0644); err != nil {
-		t.Fatal(err)
-	}
-
-	content, err := loadExistingDashboards(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !strings.Contains(content, "## host.yaml") {
-		t.Error("missing host.yaml")
-	}
-	if !strings.Contains(content, "title: Host") {
-		t.Error("missing host.yaml content")
-	}
-	if !strings.Contains(content, "infra/network.yaml") {
-		t.Error("missing infra/network.yaml")
-	}
-	if !strings.Contains(content, "title: Network") {
-		t.Error("missing network.yaml content")
-	}
-	if strings.Contains(content, "readme.txt") {
-		t.Error("non-YAML file should be excluded")
-	}
-}

@@ -22,7 +22,6 @@ type GenPromptCmd struct {
 	Timeout       time.Duration `help:"HTTP timeout." default:"30s"`
 	Output        string        `help:"Output file (default: stdout). A labels file is also written alongside." short:"o" default:""`
 	Guidelines    string        `help:"Custom guidelines markdown file to replace default guidelines." default:""`
-	DashboardsDir string        `help:"Directory of existing dashboard YAML files to include as context." name:"dashboards-dir" default:""`
 }
 
 func (cmd *GenPromptCmd) Run() error {
@@ -115,23 +114,12 @@ func (cmd *GenPromptCmd) Run() error {
 		slog.Info("using custom guidelines", "file", cmd.Guidelines)
 	}
 
-	// Load existing dashboards
-	var existingDashboards string
-	if cmd.DashboardsDir != "" {
-		content, err := loadExistingDashboards(cmd.DashboardsDir)
-		if err != nil {
-			return fmt.Errorf("loading existing dashboards: %w", err)
-		}
-		existingDashboards = content
-		slog.Info("loaded existing dashboards", "dir", cmd.DashboardsDir)
-	}
-
 	// Generate output
 	if cmd.Output != "" {
 		labelsFile := labelsFilePath(cmd.Output)
 		labelsBaseName := filepath.Base(labelsFile)
 
-		mainDoc := generateMetricsDoc(metrics, labelsBaseName, guidelines, existingDashboards)
+		mainDoc := generateMetricsDoc(metrics, labelsBaseName, guidelines)
 		labelsDoc := generateLabelsDoc(metrics)
 
 		if err := os.WriteFile(cmd.Output, []byte(mainDoc), 0644); err != nil {
@@ -145,7 +133,7 @@ func (cmd *GenPromptCmd) Run() error {
 		slog.Info("wrote labels file", "file", labelsFile)
 	} else {
 		// stdout: output everything in one stream
-		mainDoc := generateMetricsDoc(metrics, "", guidelines, existingDashboards)
+		mainDoc := generateMetricsDoc(metrics, "", guidelines)
 		fmt.Print(mainDoc)
 		labelsDoc := generateLabelsDoc(metrics)
 		if labelsDoc != "" {
@@ -163,42 +151,6 @@ func labelsFilePath(mainPath string) string {
 	ext := filepath.Ext(mainPath)
 	base := strings.TrimSuffix(mainPath, ext)
 	return base + "-labels" + ext
-}
-
-// loadExistingDashboards reads all YAML files from a directory and returns their content
-// formatted for inclusion in the prompt.
-func loadExistingDashboards(dir string) (string, error) {
-	var sb strings.Builder
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			return nil
-		}
-		ext := strings.ToLower(filepath.Ext(path))
-		if ext != ".yaml" && ext != ".yml" {
-			return nil
-		}
-
-		relPath, err := filepath.Rel(dir, path)
-		if err != nil {
-			relPath = filepath.Base(path)
-		}
-
-		data, err := os.ReadFile(path)
-		if err != nil {
-			slog.Warn("could not read dashboard file", "path", path, "error", err)
-			return nil
-		}
-
-		sb.WriteString(fmt.Sprintf("## %s\n\n```yaml\n%s```\n\n", relPath, string(data)))
-		return nil
-	})
-	if err != nil {
-		return "", err
-	}
-	return sb.String(), nil
 }
 
 // groupMetricsByPrefix groups metrics by their common prefix (first two underscore-separated segments).
@@ -223,8 +175,7 @@ func metricPrefix(name string) string {
 // generateMetricsDoc generates the main prompt file.
 // labelsFileName is the basename of the labels file (empty if stdout mode).
 // guidelines is the customizable guidelines content.
-// existingDashboards is the formatted content of existing dashboard files (empty if not provided).
-func generateMetricsDoc(metrics []prometheus.MetricInfo, labelsFileName string, guidelines string, existingDashboards string) string {
+func generateMetricsDoc(metrics []prometheus.MetricInfo, labelsFileName string, guidelines string) string {
 	var sb strings.Builder
 
 	// 1. Guidelines (customizable)
@@ -235,14 +186,7 @@ func generateMetricsDoc(metrics []prometheus.MetricInfo, labelsFileName string, 
 	sb.WriteString(prompt.FormatReference)
 	sb.WriteString("\n\n")
 
-	// 3. Existing dashboards (optional)
-	if existingDashboards != "" {
-		sb.WriteString("# Existing Dashboards\n\n")
-		sb.WriteString("The following dashboards already exist. When adding new metrics, add panels to the appropriate existing dashboard or create a new file if the domain is new. Before modifying an existing file, check `git log -p <file>` for manual edits and ask the user before overwriting those.\n\n")
-		sb.WriteString(existingDashboards)
-	}
-
-	// 4. Labels file reference
+	// 3. Labels file reference
 	if labelsFileName != "" {
 		sb.WriteString(fmt.Sprintf("# Label Details\n\nThe full list of label values for each metric is available in `%s`. Refer to it when you need to know the exact values of a label (e.g. to enumerate devices, CPU cores, or states).\n\n", labelsFileName))
 	}

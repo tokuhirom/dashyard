@@ -176,12 +176,6 @@ To update existing dashboards, also attach the current dashboard files so the LL
 
 See [docs/gen-prompt/](docs/gen-prompt/) for a complete example using a real monitoring stack.
 
-You can also embed existing dashboards directly into the prompt file with `--dashboards-dir`:
-
-```bash
-./dashyard gen-prompt http://localhost:9090 -o prompt.md --dashboards-dir ./dashboards
-```
-
 Replace the default guidelines section with your own:
 
 ```bash
