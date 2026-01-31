@@ -570,7 +570,7 @@ func TestValidateGraphPanelInvalidChartType(t *testing.T) {
 }
 
 func TestValidateGraphPanelValidChartTypes(t *testing.T) {
-	for _, ct := range []string{"line", "bar", "area", "scatter", "pie", "doughnut"} {
+	for _, ct := range []string{"line", "bar", "area", "scatter"} {
 		d := Dashboard{
 			Title: "Test",
 			Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", ChartType: ct}}}},

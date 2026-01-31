@@ -48,7 +48,7 @@ type Dashboard struct {
 
 var validChartTypes = map[string]bool{
 	"line": true, "bar": true, "area": true,
-	"scatter": true, "pie": true, "doughnut": true,
+	"scatter": true,
 }
 
 var validUnits = map[string]bool{

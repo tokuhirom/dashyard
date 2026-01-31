@@ -7,7 +7,7 @@ export interface Threshold {
 export interface Panel {
   title: string;
   type: 'graph' | 'markdown';
-  chart_type?: 'line' | 'bar' | 'area' | 'scatter' | 'pie' | 'doughnut';
+  chart_type?: 'line' | 'bar' | 'area' | 'scatter';
   query?: string;
   unit?: 'bytes' | 'percent' | 'count';
   y_min?: number;

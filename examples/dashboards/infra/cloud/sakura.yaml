@@ -13,9 +13,9 @@ rows:
         unit: "bytes"
   - title: "Summary"
     panels:
-      - title: "CPU Distribution (Pie)"
+      - title: "CPU Utilization (Scatter)"
         type: "graph"
-        chart_type: "pie"
+        chart_type: "scatter"
         query: "sakura_server_cpu_utilization"
         unit: "percent"
       - title: "About"

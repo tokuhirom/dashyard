@@ -14,7 +14,7 @@ Define dashboards in YAML and manage them with Git. Rows, panels, queries, and l
 
 ### Graph and Markdown Panels
 
-Display Prometheus metrics as line, area, bar, scatter, pie, or doughnut charts. Mix in Markdown panels for documentation alongside your graphs.
+Display Prometheus metrics as line, area, bar, or scatter charts. Mix in Markdown panels for documentation alongside your graphs.
 
 ![Chart Types](docs/screenshot-chart-types.png)
 
@@ -232,8 +232,6 @@ Controls the chart visualization style. Defaults to `line` when omitted.
 | `area` | Line chart with filled area |
 | `bar` | Bar chart |
 | `scatter` | Scatter plot |
-| `pie` | Pie chart (uses last value of each series) |
-| `doughnut` | Doughnut chart (uses last value of each series) |
 
 ### `unit`
 
@@ -263,7 +261,7 @@ The `legend` field accepts a Go template string for formatting series labels (e.
 
 ### `thresholds`
 
-Add horizontal reference lines to graph panels. Each threshold is drawn as a dashed line at the specified y-axis value. Thresholds are not supported on `pie` or `doughnut` chart types.
+Add horizontal reference lines to graph panels. Each threshold is drawn as a dashed line at the specified y-axis value.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|

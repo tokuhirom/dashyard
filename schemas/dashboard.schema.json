@@ -101,7 +101,7 @@
         "chart_type": {
           "type": "string",
           "description": "Chart visualization type. Defaults to 'line' if omitted.",
-          "enum": ["line", "bar", "area", "scatter", "pie", "doughnut"],
+          "enum": ["line", "bar", "area", "scatter"],
           "default": "line"
         },
         "legend": {
