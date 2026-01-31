@@ -55,6 +55,7 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 		api.GET("/dashboard-source/*path", dashboardsHandler.GetSource)
 		api.GET("/query", queryHandler.Handle)
 		api.GET("/label-values", labelValuesHandler.Handle)
+		api.GET("/health", readyHandler.Handle)
 	}
 
 	// Frontend static files (SPA fallback)
