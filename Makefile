@@ -1,4 +1,4 @@
-.PHONY: all frontend backend build test test-e2e lint clean dev-frontend dev-backend dev-dummyprom screenshots
+.PHONY: all frontend backend build test test-e2e lint clean dev-frontend dev-backend dev-dummyprom screenshots metrics-doc
 
 all: build
 
@@ -31,6 +31,14 @@ dev-dummyprom:
 screenshots:
 	docker compose -f docker-compose.screenshots.yaml up --build --abort-on-container-exit screenshots
 	docker compose -f docker-compose.screenshots.yaml down
+
+metrics-doc:
+	@echo "Starting dummyprom..."
+	@go run ./cmd/dummyprom & DUMMYPROM_PID=$$!; \
+	sleep 1; \
+	go run . metrics-doc http://localhost:9090 -o examples/metrics-doc-example.md; \
+	kill $$DUMMYPROM_PID 2>/dev/null; \
+	echo "Generated examples/metrics-doc-example.md"
 
 clean:
 	rm -f dashyard dummyprom

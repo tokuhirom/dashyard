@@ -23,9 +23,10 @@ import (
 var frontendFiles embed.FS
 
 var cli struct {
-	Serve    ServeCmd    `cmd:"" help:"Start the dashboard server."`
-	Validate ValidateCmd `cmd:"" help:"Validate config and dashboard files."`
-	Mkpasswd MkpasswdCmd `cmd:"" help:"Generate a SHA-512 crypt password hash."`
+	Serve      ServeCmd      `cmd:"" help:"Start the dashboard server."`
+	Validate   ValidateCmd   `cmd:"" help:"Validate config and dashboard files."`
+	Mkpasswd   MkpasswdCmd   `cmd:"" help:"Generate a SHA-512 crypt password hash."`
+	MetricsDoc MetricsDocCmd `cmd:"metrics-doc" help:"Generate a markdown document of available Prometheus metrics."`
 }
 
 type ServeCmd struct {
