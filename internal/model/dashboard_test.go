@@ -592,7 +592,7 @@ func TestValidateGraphPanelInvalidUnit(t *testing.T) {
 }
 
 func TestValidateGraphPanelValidUnits(t *testing.T) {
-	for _, u := range []string{"bytes", "percent", "count"} {
+	for _, u := range []string{"bytes", "percent", "count", "seconds"} {
 		d := Dashboard{
 			Title: "Test",
 			Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", Unit: u}}}},

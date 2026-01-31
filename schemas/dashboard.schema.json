@@ -96,7 +96,7 @@
         "unit": {
           "type": "string",
           "description": "Unit for formatting values on the Y axis.",
-          "enum": ["bytes", "percent", "count"]
+          "enum": ["bytes", "percent", "count", "seconds"]
         },
         "chart_type": {
           "type": "string",
