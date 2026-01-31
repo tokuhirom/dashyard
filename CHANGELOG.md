@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.0.11](https://github.com/tokuhirom/dashyard/compare/v0.0.10...v0.0.11) - 2026-01-31
+- Make dummyprom output deterministic for stable screenshots by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/49
+- Fix Go version requirement in README by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/51
+
 ## [v0.0.10](https://github.com/tokuhirom/dashyard/compare/v0.0.9...v0.0.10) - 2026-01-31
 - Add Docker Compose workflow for automated screenshots by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/46
 - Hide variable selectors for repeat-only variables by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/43
