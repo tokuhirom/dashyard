@@ -29,7 +29,7 @@ func TestQueryRange(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"success","data":{"resultType":"matrix","result":[]}}`))
+		_, _ = w.Write([]byte(`{"status":"success","data":{"resultType":"matrix","result":[]}}`))
 	}))
 	defer server.Close()
 
@@ -39,7 +39,7 @@ func TestQueryRange(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	defer body.Close()
+	defer func() { _ = body.Close() }()
 
 	if statusCode != http.StatusOK {
 		t.Errorf("expected status 200, got %d", statusCode)
@@ -58,7 +58,7 @@ func TestQueryRange(t *testing.T) {
 func TestQueryRangeServerError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"status":"error","error":"internal error"}`))
+		_, _ = w.Write([]byte(`{"status":"error","error":"internal error"}`))
 	}))
 	defer server.Close()
 
@@ -68,7 +68,7 @@ func TestQueryRangeServerError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	defer body.Close()
+	defer func() { _ = body.Close() }()
 
 	if statusCode != http.StatusInternalServerError {
 		t.Errorf("expected status 500, got %d", statusCode)
@@ -86,7 +86,7 @@ func TestLabelValues(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"success","data":["eth0","eth1"]}`))
+		_, _ = w.Write([]byte(`{"status":"success","data":["eth0","eth1"]}`))
 	}))
 	defer server.Close()
 
@@ -96,7 +96,7 @@ func TestLabelValues(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	defer body.Close()
+	defer func() { _ = body.Close() }()
 
 	if statusCode != http.StatusOK {
 		t.Errorf("expected status 200, got %d", statusCode)
@@ -123,7 +123,7 @@ func TestLabelValuesNoMatch(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"success","data":["cpu0","cpu1"]}`))
+		_, _ = w.Write([]byte(`{"status":"success","data":["cpu0","cpu1"]}`))
 	}))
 	defer server.Close()
 
@@ -133,7 +133,7 @@ func TestLabelValuesNoMatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	defer body.Close()
+	defer func() { _ = body.Close() }()
 
 	if statusCode != http.StatusOK {
 		t.Errorf("expected status 200, got %d", statusCode)

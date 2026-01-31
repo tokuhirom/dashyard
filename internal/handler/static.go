@@ -27,7 +27,7 @@ func (h *StaticHandler) Handle(c *gin.Context) {
 
 	// Try to serve the exact file
 	if f, err := h.fsys.Open(path[1:]); err == nil {
-		f.Close()
+		_ = f.Close()
 		h.fileServer.ServeHTTP(c.Writer, c.Request)
 		return
 	}

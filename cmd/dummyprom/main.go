@@ -72,7 +72,9 @@ func handleQueryRange(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		slog.Error("failed to encode query_range response", "error", err)
+	}
 }
 
 func parseStep(s string) float64 {
@@ -270,7 +272,9 @@ func handleLabelValues(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		slog.Error("failed to encode label_values response", "error", err)
+	}
 }
 
 func collectLabelValues(label, match string) []string {
