@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.4](https://github.com/tokuhirom/dashyard/compare/v0.0.3...v0.0.4) - 2026-01-31
+- Add serve and mkpasswd subcommands by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/18
+
 ## [v0.0.3](https://github.com/tokuhirom/dashyard/compare/v0.0.2...v0.0.3) - 2026-01-31
 - Fix goreleaser before hooks YAML format by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/16
 - Add branch creation step to git workflow by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/15
