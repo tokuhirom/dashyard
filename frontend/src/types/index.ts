@@ -15,6 +15,7 @@ export interface Panel {
   legend?: string;
   thresholds?: Threshold[];
   stacked?: boolean;
+  y_scale?: 'linear' | 'log';
   content?: string;
   full_width?: boolean;
 }

@@ -24,3 +24,16 @@ rows:
         query: 'system_memory_usage_bytes{state="used"}'
         unit: "bytes"
         y_min: 0
+  - title: "Logarithmic Scale"
+    panels:
+      - title: "Memory by State (log scale)"
+        type: "graph"
+        query: "system_memory_usage_bytes"
+        unit: "bytes"
+        legend: "{state}"
+        y_scale: "log"
+      - title: "Memory by State (linear scale)"
+        type: "graph"
+        query: "system_memory_usage_bytes"
+        unit: "bytes"
+        legend: "{state}"

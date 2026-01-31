@@ -3,6 +3,7 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  LogarithmicScale,
   PointElement,
   LineElement,
   BarElement,
@@ -20,6 +21,7 @@ import { getYAxisTickCallback } from '../utils/units';
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  LogarithmicScale,
   PointElement,
   LineElement,
   BarElement,
@@ -41,6 +43,7 @@ interface GraphPanelProps {
   thresholds?: Threshold[];
   chartType?: 'line' | 'bar' | 'area' | 'scatter';
   stacked?: boolean;
+  yScale?: 'linear' | 'log';
   loading: boolean;
   error: string | null;
   id?: string;
@@ -92,7 +95,7 @@ function buildLabel(metric: Record<string, string>, legend?: string): string {
   return entries.map(([k, v]) => `${k}="${v}"`).join(', ');
 }
 
-export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, chartType, stacked, loading, error, id }: GraphPanelProps) {
+export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, chartType, stacked, yScale, loading, error, id }: GraphPanelProps) {
   const titleContent = (
     <h3 className="panel-title">
       {title}
@@ -178,7 +181,7 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
         },
       },
       y: {
-        beginAtZero: true,
+        ...(yScale === 'log' ? { type: 'logarithmic' as const } : { beginAtZero: true }),
         ...(shouldStack ? { stacked: true } : {}),
         ...(unit === 'percent' ? { min: 0, max: 100 } : {}),
         ...(yMin !== undefined ? { min: yMin } : {}),
