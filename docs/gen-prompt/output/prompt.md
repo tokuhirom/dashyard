@@ -203,6 +203,16 @@ rows:
 | `seconds` | durations, latencies | Human-readable time |
 | `count` | counts, rates, dimensionless (default when omitted) | SI suffixes (k, M) |
 
+## Division Queries
+
+When dividing two `rate()` expressions (e.g. hit rate = hits / (hits + misses)), guard against division by zero with `> 0` on the denominator. Without this, periods with no traffic produce `NaN`.
+
+```
+rate(hits_total[5m]) / (rate(hits_total[5m]) + rate(misses_total[5m]) > 0) * 100
+```
+
+The `> 0` filter drops zero-denominator samples so the panel shows no data instead of `NaN`.
+
 ## Stacked Charts
 
 Use `stacked: true` when series represent parts of a whole that sum to a meaningful total (e.g. memory by state: used + cached + free + buffers = total). Do not stack independent series that overlap (e.g. CPU utilization per core).
