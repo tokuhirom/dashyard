@@ -59,7 +59,7 @@ func (sm *SessionManager) CreateSession(w http.ResponseWriter, userID string) er
 		Value:    cookieValue,
 		Path:     "/",
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 		Secure:   sm.secure,
 		MaxAge:   int(sessionExpiry.Seconds()),
 	})
@@ -116,7 +116,7 @@ func (sm *SessionManager) ClearSession(w http.ResponseWriter) {
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
 	})
 }

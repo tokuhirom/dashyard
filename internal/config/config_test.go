@@ -135,3 +135,142 @@ func TestParseInvalidYAML(t *testing.T) {
 		t.Error("expected error for invalid YAML")
 	}
 }
+
+func TestParseOAuthConfig(t *testing.T) {
+	input := []byte(`
+auth:
+  oauth:
+    provider: github
+    client_id: "test-id"
+    client_secret: "test-secret"
+    redirect_url: "http://localhost:8080/auth/callback"
+    scopes: ["read:user"]
+    allowed_users: ["user1"]
+    allowed_orgs: ["my-org"]
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if cfg.Auth.OAuth == nil {
+		t.Fatal("expected oauth config to be set")
+	}
+	if cfg.Auth.OAuth.Provider != "github" {
+		t.Errorf("expected provider 'github', got %q", cfg.Auth.OAuth.Provider)
+	}
+	if cfg.Auth.OAuth.ClientID != "test-id" {
+		t.Errorf("expected client_id 'test-id', got %q", cfg.Auth.OAuth.ClientID)
+	}
+	if cfg.Auth.OAuth.ClientSecret != "test-secret" {
+		t.Errorf("expected client_secret 'test-secret', got %q", cfg.Auth.OAuth.ClientSecret)
+	}
+	if cfg.Auth.OAuth.RedirectURL != "http://localhost:8080/auth/callback" {
+		t.Errorf("expected redirect_url, got %q", cfg.Auth.OAuth.RedirectURL)
+	}
+	if len(cfg.Auth.OAuth.Scopes) != 1 || cfg.Auth.OAuth.Scopes[0] != "read:user" {
+		t.Errorf("expected scopes [read:user], got %v", cfg.Auth.OAuth.Scopes)
+	}
+	if len(cfg.Auth.OAuth.AllowedUsers) != 1 || cfg.Auth.OAuth.AllowedUsers[0] != "user1" {
+		t.Errorf("expected allowed_users [user1], got %v", cfg.Auth.OAuth.AllowedUsers)
+	}
+	if len(cfg.Auth.OAuth.AllowedOrgs) != 1 || cfg.Auth.OAuth.AllowedOrgs[0] != "my-org" {
+		t.Errorf("expected allowed_orgs [my-org], got %v", cfg.Auth.OAuth.AllowedOrgs)
+	}
+}
+
+func TestParseOAuthConfigOIDC(t *testing.T) {
+	input := []byte(`
+auth:
+  oauth:
+    provider: oidc
+    client_id: "test-id"
+    client_secret: "test-secret"
+    issuer_url: "https://accounts.google.com"
+    redirect_url: "http://localhost:8080/auth/callback"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.Auth.OAuth.IssuerURL != "https://accounts.google.com" {
+		t.Errorf("expected issuer_url, got %q", cfg.Auth.OAuth.IssuerURL)
+	}
+}
+
+func TestParseOAuthConfigValidation(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{
+			name: "invalid provider",
+			input: `
+auth:
+  oauth:
+    provider: invalid
+    client_id: "id"
+    client_secret: "secret"
+    redirect_url: "http://localhost/callback"`,
+		},
+		{
+			name: "missing client_id",
+			input: `
+auth:
+  oauth:
+    provider: github
+    client_secret: "secret"
+    redirect_url: "http://localhost/callback"`,
+		},
+		{
+			name: "missing client_secret",
+			input: `
+auth:
+  oauth:
+    provider: github
+    client_id: "id"
+    redirect_url: "http://localhost/callback"`,
+		},
+		{
+			name: "missing redirect_url",
+			input: `
+auth:
+  oauth:
+    provider: github
+    client_id: "id"
+    client_secret: "secret"`,
+		},
+		{
+			name: "oidc missing issuer_url",
+			input: `
+auth:
+  oauth:
+    provider: oidc
+    client_id: "id"
+    client_secret: "secret"
+    redirect_url: "http://localhost/callback"`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse([]byte(tt.input))
+			if err == nil {
+				t.Error("expected validation error")
+			}
+		})
+	}
+}
+
+func TestParseNoOAuthConfig(t *testing.T) {
+	input := []byte(`{}`)
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.Auth.OAuth != nil {
+		t.Error("expected nil oauth config")
+	}
+}

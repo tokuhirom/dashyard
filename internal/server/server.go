@@ -46,6 +46,7 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 	labelValuesHandler := handler.NewLabelValuesHandler(promClient)
 	readyHandler := handler.NewReadyHandler(promClient)
 	staticHandler := handler.NewStaticHandler(frontendFS)
+	authInfoHandler := handler.NewAuthInfoHandler(cfg.Users, cfg.Auth.OAuth)
 
 	// Public routes
 	r.GET("/ready", readyHandler.Handle)
@@ -53,6 +54,21 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 		r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	}
 	r.POST("/api/login", loginHandler.Handle)
+	r.GET("/api/auth-info", authInfoHandler.Handle)
+
+	// OAuth routes (if configured)
+	if cfg.Auth.OAuth != nil {
+		oauthProvider, err := auth.NewOAuthProvider(cfg.Auth.OAuth)
+		if err != nil {
+			return nil, fmt.Errorf("creating oauth provider: %w", err)
+		}
+		stateManager := auth.NewOAuthStateManager(cfg.Server.SessionSecret, false)
+		oauthHandler := handler.NewOAuthHandler(oauthProvider, stateManager, sm, cfg.Auth.OAuth)
+
+		r.GET("/auth/login", oauthHandler.Login)
+		r.GET("/auth/callback", oauthHandler.Callback)
+		r.GET("/auth/logout", oauthHandler.Logout)
+	}
 
 	// Authenticated API routes
 	api := r.Group("/api")

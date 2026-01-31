@@ -29,8 +29,8 @@ func TestCreateAndValidateSession(t *testing.T) {
 	if !cookie.HttpOnly {
 		t.Error("expected HttpOnly flag")
 	}
-	if cookie.SameSite != http.SameSiteStrictMode {
-		t.Error("expected SameSite=Strict")
+	if cookie.SameSite != http.SameSiteLaxMode {
+		t.Error("expected SameSite=Lax")
 	}
 
 	// Validate session

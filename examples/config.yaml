@@ -18,3 +18,15 @@ dashboards:
 users:
   - id: "admin"
     password_hash: "$6$D/BkIQYiHD.cKL4A$pbAApV8cWXOv3hTyITrHNmlWe3FyfIJyM2CVFuJxbmXwDZPIVbcXKJbM2dxmJqG/ZJZBtrt8e9bVxt0d7rQKK."
+
+# OAuth/OIDC authentication (optional, can coexist with password auth above)
+# auth:
+#   oauth:
+#     provider: github               # "github", "google", or "oidc"
+#     client_id: "your-client-id"
+#     client_secret: "your-client-secret"
+#     redirect_url: "http://localhost:8080/auth/callback"
+#     # issuer_url: "https://..."    # Required for "oidc" provider
+#     # scopes: ["read:user"]        # Defaults per provider if omitted
+#     # allowed_users: ["user1"]     # Optional allowlist
+#     # allowed_orgs: ["my-org"]     # Optional (GitHub-specific)

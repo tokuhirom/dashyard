@@ -19,6 +19,17 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   return resp.json();
 }
 
+export interface AuthInfo {
+  password_enabled: boolean;
+  oauth_enabled: boolean;
+  oauth_provider?: string;
+  oauth_login_url?: string;
+}
+
+export async function fetchAuthInfo(): Promise<AuthInfo> {
+  return request('/api/auth-info');
+}
+
 export async function login(userId: string, password: string): Promise<{ user_id: string }> {
   return request('/api/login', {
     method: 'POST',
