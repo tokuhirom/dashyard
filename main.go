@@ -47,6 +47,8 @@ func (cmd *ServeCmd) Run() error {
 	}
 	slog.Info("loaded dashboards", "count", len(store.List()))
 
+	holder := dashboard.NewStoreHolder(store)
+
 	// Get frontend filesystem
 	frontendFS, err := fs.Sub(frontendFiles, "frontend/dist")
 	if err != nil {
@@ -55,11 +57,19 @@ func (cmd *ServeCmd) Run() error {
 	}
 
 	// Create server
-	srv := server.New(cfg, store, frontendFS)
+	srv := server.New(cfg, holder, frontendFS)
 
 	// Graceful shutdown
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+
+	// Watch dashboards directory for changes
+	watcher := dashboard.NewWatcher(cfg.Dashboards.Dir, holder)
+	go func() {
+		if err := watcher.Watch(ctx); err != nil {
+			slog.Error("dashboard watcher error", "error", err)
+		}
+	}()
 
 	go func() {
 		slog.Info("starting server", "addr", srv.Addr)
