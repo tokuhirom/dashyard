@@ -1,5 +1,7 @@
 package model
 
+import "fmt"
+
 // Threshold represents a horizontal reference line on a graph panel.
 type Threshold struct {
 	Value float64 `yaml:"value" json:"value"`
@@ -42,6 +44,72 @@ type Dashboard struct {
 	Variables []Variable `yaml:"variables,omitempty" json:"variables,omitempty"`
 	Rows      []Row      `yaml:"rows" json:"rows"`
 	Path      string     `yaml:"-" json:"path"` // Set by loader, not from YAML
+}
+
+var validChartTypes = map[string]bool{
+	"line": true, "bar": true, "area": true,
+	"scatter": true, "pie": true, "doughnut": true,
+}
+
+var validUnits = map[string]bool{
+	"bytes": true, "percent": true, "count": true, "seconds": true,
+}
+
+// Validate checks the dashboard for semantic correctness.
+func (d *Dashboard) Validate() error {
+	if d.Title == "" {
+		return fmt.Errorf("dashboard title must not be empty")
+	}
+	if len(d.Rows) == 0 {
+		return fmt.Errorf("dashboard %q must have at least one row", d.Title)
+	}
+
+	// Build variable name set for repeat validation
+	varNames := make(map[string]bool, len(d.Variables))
+	for i, v := range d.Variables {
+		if v.Name == "" {
+			return fmt.Errorf("variable[%d] name must not be empty in dashboard %q", i, d.Title)
+		}
+		if v.Query == "" {
+			return fmt.Errorf("variable %q query must not be empty in dashboard %q", v.Name, d.Title)
+		}
+		varNames[v.Name] = true
+	}
+
+	for i, row := range d.Rows {
+		if row.Title == "" {
+			return fmt.Errorf("row[%d] title must not be empty in dashboard %q", i, d.Title)
+		}
+		if len(row.Panels) == 0 {
+			return fmt.Errorf("row %q must have at least one panel in dashboard %q", row.Title, d.Title)
+		}
+		if row.Repeat != "" && !varNames[row.Repeat] {
+			return fmt.Errorf("row %q repeat variable %q is not defined in dashboard %q", row.Title, row.Repeat, d.Title)
+		}
+
+		for j, panel := range row.Panels {
+			switch panel.Type {
+			case "graph":
+				if panel.Query == "" {
+					return fmt.Errorf("graph panel[%d] %q in row %q must have a query in dashboard %q", j, panel.Title, row.Title, d.Title)
+				}
+				if panel.ChartType != "" && !validChartTypes[panel.ChartType] {
+					return fmt.Errorf("graph panel[%d] %q in row %q has invalid chart_type %q in dashboard %q", j, panel.Title, row.Title, panel.ChartType, d.Title)
+				}
+				if panel.Unit != "" && !validUnits[panel.Unit] {
+					return fmt.Errorf("graph panel[%d] %q in row %q has invalid unit %q in dashboard %q", j, panel.Title, row.Title, panel.Unit, d.Title)
+				}
+			case "markdown":
+				if panel.Content == "" {
+					return fmt.Errorf("markdown panel[%d] %q in row %q must have content in dashboard %q", j, panel.Title, row.Title, d.Title)
+				}
+			default:
+				return fmt.Errorf("panel[%d] %q in row %q has invalid type %q in dashboard %q", j, panel.Title, row.Title, panel.Type, d.Title)
+			}
+		}
+	}
+
+	return nil
 }
 
 // DashboardTreeNode represents a node in the hierarchical dashboard navigation tree.

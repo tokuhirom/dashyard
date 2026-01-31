@@ -490,6 +490,172 @@ func TestPanelStackedJSON(t *testing.T) {
 	}
 }
 
+func TestValidateValidDashboard(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows: []Row{
+			{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}},
+		},
+	}
+	if err := d.Validate(); err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+}
+
+func TestValidateEmptyTitle(t *testing.T) {
+	d := Dashboard{
+		Title: "",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for empty title")
+	}
+}
+
+func TestValidateNoRows(t *testing.T) {
+	d := Dashboard{Title: "Test", Rows: []Row{}}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for no rows")
+	}
+}
+
+func TestValidateRowEmptyTitle(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for empty row title")
+	}
+}
+
+func TestValidateRowNoPanels(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for row with no panels")
+	}
+}
+
+func TestValidateInvalidPanelType(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "unknown"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for invalid panel type")
+	}
+}
+
+func TestValidateGraphPanelNoQuery(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: ""}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for graph panel without query")
+	}
+}
+
+func TestValidateGraphPanelInvalidChartType(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", ChartType: "invalid"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for invalid chart_type")
+	}
+}
+
+func TestValidateGraphPanelValidChartTypes(t *testing.T) {
+	for _, ct := range []string{"line", "bar", "area", "scatter", "pie", "doughnut"} {
+		d := Dashboard{
+			Title: "Test",
+			Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", ChartType: ct}}}},
+		}
+		if err := d.Validate(); err != nil {
+			t.Errorf("expected no error for chart_type %q, got %v", ct, err)
+		}
+	}
+}
+
+func TestValidateGraphPanelInvalidUnit(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", Unit: "invalid"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for invalid unit")
+	}
+}
+
+func TestValidateGraphPanelValidUnits(t *testing.T) {
+	for _, u := range []string{"bytes", "percent", "count"} {
+		d := Dashboard{
+			Title: "Test",
+			Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", Unit: u}}}},
+		}
+		if err := d.Validate(); err != nil {
+			t.Errorf("expected no error for unit %q, got %v", u, err)
+		}
+	}
+}
+
+func TestValidateMarkdownPanelNoContent(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "markdown", Content: ""}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for markdown panel without content")
+	}
+}
+
+func TestValidateVariableEmptyName(t *testing.T) {
+	d := Dashboard{
+		Title:     "Test",
+		Variables: []Variable{{Name: "", Query: "label_values(m, x)"}},
+		Rows:      []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for variable with empty name")
+	}
+}
+
+func TestValidateVariableEmptyQuery(t *testing.T) {
+	d := Dashboard{
+		Title:     "Test",
+		Variables: []Variable{{Name: "x", Query: ""}},
+		Rows:      []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for variable with empty query")
+	}
+}
+
+func TestValidateRepeatUndefinedVariable(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Repeat: "missing", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for repeat referencing undefined variable")
+	}
+}
+
+func TestValidateRepeatDefinedVariable(t *testing.T) {
+	d := Dashboard{
+		Title:     "Test",
+		Variables: []Variable{{Name: "device", Query: "label_values(m, device)"}},
+		Rows:      []Row{{Title: "Row1", Repeat: "device", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}}},
+	}
+	if err := d.Validate(); err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+}
+
 func TestDashboardTreeNodeJSON(t *testing.T) {
 	node := DashboardTreeNode{
 		Name: "infra",

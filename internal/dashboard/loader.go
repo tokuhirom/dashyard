@@ -64,6 +64,9 @@ func LoadDir(dir string) (*Store, error) {
 		if err := yaml.Unmarshal(data, &d); err != nil {
 			return fmt.Errorf("parsing %s: %w", path, err)
 		}
+		if err := d.Validate(); err != nil {
+			return fmt.Errorf("validating %s: %w", path, err)
+		}
 		d.Path = dashPath
 
 		store.dashboards[dashPath] = &d
