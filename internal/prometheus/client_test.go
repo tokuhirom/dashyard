@@ -140,6 +140,43 @@ func TestLabelValuesNoMatch(t *testing.T) {
 	}
 }
 
+func TestPing(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/-/ready" {
+			t.Errorf("expected path '/-/ready', got %q", r.URL.Path)
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, 5*time.Second)
+
+	if err := client.Ping(context.Background()); err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+}
+
+func TestPingNotReady(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, 5*time.Second)
+
+	if err := client.Ping(context.Background()); err == nil {
+		t.Error("expected error for non-200 response")
+	}
+}
+
+func TestPingConnectionError(t *testing.T) {
+	client := NewClient("http://localhost:1", 1*time.Second)
+
+	if err := client.Ping(context.Background()); err == nil {
+		t.Error("expected error for connection failure")
+	}
+}
+
 func TestQueryRangeConnectionError(t *testing.T) {
 	client := NewClient("http://localhost:1", 1*time.Second)
 

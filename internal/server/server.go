@@ -39,9 +39,11 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 	dashboardsHandler := handler.NewDashboardsHandler(holder, cfg.SiteTitle, cfg.HeaderColor)
 	queryHandler := handler.NewQueryHandler(promClient)
 	labelValuesHandler := handler.NewLabelValuesHandler(promClient)
+	readyHandler := handler.NewReadyHandler(promClient)
 	staticHandler := handler.NewStaticHandler(frontendFS)
 
 	// Public routes
+	r.GET("/ready", readyHandler.Handle)
 	r.POST("/api/login", loginHandler.Handle)
 
 	// Authenticated API routes
