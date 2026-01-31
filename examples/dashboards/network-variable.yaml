@@ -1,0 +1,18 @@
+title: "Network by Interface"
+variables:
+  - name: device
+    label: "Network Device"
+    query: "label_values(system_network_io_bytes_total, device)"
+rows:
+  - title: "Traffic for $device"
+    panels:
+      - title: "Bytes Received ($device)"
+        type: graph
+        query: 'rate(system_network_io_bytes_total{device="$device", direction="receive"}[5m])'
+        unit: bytes
+        legend: "{direction}"
+      - title: "Bytes Transmitted ($device)"
+        type: graph
+        query: 'rate(system_network_io_bytes_total{device="$device", direction="transmit"}[5m])'
+        unit: bytes
+        legend: "{direction}"

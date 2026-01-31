@@ -9,6 +9,13 @@
       "type": "string",
       "description": "Display title of the dashboard."
     },
+    "variables": {
+      "type": "array",
+      "description": "Template variables populated from Prometheus label values.",
+      "items": {
+        "$ref": "#/$defs/variable"
+      }
+    },
     "rows": {
       "type": "array",
       "description": "Horizontal rows of panels.",
@@ -20,6 +27,26 @@
   "required": ["title", "rows"],
   "additionalProperties": false,
   "$defs": {
+    "variable": {
+      "type": "object",
+      "description": "A template variable populated from Prometheus label values.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Variable name used in PromQL templates as $name or ${name}."
+        },
+        "label": {
+          "type": "string",
+          "description": "Display label for the variable dropdown. Defaults to name if omitted."
+        },
+        "query": {
+          "type": "string",
+          "description": "Query to populate values, e.g. label_values(metric, label)."
+        }
+      },
+      "required": ["name", "query"],
+      "additionalProperties": false
+    },
     "row": {
       "type": "object",
       "description": "A horizontal row containing one or more panels.",
@@ -27,6 +54,10 @@
         "title": {
           "type": "string",
           "description": "Display title of the row."
+        },
+        "repeat": {
+          "type": "string",
+          "description": "Variable name to repeat this row for each value of the variable."
         },
         "panels": {
           "type": "array",

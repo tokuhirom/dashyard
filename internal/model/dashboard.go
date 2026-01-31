@@ -14,14 +14,23 @@ type Panel struct {
 // Row represents a horizontal row of panels in a dashboard.
 type Row struct {
 	Title  string  `yaml:"title" json:"title"`
+	Repeat string  `yaml:"repeat,omitempty" json:"repeat,omitempty"`
 	Panels []Panel `yaml:"panels" json:"panels"`
+}
+
+// Variable represents a dashboard-level template variable populated from Prometheus label values.
+type Variable struct {
+	Name  string `yaml:"name" json:"name"`
+	Label string `yaml:"label,omitempty" json:"label,omitempty"`
+	Query string `yaml:"query" json:"query"`
 }
 
 // Dashboard represents a single dashboard definition loaded from YAML.
 type Dashboard struct {
-	Title string `yaml:"title" json:"title"`
-	Rows  []Row  `yaml:"rows" json:"rows"`
-	Path  string `yaml:"-" json:"path"` // Set by loader, not from YAML
+	Title     string     `yaml:"title" json:"title"`
+	Variables []Variable `yaml:"variables,omitempty" json:"variables,omitempty"`
+	Rows      []Row      `yaml:"rows" json:"rows"`
+	Path      string     `yaml:"-" json:"path"` // Set by loader, not from YAML
 }
 
 // DashboardTreeNode represents a node in the hierarchical dashboard navigation tree.

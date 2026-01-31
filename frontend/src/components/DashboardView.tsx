@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { TimeRange } from '../types';
 import { useDashboardDetail } from '../hooks/useDashboards';
+import { useVariables } from '../hooks/useVariables';
 import { fetchDashboardSource, ApiError } from '../api/client';
+import { VariableBar } from './VariableBar';
 import { RowView } from './RowView';
 
 interface DashboardViewProps {
@@ -13,6 +15,8 @@ interface DashboardViewProps {
 
 export function DashboardView({ path, timeRange, onAuthError, columns }: DashboardViewProps) {
   const { dashboard, loading, error } = useDashboardDetail(path, onAuthError);
+  const { variables, selectedValues, allValues, setVariableValue, loading: varsLoading } =
+    useVariables(dashboard?.variables, onAuthError);
   const [showSource, setShowSource] = useState(false);
   const [source, setSource] = useState<string | null>(null);
   const [sourceLoading, setSourceLoading] = useState(false);
@@ -66,9 +70,43 @@ export function DashboardView({ path, timeRange, onAuthError, columns }: Dashboa
           <pre className="dashboard-source">{source}</pre>
         )
       ) : (
-        dashboard.rows.map((row, idx) => (
-          <RowView key={idx} row={row} rowIndex={idx} timeRange={timeRange} columns={columns} />
-        ))
+        <>
+          {variables.length > 0 && (
+            <VariableBar variables={variables} onValueChange={setVariableValue} />
+          )}
+          {varsLoading ? (
+            <div className="dashboard-loading">Loading variables...</div>
+          ) : (
+            dashboard.rows.map((row, idx) => {
+              if (row.repeat && allValues[row.repeat]) {
+                // Repeat this row for each value of the variable
+                return allValues[row.repeat].map((value, repeatIdx) => {
+                  const repeatValues = { ...selectedValues, [row.repeat!]: value };
+                  return (
+                    <RowView
+                      key={`${idx}-${value}`}
+                      row={row}
+                      rowIndex={idx * 100 + repeatIdx}
+                      timeRange={timeRange}
+                      columns={columns}
+                      variableValues={repeatValues}
+                    />
+                  );
+                });
+              }
+              return (
+                <RowView
+                  key={idx}
+                  row={row}
+                  rowIndex={idx}
+                  timeRange={timeRange}
+                  columns={columns}
+                  variableValues={selectedValues}
+                />
+              );
+            })
+          )}
+        </>
       )}
     </div>
   );

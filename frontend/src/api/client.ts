@@ -1,4 +1,4 @@
-import type { Dashboard, DashboardsResponse, PrometheusResponse } from '../types';
+import type { Dashboard, DashboardsResponse, LabelValuesResponse, PrometheusResponse } from '../types';
 
 class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -48,6 +48,14 @@ export async function queryPrometheus(
     step,
   });
   return request(`/api/query?${params}`);
+}
+
+export async function fetchLabelValues(label: string, match?: string): Promise<LabelValuesResponse> {
+  const params = new URLSearchParams({ label });
+  if (match) {
+    params.set('match', match);
+  }
+  return request(`/api/label-values?${params}`);
 }
 
 export async function fetchDashboardSource(path: string): Promise<string> {

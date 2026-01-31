@@ -22,6 +22,7 @@ func main() {
 	}
 
 	http.HandleFunc("/api/v1/query_range", handleQueryRange)
+	http.HandleFunc("/api/v1/label/", handleLabelValues)
 
 	slog.Info("dummy prometheus server starting", "port", port)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
@@ -219,5 +220,76 @@ func generateTimeSeries(start, end, step float64, fn func(float64) float64) [][2
 			fmt.Sprintf("%.6f", fn(t)),
 		})
 	}
+	return values
+}
+
+// labelRegistry maps metric names to their label name -> values.
+var labelRegistry = map[string]map[string][]string{
+	"system_network_io_bytes_total": {
+		"device":    {"eth0", "eth1"},
+		"direction": {"receive", "transmit"},
+	},
+	"system_cpu_utilization_ratio": {
+		"cpu": {"cpu0", "cpu1", "cpu2", "cpu3"},
+	},
+	"system_disk_io_bytes_total": {
+		"device":    {"sda"},
+		"direction": {"read", "write"},
+	},
+}
+
+type labelValuesResponse struct {
+	Status string   `json:"status"`
+	Data   []string `json:"data"`
+}
+
+func handleLabelValues(w http.ResponseWriter, r *http.Request) {
+	// Path: /api/v1/label/{label}/values
+	path := r.URL.Path
+	const prefix = "/api/v1/label/"
+	const suffix = "/values"
+	if !strings.HasPrefix(path, prefix) || !strings.HasSuffix(path, suffix) {
+		http.NotFound(w, r)
+		return
+	}
+	label := path[len(prefix) : len(path)-len(suffix)]
+	if label == "" {
+		http.NotFound(w, r)
+		return
+	}
+
+	match := r.URL.Query().Get("match[]")
+
+	slog.Info("label_values", "label", label, "match", match)
+
+	values := collectLabelValues(label, match)
+
+	resp := labelValuesResponse{
+		Status: "success",
+		Data:   values,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+func collectLabelValues(label, match string) []string {
+	seen := map[string]bool{}
+	var values []string
+
+	for metric, labels := range labelRegistry {
+		if match != "" && metric != match {
+			continue
+		}
+		if vals, ok := labels[label]; ok {
+			for _, v := range vals {
+				if !seen[v] {
+					seen[v] = true
+					values = append(values, v)
+				}
+			}
+		}
+	}
+
 	return values
 }
