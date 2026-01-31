@@ -16,12 +16,12 @@ import (
 )
 
 type GenPromptCmd struct {
-	URL           string        `arg:"" help:"Prometheus server URL."`
-	BearerToken   string        `help:"Bearer token for authentication." env:"PROMETHEUS_BEARER_TOKEN"`
-	Match         string        `help:"Regex to filter metric names." default:""`
-	Timeout       time.Duration `help:"HTTP timeout." default:"30s"`
-	OutputDir     string        `help:"Output directory for prompt.md and prompt-labels.md (default: stdout)." short:"o" default:""`
-	Guidelines    string        `help:"Custom guidelines markdown file to replace default guidelines." default:""`
+	URL       string        `arg:"" help:"Prometheus server URL."`
+	BearerToken string      `help:"Bearer token for authentication." env:"PROMETHEUS_BEARER_TOKEN"`
+	Match     string        `help:"Regex to filter metric names." default:""`
+	Timeout   time.Duration `help:"HTTP timeout." default:"30s"`
+	OutputDir  string        `help:"Output directory for prompt.md and prompt-metrics.md (default: stdout)." short:"o" default:""`
+	ForcePrompt bool        `help:"Overwrite prompt.md even if it already exists." default:"false"`
 }
 
 func (cmd *GenPromptCmd) Run() error {
@@ -103,90 +103,62 @@ func (cmd *GenPromptCmd) Run() error {
 		metrics = append(metrics, info)
 	}
 
-	// Load guidelines
-	guidelines := prompt.DefaultGuidelines
-	if cmd.Guidelines != "" {
-		data, err := os.ReadFile(cmd.Guidelines)
-		if err != nil {
-			return fmt.Errorf("reading guidelines file: %w", err)
-		}
-		guidelines = string(data)
-		slog.Info("using custom guidelines", "file", cmd.Guidelines)
-	}
-
 	// Generate output
 	if cmd.OutputDir != "" {
 		promptFile := filepath.Join(cmd.OutputDir, "prompt.md")
-		labelsFile := filepath.Join(cmd.OutputDir, "prompt-labels.md")
-
-		mainDoc := generateMetricsDoc(metrics, "prompt-labels.md", guidelines)
-		labelsDoc := generateLabelsDoc(metrics)
+		metricsFile := filepath.Join(cmd.OutputDir, "prompt-metrics.md")
 
 		if err := os.MkdirAll(cmd.OutputDir, 0755); err != nil {
 			return fmt.Errorf("creating output directory: %w", err)
 		}
-		if err := os.WriteFile(promptFile, []byte(mainDoc), 0644); err != nil {
-			return fmt.Errorf("writing prompt file: %w", err)
-		}
-		slog.Info("wrote prompt file", "file", promptFile)
 
-		if err := os.WriteFile(labelsFile, []byte(labelsDoc), 0644); err != nil {
-			return fmt.Errorf("writing labels file: %w", err)
+		// Write prompt.md only if it doesn't exist (user-editable template), unless --force-prompt
+		if cmd.ForcePrompt {
+			promptDoc := generatePromptDoc()
+			if err := os.WriteFile(promptFile, []byte(promptDoc), 0644); err != nil {
+				return fmt.Errorf("writing prompt file: %w", err)
+			}
+			slog.Info("wrote prompt file (forced)", "file", promptFile)
+		} else if _, err := os.Stat(promptFile); os.IsNotExist(err) {
+			promptDoc := generatePromptDoc()
+			if err := os.WriteFile(promptFile, []byte(promptDoc), 0644); err != nil {
+				return fmt.Errorf("writing prompt file: %w", err)
+			}
+			slog.Info("wrote prompt file", "file", promptFile)
+		} else {
+			slog.Info("prompt file already exists, skipping", "file", promptFile)
 		}
-		slog.Info("wrote labels file", "file", labelsFile)
+
+		// Always overwrite prompt-metrics.md
+		metricsDoc := generateMetricsDoc(metrics)
+		if err := os.WriteFile(metricsFile, []byte(metricsDoc), 0644); err != nil {
+			return fmt.Errorf("writing metrics file: %w", err)
+		}
+		slog.Info("wrote metrics file", "file", metricsFile)
 	} else {
 		// stdout: output everything in one stream
-		mainDoc := generateMetricsDoc(metrics, "", guidelines)
-		fmt.Print(mainDoc)
-		labelsDoc := generateLabelsDoc(metrics)
-		if labelsDoc != "" {
-			fmt.Print("\n---\n\n")
-			fmt.Print(labelsDoc)
-		}
+		fmt.Print(generatePromptDoc())
+		fmt.Print("\n---\n\n")
+		fmt.Print(generateMetricsDoc(metrics))
 	}
 
 	return nil
 }
 
-// groupMetricsByPrefix groups metrics by their common prefix (first two underscore-separated segments).
-func groupMetricsByPrefix(metrics []prometheus.MetricInfo) map[string][]prometheus.MetricInfo {
-	groups := make(map[string][]prometheus.MetricInfo)
-	for _, m := range metrics {
-		prefix := metricPrefix(m.Name)
-		groups[prefix] = append(groups[prefix], m)
-	}
-	return groups
+// generatePromptDoc generates the static prompt template (guidelines + format reference).
+func generatePromptDoc() string {
+	var sb strings.Builder
+	sb.WriteString(prompt.DefaultGuidelines)
+	sb.WriteString("\n\n")
+	sb.WriteString(prompt.FormatReference)
+	sb.WriteString("\n")
+	return sb.String()
 }
 
-// metricPrefix extracts the first two underscore-separated segments, or the full name if fewer.
-func metricPrefix(name string) string {
-	parts := strings.SplitN(name, "_", 3)
-	if len(parts) >= 2 {
-		return parts[0] + "_" + parts[1]
-	}
-	return name
-}
-
-// generateMetricsDoc generates the main prompt file.
-// labelsFileName is the basename of the labels file (empty if stdout mode).
-// guidelines is the customizable guidelines content.
-func generateMetricsDoc(metrics []prometheus.MetricInfo, labelsFileName string, guidelines string) string {
+// generateMetricsDoc generates the metrics file (metric listing + label values).
+func generateMetricsDoc(metrics []prometheus.MetricInfo) string {
 	var sb strings.Builder
 
-	// 1. Guidelines (customizable)
-	sb.WriteString(guidelines)
-	sb.WriteString("\n\n")
-
-	// 2. Format reference (universal, always included)
-	sb.WriteString(prompt.FormatReference)
-	sb.WriteString("\n\n")
-
-	// 3. Labels file reference
-	if labelsFileName != "" {
-		sb.WriteString(fmt.Sprintf("# Label Details\n\nThe full list of label values for each metric is available in `%s`. Refer to it when you need to know the exact values of a label (e.g. to enumerate devices, CPU cores, or states).\n\n", labelsFileName))
-	}
-
-	// 5. Metrics listing
 	sb.WriteString("# Available Metrics\n\n")
 
 	if len(metrics) == 0 {
@@ -233,12 +205,7 @@ func generateMetricsDoc(metrics []prometheus.MetricInfo, labelsFileName string, 
 		sb.WriteString("\n")
 	}
 
-	return sb.String()
-}
-
-// generateLabelsDoc generates the label values detail file.
-func generateLabelsDoc(metrics []prometheus.MetricInfo) string {
-	// Check if there are any label values to write
+	// Label values detail
 	hasValues := false
 	for _, m := range metrics {
 		if len(m.LabelValues) > 0 {
@@ -246,29 +213,45 @@ func generateLabelsDoc(metrics []prometheus.MetricInfo) string {
 			break
 		}
 	}
-	if !hasValues {
-		return ""
-	}
+	if hasValues {
+		sb.WriteString("# Label Values\n\n")
+		sb.WriteString("Full label value listings for each metric.\n\n")
 
-	var sb strings.Builder
-	sb.WriteString("# Label Values\n\n")
-	sb.WriteString("Full label value listings for each metric.\n\n")
-
-	for _, m := range metrics {
-		if len(m.LabelValues) == 0 {
-			continue
-		}
-
-		sb.WriteString(fmt.Sprintf("## %s\n\n", m.Name))
-		for _, label := range m.Labels {
-			vals, ok := m.LabelValues[label]
-			if !ok || len(vals) == 0 {
+		for _, m := range metrics {
+			if len(m.LabelValues) == 0 {
 				continue
 			}
-			sb.WriteString(fmt.Sprintf("- **%s**: %s\n", label, strings.Join(vals, ", ")))
+
+			sb.WriteString(fmt.Sprintf("## %s\n\n", m.Name))
+			for _, label := range m.Labels {
+				vals, ok := m.LabelValues[label]
+				if !ok || len(vals) == 0 {
+					continue
+				}
+				sb.WriteString(fmt.Sprintf("- **%s**: %s\n", label, strings.Join(vals, ", ")))
+			}
+			sb.WriteString("\n")
 		}
-		sb.WriteString("\n")
 	}
 
 	return sb.String()
+}
+
+// groupMetricsByPrefix groups metrics by their common prefix (first two underscore-separated segments).
+func groupMetricsByPrefix(metrics []prometheus.MetricInfo) map[string][]prometheus.MetricInfo {
+	groups := make(map[string][]prometheus.MetricInfo)
+	for _, m := range metrics {
+		prefix := metricPrefix(m.Name)
+		groups[prefix] = append(groups[prefix], m)
+	}
+	return groups
+}
+
+// metricPrefix extracts the first two underscore-separated segments, or the full name if fewer.
+func metricPrefix(name string) string {
+	parts := strings.SplitN(name, "_", 3)
+	if len(parts) >= 2 {
+		return parts[0] + "_" + parts[1]
+	}
+	return name
 }
