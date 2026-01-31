@@ -1,4 +1,4 @@
-.PHONY: all frontend backend build test test-e2e lint clean dev-frontend dev-backend dev-dummyprom screenshots gen-prompt gen-prompt-up
+.PHONY: all frontend backend build test test-frontend test-e2e lint clean dev-frontend dev-backend dev-dummyprom screenshots gen-prompt gen-prompt-up
 
 all: build
 
@@ -12,6 +12,9 @@ build: backend
 
 test:
 	go test ./...
+
+test-frontend:
+	cd frontend && npm run test
 
 test-e2e:
 	cd frontend && npx playwright test
