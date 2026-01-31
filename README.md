@@ -157,3 +157,19 @@ make test                        # All Go tests
 go test ./internal/config/...    # Specific package
 cd frontend && npm run build     # TypeScript type checking + build
 ```
+
+### E2E Tests
+
+Playwright-based end-to-end tests verify login, dashboard rendering, column selector, and Chart.js canvas resize behavior.
+
+```bash
+# Start all three services first:
+make dev-dummyprom   # Terminal 1
+make dev-backend     # Terminal 2
+make dev-frontend    # Terminal 3
+
+# Run E2E tests:
+make test-e2e                          # Headless
+cd frontend && npm run test:e2e:headed # With browser visible
+cd frontend && npm run test:e2e:ui     # Interactive UI mode
+```
