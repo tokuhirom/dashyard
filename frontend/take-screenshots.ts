@@ -1,7 +1,7 @@
 // take-screenshots.ts -- Capture README screenshots using Playwright.
 // Prerequisites: start dev services first (make dev-dummyprom, make dev-backend, make dev-frontend).
 // Usage: cd frontend && npx tsx take-screenshots.ts
-import { chromium } from "@playwright/test";
+import { chromium, type Page } from "@playwright/test";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
@@ -24,6 +24,23 @@ function dashboardUrl(dashPath: string): string {
   return `${base}/d/${dashPath}?${TIME_QS}`;
 }
 
+async function captureDashboard(
+  page: Page,
+  url: string,
+  selector: string,
+  outputPath: string,
+  options?: { fullPage?: boolean }
+) {
+  await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+  await page.waitForSelector(selector, { timeout: 30000 });
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1000); // Chart.js animation buffer
+  await page.screenshot({
+    path: outputPath,
+    fullPage: options?.fullPage ?? false,
+  });
+}
+
 async function main() {
   fs.mkdirSync(path.join(OUTPUT_DIR, "docs"), { recursive: true });
 
@@ -33,11 +50,21 @@ async function main() {
   });
   const page = await context.newPage();
 
+  // Log browser console errors for debugging
+  page.on("console", (msg) => {
+    if (msg.type() === "error") {
+      console.log(`[browser error] ${msg.text()}`);
+    }
+  });
+  page.on("pageerror", (err) => {
+    console.log(`[page error] ${err.message}`);
+  });
+
   // Go to login page
-  await page.goto(BASE_URL);
+  await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 60000 });
 
   // Wait for login form
-  await page.waitForSelector(".login-form", { timeout: 15000 });
+  await page.waitForSelector(".login-form", { timeout: 30000 });
 
   // Screenshot: Login page
   await page.screenshot({
@@ -58,18 +85,17 @@ async function main() {
   );
   await page.click('button[type="submit"]');
   await loginResponsePromise;
+  // Wait for post-login state to settle (React re-render, dashboard list fetch)
+  await page.waitForLoadState("networkidle");
+  console.log(`Post-login URL: ${page.url()}`);
 
   // Navigate to overview dashboard with absolute time range
-  await page.goto(dashboardUrl("overview"));
-  await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
-  // Give Chart.js a moment to finish animations
-  await page.waitForTimeout(2000);
-
-  // Screenshot: Main dashboard view (overview)
-  await page.screenshot({
-    path: path.join(OUTPUT_DIR, "screenshot.png"),
-    fullPage: false,
-  });
+  await captureDashboard(
+    page,
+    dashboardUrl("overview"),
+    ".graph-panel canvas",
+    path.join(OUTPUT_DIR, "screenshot.png")
+  );
   console.log("Saved: screenshot.png (main)");
 
   // Screenshot: Full page dashboard
@@ -80,33 +106,32 @@ async function main() {
   console.log("Saved: screenshot-dashboard.png");
 
   // Navigate to a dashboard with variables (network-variable)
-  await page.goto(dashboardUrl("network-variable"));
-  await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
-  await page.waitForTimeout(2000);
-  await page.screenshot({
-    path: path.join(OUTPUT_DIR, "docs", "screenshot-variables.png"),
-    fullPage: false,
-  });
+  await captureDashboard(
+    page,
+    dashboardUrl("network-variable"),
+    ".graph-panel canvas",
+    path.join(OUTPUT_DIR, "docs", "screenshot-variables.png")
+  );
   console.log("Saved: screenshot-variables.png");
 
   // Navigate to a dashboard with repeat rows (network-repeat)
-  await page.goto(dashboardUrl("network-repeat"));
-  await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
-  await page.waitForTimeout(2000);
-  await page.screenshot({
-    path: path.join(OUTPUT_DIR, "docs", "screenshot-repeat.png"),
-    fullPage: true,
-  });
+  await captureDashboard(
+    page,
+    dashboardUrl("network-repeat"),
+    ".graph-panel canvas",
+    path.join(OUTPUT_DIR, "docs", "screenshot-repeat.png"),
+    { fullPage: true }
+  );
   console.log("Saved: screenshot-repeat.png");
 
   // Navigate to chart-types dashboard
-  await page.goto(dashboardUrl("chart-types"));
-  await page.waitForSelector(".panel", { timeout: 15000 });
-  await page.waitForTimeout(2000);
-  await page.screenshot({
-    path: path.join(OUTPUT_DIR, "docs", "screenshot-chart-types.png"),
-    fullPage: true,
-  });
+  await captureDashboard(
+    page,
+    dashboardUrl("chart-types"),
+    ".panel",
+    path.join(OUTPUT_DIR, "docs", "screenshot-chart-types.png"),
+    { fullPage: true }
+  );
   console.log("Saved: screenshot-chart-types.png");
 
   // Navigate to thresholds dashboard using a fresh page so Chart.js
@@ -114,16 +139,13 @@ async function main() {
   // earlier dashboards can interfere with annotation rendering).
   {
     const freshPage = await context.newPage();
-    await freshPage.goto(dashboardUrl("thresholds"));
-    await freshPage.waitForSelector(".graph-panel canvas", {
-      timeout: 15000,
-    });
-    // Annotation plugin needs extra time to render after async data loads
-    await freshPage.waitForTimeout(10000);
-    await freshPage.screenshot({
-      path: path.join(OUTPUT_DIR, "docs", "screenshot-thresholds.png"),
-      fullPage: true,
-    });
+    await captureDashboard(
+      freshPage,
+      dashboardUrl("thresholds"),
+      ".graph-panel canvas",
+      path.join(OUTPUT_DIR, "docs", "screenshot-thresholds.png"),
+      { fullPage: true }
+    );
     console.log("Saved: screenshot-thresholds.png");
     await freshPage.close();
   }
@@ -132,12 +154,13 @@ async function main() {
   const groupHeader = page.locator(".sidebar-group-header").first();
   if ((await groupHeader.count()) > 0) {
     await groupHeader.click();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState("networkidle");
     const groupItems = page.locator(".sidebar-group-items .sidebar-item");
     if ((await groupItems.count()) > 0) {
       await groupItems.first().click();
-      await page.waitForSelector(".panel", { timeout: 15000 });
-      await page.waitForTimeout(2000);
+      await page.waitForSelector(".panel", { timeout: 30000 });
+      await page.waitForLoadState("networkidle");
+      await page.waitForTimeout(1000);
       await page.screenshot({
         path: path.join(OUTPUT_DIR, "docs", "screenshot-sidebar-groups.png"),
         fullPage: false,
