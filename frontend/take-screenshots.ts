@@ -31,7 +31,7 @@ async function captureDashboard(
   outputPath: string,
   options?: { fullPage?: boolean }
 ) {
-  await page.goto(url);
+  await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
   await page.waitForSelector(selector, { timeout: 30000 });
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(1000); // Chart.js animation buffer
@@ -50,8 +50,18 @@ async function main() {
   });
   const page = await context.newPage();
 
+  // Log browser console errors for debugging
+  page.on("console", (msg) => {
+    if (msg.type() === "error") {
+      console.log(`[browser error] ${msg.text()}`);
+    }
+  });
+  page.on("pageerror", (err) => {
+    console.log(`[page error] ${err.message}`);
+  });
+
   // Go to login page
-  await page.goto(BASE_URL);
+  await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 60000 });
 
   // Wait for login form
   await page.waitForSelector(".login-form", { timeout: 30000 });
@@ -75,7 +85,9 @@ async function main() {
   );
   await page.click('button[type="submit"]');
   await loginResponsePromise;
+  // Wait for post-login state to settle (React re-render, dashboard list fetch)
   await page.waitForLoadState("networkidle");
+  console.log(`Post-login URL: ${page.url()}`);
 
   // Navigate to overview dashboard with absolute time range
   await captureDashboard(
