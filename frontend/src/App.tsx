@@ -65,6 +65,15 @@ function App() {
   const [currentPath, setCurrentPath] = useState<string | null>(parseDashboardPath);
   const [timeRange, setTimeRange] = useState<TimeRange>(parseTimeRange);
   const [columns, setColumns] = useState(2);
+  const [refreshInterval, setRefreshInterval] = useState(0);
+
+  useEffect(() => {
+    if (refreshInterval <= 0) return;
+    const id = setInterval(() => {
+      setTimeRange((prev) => (prev.type === 'relative' ? { ...prev } : prev));
+    }, refreshInterval);
+    return () => clearInterval(id);
+  }, [refreshInterval]);
 
   const handleAuthError = useCallback(() => {
     setAuthenticated(false);
@@ -144,6 +153,8 @@ function App() {
       headerColor={dashboardsData.header_color}
       columns={columns}
       onColumnsChange={setColumns}
+      refreshInterval={refreshInterval}
+      onRefreshIntervalChange={setRefreshInterval}
     >
       <DashboardView
         path={activePath}
