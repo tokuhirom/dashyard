@@ -88,6 +88,18 @@ Session-based login with SHA-512 crypt password hashing.
 
 ![Login](docs/screenshot-login.png)
 
+### Readiness Probe
+
+`GET /ready` returns the server and Prometheus connectivity status. No authentication required.
+
+```bash
+curl http://localhost:8080/ready
+# 200 {"status":"ok","prometheus":"reachable"}
+# 503 {"status":"degraded","prometheus":"unreachable"}
+```
+
+Use it as a Docker `HEALTHCHECK`, Kubernetes readiness probe, or load balancer health check.
+
 ### Single Binary and Docker-Ready
 
 Go backend with embedded React frontend, no external dependencies. Multi-stage Dockerfile produces a ~30MB image.
