@@ -57,6 +57,7 @@ cd frontend && npm run build     # Type-checks and builds frontend
 - When starting a new task, always pull the latest main and create a new branch from it first (`git checkout main && git pull origin main && git checkout -b <branch>`)
 - Create a separate branch and pull request for each feature or change
 - Do not mix unrelated changes in a single branch/PR
+- Include a link to the related issue in PR descriptions (e.g. `Fixes #123`)
 
 ## Go Module
 
