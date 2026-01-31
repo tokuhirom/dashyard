@@ -2,15 +2,53 @@
 
 > **Warning:** This project is under active development. APIs, configuration formats, and features may change without notice.
 
-A lightweight Prometheus metrics dashboard. Define dashboards in YAML, drop them in a directory, and view metrics through a simple web UI.
+An AI-native Prometheus dashboard. Point an LLM at your metrics, get production-ready dashboards in minutes — stored as YAML in git, served from a stateless binary.
+
+**Why Dashyard?**
+- **AI-first workflow** — `gen-prompt` scans your Prometheus and builds an LLM prompt. Claude or ChatGPT generates complete dashboards from it.
+- **Dashboards as Code** — plain YAML files in a git repo. Diff, review, and version-control every change.
+- **Immutable by design** — no database, no storage, no write API. The server reads YAML from disk and serves graphs. Nothing else.
+- **Single binary** — one ~30MB Go binary with the frontend embedded. Docker image included.
 
 ![Dashboard Overview](screenshot.png)
 
 ## Features
 
-### Dashboard as Code
+### AI-Powered Dashboard Generation
 
-Define dashboards in YAML and manage them with Git. Rows, panels, queries, and layout are all declarative.
+The `gen-prompt` command reads metrics from your Prometheus server and produces a prompt file optimized for LLMs. Feed it to Claude, ChatGPT, or any other LLM to generate complete dashboard YAML files instantly.
+
+```bash
+./dashyard gen-prompt http://localhost:9090 -o .
+./dashyard gen-prompt https://prom.example.com --bearer-token "eyJ..."
+./dashyard gen-prompt http://localhost:9090 --match "node_.*" -o .
+```
+
+This writes `prompt.md` and `prompt-metrics.md` to the specified directory. `prompt.md` is a static template (guidelines + format reference) written only on first run — edit it freely to customize the LLM instructions. `prompt-metrics.md` is regenerated every time with the latest metrics. To reset `prompt.md` to the default, use `--force-prompt`.
+
+Then ask an LLM to generate dashboards. For example, with Claude Code:
+
+```
+Read prompt.md and prompt-metrics.md, then generate Dashyard dashboard
+YAML files for all available metrics. Write the files to ./dashboards/.
+```
+
+To update existing dashboards:
+
+```
+Read prompt.md and prompt-metrics.md, then update the dashboards in
+./dashboards/. Add panels for any new metrics that are not yet covered.
+```
+
+See [docs/gen-prompt/](docs/gen-prompt/) for a complete example using a real monitoring stack.
+
+### Dashboards as Code
+
+Define dashboards in YAML and manage them with Git. Rows, panels, queries, and layout are all declarative. Every change is human-readable, diff-friendly, and reviewable in pull requests.
+
+### Immutable & Secure
+
+There is no database, no persistent storage, and no write API. The server reads dashboard YAML files from disk and proxies queries to Prometheus. Nothing to exploit, nothing to corrupt.
 
 ### Graph and Markdown Panels
 
@@ -157,32 +195,6 @@ Generate a password hash:
 ```bash
 ./dashyard mkpasswd <password>
 ```
-
-Generate an LLM prompt for dashboard YAML generation from your Prometheus metrics:
-
-```bash
-./dashyard gen-prompt http://localhost:9090 -o .
-./dashyard gen-prompt https://prom.example.com --bearer-token "eyJ..."
-./dashyard gen-prompt http://localhost:9090 --match "node_.*" -o .
-```
-
-This writes `prompt.md` and `prompt-metrics.md` to the specified directory. `prompt.md` is a static template (guidelines + format reference) written only on first run — edit it freely to customize the LLM instructions. `prompt-metrics.md` is regenerated every time with the latest metrics. To reset `prompt.md` to the default, use `--force-prompt`.
-
-Then ask an LLM to generate dashboards. For example, with Claude Code:
-
-```
-Read prompt.md and prompt-metrics.md, then generate Dashyard dashboard
-YAML files for all available metrics. Write the files to ./dashboards/.
-```
-
-To update existing dashboards:
-
-```
-Read prompt.md and prompt-metrics.md, then update the dashboards in
-./dashboards/. Add panels for any new metrics that are not yet covered.
-```
-
-See [docs/gen-prompt/](docs/gen-prompt/) for a complete example using a real monitoring stack.
 
 JSON schema: [`schemas/config.schema.json`](schemas/config.schema.json)
 
