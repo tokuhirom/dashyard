@@ -36,9 +36,9 @@ gen-prompt:
 	@echo "Starting dummyprom..."
 	@go run ./cmd/dummyprom & DUMMYPROM_PID=$$!; \
 	sleep 1; \
-	go run . gen-prompt http://localhost:9090 -o examples/gen-prompt-example.md; \
+	go run . gen-prompt http://localhost:9090 -o docs/gen-prompt/example.md; \
 	kill $$DUMMYPROM_PID 2>/dev/null; \
-	echo "Generated examples/gen-prompt-example.md"
+	echo "Generated docs/gen-prompt/example.md"
 
 clean:
 	rm -f dashyard dummyprom

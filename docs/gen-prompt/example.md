@@ -86,7 +86,7 @@ rows:
 
 # Label Details
 
-The full list of label values for each metric is available in `gen-prompt-example-labels.md`. Refer to it when you need to know the exact values of a label (e.g. to enumerate devices, CPU cores, or states).
+The full list of label values for each metric is available in `example-labels.md`. Refer to it when you need to know the exact values of a label (e.g. to enumerate devices, CPU cores, or states).
 
 # Available Metrics
 

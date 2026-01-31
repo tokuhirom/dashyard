@@ -161,7 +161,7 @@ Generate a password hash:
 Generate an LLM prompt for dashboard YAML generation (starts dummyprom, queries it, outputs prompt + labels files):
 
 ```bash
-make gen-prompt                  # Output: examples/gen-prompt-example.md + examples/gen-prompt-example-labels.md
+make gen-prompt                  # Output: docs/gen-prompt/example.md + docs/gen-prompt/example-labels.md
 ```
 
 Or point at any Prometheus instance directly:
