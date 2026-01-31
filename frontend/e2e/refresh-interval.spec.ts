@@ -33,35 +33,31 @@ test.describe("Refresh Interval Selector", () => {
   test("auto-refresh triggers periodic API calls for relative time range", async ({
     page,
   }) => {
-    // Count query_range requests
-    let queryCount = 0;
-    page.on("request", (req) => {
-      if (req.url().includes("/api/query_range")) {
-        queryCount++;
-      }
-    });
+    // Wait for initial load to fully settle
+    await page.waitForLoadState("networkidle");
 
-    // Wait for initial load requests to settle
-    await page.waitForTimeout(1000);
-    queryCount = 0;
-
-    // Select 10s refresh interval (shortest available)
+    // Select 10s refresh interval
     const selector = page.locator(".refresh-interval-selector");
     await selector.selectOption("10000");
 
-    // Wait long enough for at least one refresh cycle
-    await page.waitForTimeout(12000);
-
-    // Should have made at least 1 new batch of API calls
-    expect(queryCount).toBeGreaterThan(0);
+    // Wait for auto-refresh to trigger a /api/query request
+    const response = await page.waitForResponse(
+      (resp) => resp.url().includes("/api/query?"),
+      { timeout: 15000 }
+    );
+    expect(response.status()).toBe(200);
   });
 
   test("selecting Off stops periodic requests", async ({ page }) => {
     const selector = page.locator(".refresh-interval-selector");
 
-    // Enable refresh
+    // Enable refresh and wait for it to fire once
+    await page.waitForLoadState("networkidle");
     await selector.selectOption("10000");
-    await page.waitForTimeout(2000);
+    await page.waitForResponse(
+      (resp) => resp.url().includes("/api/query?"),
+      { timeout: 15000 }
+    );
 
     // Turn it off
     await selector.selectOption("0");
@@ -69,12 +65,12 @@ test.describe("Refresh Interval Selector", () => {
     // Count requests after turning off
     let queryCount = 0;
     page.on("request", (req) => {
-      if (req.url().includes("/api/query_range")) {
+      if (req.url().includes("/api/query?")) {
         queryCount++;
       }
     });
 
-    // Wait and verify no new requests
+    // Wait longer than one full interval and verify no new requests
     await page.waitForTimeout(12000);
     expect(queryCount).toBe(0);
   });
@@ -91,12 +87,12 @@ test.describe("Refresh Interval Selector", () => {
     await expect(page.locator(".panel").first()).toBeVisible();
 
     // Wait for initial requests to settle
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("networkidle");
 
-    // Count requests
+    // Count requests after enabling refresh
     let queryCount = 0;
     page.on("request", (req) => {
-      if (req.url().includes("/api/query_range")) {
+      if (req.url().includes("/api/query?")) {
         queryCount++;
       }
     });
@@ -105,7 +101,7 @@ test.describe("Refresh Interval Selector", () => {
     const selector = page.locator(".refresh-interval-selector");
     await selector.selectOption("10000");
 
-    // Wait for a refresh cycle
+    // Wait for a full refresh cycle
     await page.waitForTimeout(12000);
 
     // No new requests should have been made (absolute range returns same ref)
