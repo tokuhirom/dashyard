@@ -27,6 +27,7 @@ rows:
         type: markdown
         content: |
           Markdown content here.
+        full_width: true            # span entire row width (markdown only)
 ```
 
 # Rules

@@ -22,6 +22,7 @@ type Panel struct {
 	Thresholds []Threshold `yaml:"thresholds,omitempty" json:"thresholds,omitempty"`
 	Stacked    bool        `yaml:"stacked,omitempty" json:"stacked,omitempty"`
 	Content    string      `yaml:"content,omitempty" json:"content,omitempty"`
+	FullWidth  bool        `yaml:"full_width,omitempty" json:"full_width,omitempty"`
 }
 
 // Row represents a horizontal row of panels in a dashboard.

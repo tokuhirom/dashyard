@@ -16,6 +16,7 @@ export interface Panel {
   thresholds?: Threshold[];
   stacked?: boolean;
   content?: string;
+  full_width?: boolean;
 }
 
 export interface Row {

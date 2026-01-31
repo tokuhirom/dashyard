@@ -23,8 +23,11 @@ export function RowView({ row, rowIndex, timeRange, columns, variableValues }: R
       <div className="row-panels" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
         {row.panels.map((panel, idx) => {
           const panelId = `panel-${rowIndex}-${idx}`;
+          const style = panel.full_width ? { gridColumn: '1 / -1' } : undefined;
           return (
-            <PanelRenderer key={idx} panel={panel} panelId={panelId} timeRange={timeRange} variableValues={vars} />
+            <div key={idx} style={style}>
+              <PanelRenderer panel={panel} panelId={panelId} timeRange={timeRange} variableValues={vars} />
+            </div>
           );
         })}
       </div>
