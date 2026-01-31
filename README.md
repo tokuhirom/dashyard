@@ -166,7 +166,11 @@ Generate an LLM prompt for dashboard YAML generation from your Prometheus metric
 ./dashyard gen-prompt http://localhost:9090 --match "node_.*" -o prompt.md
 ```
 
-This outputs a prompt file and a labels file (e.g. `prompt.md` + `prompt-labels.md`) that you can feed to an LLM to generate Dashyard dashboard YAML. See [docs/gen-prompt/](docs/gen-prompt/) for example output.
+This outputs a prompt file and a labels file (e.g. `prompt.md` + `prompt-labels.md`). Attach both files to an LLM conversation and ask it to generate dashboards:
+
+> Read the attached files and generate Dashyard dashboard YAML files for all available metrics.
+
+See [docs/gen-prompt/](docs/gen-prompt/) for a complete example using a real monitoring stack.
 
 Include existing dashboards as context for incremental updates:
 
