@@ -22,6 +22,22 @@
         "session_secret": {
           "type": "string",
           "description": "Secret key for session signing. Auto-generated if omitted."
+        },
+        "trusted_proxies": {
+          "type": "array",
+          "description": "List of IP addresses or CIDRs trusted to set X-Forwarded-For headers.",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["10.0.0.1", "172.16.0.0/12"]]
+        },
+        "allow": {
+          "type": "array",
+          "description": "IP allow list. Only listed IPs/CIDRs can access the server. Omit to allow all.",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["192.168.1.0/24", "10.0.0.1"]]
         }
       },
       "additionalProperties": false

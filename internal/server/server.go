@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tokuhirom/dashyard/internal/acl"
 	"github.com/tokuhirom/dashyard/internal/auth"
 	"github.com/tokuhirom/dashyard/internal/config"
 	"github.com/tokuhirom/dashyard/internal/dashboard"
@@ -14,12 +15,26 @@ import (
 )
 
 // New creates and configures an http.Server with all routes and middleware.
-func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, host string, port int) *http.Server {
+func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, host string, port int) (*http.Server, error) {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(gin.Logger())
+
+	// Trusted proxies
+	if len(cfg.Server.TrustedProxies) > 0 {
+		if err := r.SetTrustedProxies(cfg.Server.TrustedProxies); err != nil {
+			return nil, fmt.Errorf("setting trusted proxies: %w", err)
+		}
+	}
+
+	// IP allow list
+	allowList, err := acl.New(cfg.Server.Allow)
+	if err != nil {
+		return nil, fmt.Errorf("creating IP allow list: %w", err)
+	}
+	r.Use(acl.Middleware(allowList))
 
 	// Session manager
 	sm := auth.NewSessionManager(cfg.Server.SessionSecret, false)
@@ -56,5 +71,5 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 	return &http.Server{
 		Addr:    addr,
 		Handler: r,
-	}
+	}, nil
 }
