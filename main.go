@@ -26,7 +26,7 @@ var cli struct {
 	Serve      ServeCmd      `cmd:"" help:"Start the dashboard server."`
 	Validate   ValidateCmd   `cmd:"" help:"Validate config and dashboard files."`
 	Mkpasswd   MkpasswdCmd   `cmd:"" help:"Generate a SHA-512 crypt password hash."`
-	GenPrompt MetricsDocCmd `cmd:"gen-prompt" help:"Generate an LLM prompt for dashboard YAML generation from Prometheus metrics."`
+	GenPrompt GenPromptCmd `cmd:"gen-prompt" help:"Generate an LLM prompt for dashboard YAML generation from Prometheus metrics."`
 }
 
 type ServeCmd struct {

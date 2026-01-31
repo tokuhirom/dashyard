@@ -12,9 +12,10 @@ import (
 	"time"
 
 	"github.com/tokuhirom/dashyard/internal/prometheus"
+	"github.com/tokuhirom/dashyard/internal/prompt"
 )
 
-type MetricsDocCmd struct {
+type GenPromptCmd struct {
 	URL         string        `arg:"" help:"Prometheus server URL."`
 	BearerToken string        `help:"Bearer token for authentication." env:"PROMETHEUS_BEARER_TOKEN"`
 	Match       string        `help:"Regex to filter metric names." default:""`
@@ -22,7 +23,7 @@ type MetricsDocCmd struct {
 	Output      string        `help:"Output file (default: stdout). A labels file is also written alongside." short:"o" default:""`
 }
 
-func (cmd *MetricsDocCmd) Run() error {
+func (cmd *GenPromptCmd) Run() error {
 	ctx := context.Background()
 
 	var opts []prometheus.ClientOption
@@ -164,84 +165,8 @@ func metricPrefix(name string) string {
 func generateMetricsDoc(metrics []prometheus.MetricInfo, labelsFileName string) string {
 	var sb strings.Builder
 
-	// Role and task
-	sb.WriteString("You are a Dashyard dashboard generator. Your task is to create Dashyard dashboard YAML files based on user requests.\n\n")
-	sb.WriteString("When the user asks for dashboards, generate one or more YAML files. Group metrics by domain — put closely related metrics together in the same dashboard. For example, host metrics (CPU, memory, disk, network) belong in a single dashboard. Separate dashboards are for distinct domains like JVM, HTTP, database, or application-specific metrics.\n\n")
-	sb.WriteString("Dashyard loads all YAML files from a dashboard directory. Subdirectories become collapsible groups in the sidebar. Output each file with a comment indicating its path, for example:\n\n")
-	sb.WriteString("```\n")
-	sb.WriteString("# File: host.yaml\n")
-	sb.WriteString("title: \"Host Metrics\"\n")
-	sb.WriteString("...\n\n")
-	sb.WriteString("# File: jvm.yaml\n")
-	sb.WriteString("title: \"JVM\"\n")
-	sb.WriteString("...\n")
-	sb.WriteString("```\n\n")
-
-	// Dashboard YAML format
-	sb.WriteString("# Dashboard YAML Format\n\n")
-	sb.WriteString("```yaml\n")
-	sb.WriteString(`title: "Dashboard Title"
-variables:                          # optional
-  - name: device                    # variable name used as $device in queries
-    label: "Network Device"         # display label
-    query: "label_values(metric_name, label_name)"
-rows:
-  - title: "Row Title"
-    repeat: device                  # optional: repeat row for each variable value
-    panels:
-      - title: "Panel Title"
-        type: graph                 # "graph" or "markdown"
-        query: 'promql_expression'  # required for graph
-        unit: bytes                 # bytes, percent, count, seconds
-        chart_type: line            # line, bar, area, scatter, pie, doughnut
-        legend: "{label_name}"      # legend template
-        y_min: 0                    # optional y-axis bounds
-        y_max: 100
-        stacked: false              # stack series
-        thresholds:                 # optional reference lines
-          - value: 80
-            color: orange
-            label: "Warning"
-      - title: "Notes"
-        type: markdown
-        content: |
-          Markdown content here.
-`)
-	sb.WriteString("```\n\n")
-
-	// Rules
-	sb.WriteString("# Rules\n\n")
-
-	sb.WriteString("## PromQL by Metric Type\n\n")
-	sb.WriteString("- counter: always wrap with `rate(...[5m])` or `increase(...[5m])`. Never use a raw counter.\n")
-	sb.WriteString("- histogram (_bucket): use `histogram_quantile(0.99, rate(...[5m]))`\n")
-	sb.WriteString("- gauge: use directly, or apply `avg()`, `sum()`, `min()`, `max()`\n")
-	sb.WriteString("- summary (_sum/_count): `rate(sum[5m]) / rate(count[5m])` for average\n\n")
-
-	sb.WriteString("## Filtering and Grouping\n\n")
-	sb.WriteString("- Filter with `{label=\"value\"}`, group with `by (label)`\n")
-	sb.WriteString("- Use `$variable` to reference dashboard variables in queries\n\n")
-
-	sb.WriteString("## Unit Selection\n\n")
-	sb.WriteString("- `bytes` — memory, disk, network I/O metrics\n")
-	sb.WriteString("- `percent` — ratios and utilization (0-100 scale)\n")
-	sb.WriteString("- `seconds` — durations and latencies\n")
-	sb.WriteString("- `count` — counts, rates, and dimensionless values\n\n")
-
-	sb.WriteString("## File Organization\n\n")
-	sb.WriteString("- Group metrics by domain into one dashboard (e.g. host metrics: CPU + memory + disk + network in one file)\n")
-	sb.WriteString("- Separate dashboards for distinct domains (e.g. `host.yaml`, `jvm.yaml`, `http.yaml`, `database.yaml`)\n")
-	sb.WriteString("- Use subdirectories when there are many dashboards (e.g. `app/api.yaml`, `app/workers.yaml`)\n")
-	sb.WriteString("- Use rows within a dashboard to separate sub-topics (e.g. CPU row, Memory row, Disk row)\n\n")
-
-	sb.WriteString("## Best Practices\n\n")
-	sb.WriteString("- Group related panels into rows with descriptive titles\n")
-	sb.WriteString("- When a metric has a label with many values (e.g. device, cpu), use a variable with `label_values()` and `$variable` in queries\n")
-	sb.WriteString("- Use `repeat` on a row to auto-expand for each variable value\n")
-	sb.WriteString("- Add `thresholds` for metrics with known warning/critical levels\n")
-	sb.WriteString("- Add a markdown panel to explain what the dashboard monitors\n")
-	sb.WriteString("- Validate generated YAML with `dashyard validate` before deploying\n")
-	sb.WriteString("- Output each file starting with `# File: path/name.yaml` followed by the YAML content\n\n")
+	sb.WriteString(prompt.Template)
+	sb.WriteString("\n\n")
 
 	// Labels file reference
 	if labelsFileName != "" {
