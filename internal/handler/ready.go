@@ -7,18 +7,18 @@ import (
 	"github.com/tokuhirom/dashyard/internal/prometheus"
 )
 
-// HealthHandler handles GET /health - returns server and upstream health status.
-type HealthHandler struct {
+// ReadyHandler handles GET /ready - checks upstream Prometheus connectivity.
+type ReadyHandler struct {
 	client *prometheus.Client
 }
 
-// NewHealthHandler creates a new HealthHandler.
-func NewHealthHandler(client *prometheus.Client) *HealthHandler {
-	return &HealthHandler{client: client}
+// NewReadyHandler creates a new ReadyHandler.
+func NewReadyHandler(client *prometheus.Client) *ReadyHandler {
+	return &ReadyHandler{client: client}
 }
 
-// Handle returns the health status of the server and Prometheus connectivity.
-func (h *HealthHandler) Handle(c *gin.Context) {
+// Handle returns whether the server is ready to serve traffic.
+func (h *ReadyHandler) Handle(c *gin.Context) {
 	promStatus := "reachable"
 	status := http.StatusOK
 
@@ -28,12 +28,12 @@ func (h *HealthHandler) Handle(c *gin.Context) {
 	}
 
 	c.JSON(status, gin.H{
-		"status":     statusText(status),
+		"status":     readyStatusText(status),
 		"prometheus": promStatus,
 	})
 }
 
-func statusText(code int) string {
+func readyStatusText(code int) string {
 	if code == http.StatusOK {
 		return "ok"
 	}

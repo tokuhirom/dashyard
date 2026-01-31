@@ -11,7 +11,7 @@ import (
 	"github.com/tokuhirom/dashyard/internal/prometheus"
 )
 
-func TestHealthHandler_OK(t *testing.T) {
+func TestReadyHandler_OK(t *testing.T) {
 	promServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/-/ready" {
 			t.Errorf("expected path '/-/ready', got %q", r.URL.Path)
@@ -21,12 +21,12 @@ func TestHealthHandler_OK(t *testing.T) {
 	defer promServer.Close()
 
 	client := prometheus.NewClient(promServer.URL, 5*time.Second)
-	h := NewHealthHandler(client)
+	h := NewReadyHandler(client)
 
 	router := gin.New()
-	router.GET("/health", h.Handle)
+	router.GET("/ready", h.Handle)
 
-	req := httptest.NewRequest("GET", "/health", nil)
+	req := httptest.NewRequest("GET", "/ready", nil)
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 
@@ -46,14 +46,14 @@ func TestHealthHandler_OK(t *testing.T) {
 	}
 }
 
-func TestHealthHandler_PrometheusUnreachable(t *testing.T) {
+func TestReadyHandler_PrometheusUnreachable(t *testing.T) {
 	client := prometheus.NewClient("http://localhost:1", 1*time.Second)
-	h := NewHealthHandler(client)
+	h := NewReadyHandler(client)
 
 	router := gin.New()
-	router.GET("/health", h.Handle)
+	router.GET("/ready", h.Handle)
 
-	req := httptest.NewRequest("GET", "/health", nil)
+	req := httptest.NewRequest("GET", "/ready", nil)
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 
@@ -73,19 +73,19 @@ func TestHealthHandler_PrometheusUnreachable(t *testing.T) {
 	}
 }
 
-func TestHealthHandler_PrometheusNotReady(t *testing.T) {
+func TestReadyHandler_PrometheusNotReady(t *testing.T) {
 	promServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}))
 	defer promServer.Close()
 
 	client := prometheus.NewClient(promServer.URL, 5*time.Second)
-	h := NewHealthHandler(client)
+	h := NewReadyHandler(client)
 
 	router := gin.New()
-	router.GET("/health", h.Handle)
+	router.GET("/ready", h.Handle)
 
-	req := httptest.NewRequest("GET", "/health", nil)
+	req := httptest.NewRequest("GET", "/ready", nil)
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 
