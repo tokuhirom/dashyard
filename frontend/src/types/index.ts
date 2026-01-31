@@ -4,6 +4,8 @@ export interface Panel {
   chart_type?: 'line' | 'bar' | 'area' | 'scatter' | 'pie' | 'doughnut';
   query?: string;
   unit?: 'bytes' | 'percent' | 'count';
+  y_min?: number;
+  y_max?: number;
   legend?: string;
   content?: string;
 }

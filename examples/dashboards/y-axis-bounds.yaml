@@ -1,0 +1,26 @@
+title: "Y-Axis Bounds Demo"
+rows:
+  - title: "Custom Y-Axis Range"
+    panels:
+      - title: "CPU (default 0–100 for percent)"
+        type: "graph"
+        query: "system_cpu_utilization_ratio"
+        unit: "percent"
+      - title: "CPU (y_max override to 50)"
+        type: "graph"
+        query: "system_cpu_utilization_ratio"
+        unit: "percent"
+        y_max: 50
+  - title: "Explicit Bounds"
+    panels:
+      - title: "Load Average (y_min: 0, y_max: 10)"
+        type: "graph"
+        query: "system_cpu_load_average_1m_ratio"
+        unit: "count"
+        y_min: 0
+        y_max: 10
+      - title: "Memory (y_min only)"
+        type: "graph"
+        query: 'system_memory_usage_bytes{state="used"}'
+        unit: "bytes"
+        y_min: 0

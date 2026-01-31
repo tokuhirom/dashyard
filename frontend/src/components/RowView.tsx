@@ -64,6 +64,8 @@ function PanelRenderer({ panel, panelId, timeRange, variableValues }: PanelRende
       title={substitutedTitle}
       data={data}
       unit={panel.unit}
+      yMin={panel.y_min}
+      yMax={panel.y_max}
       legend={panel.legend}
       chartType={panel.chart_type}
       loading={loading}
