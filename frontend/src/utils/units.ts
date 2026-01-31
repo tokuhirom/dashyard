@@ -3,7 +3,7 @@ export function formatBytes(value: number): string {
   const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
   const k = 1024;
   const i = Math.floor(Math.log(Math.abs(value)) / Math.log(k));
-  const idx = Math.min(i, units.length - 1);
+  const idx = Math.max(0, Math.min(i, units.length - 1));
   return `${(value / Math.pow(k, idx)).toFixed(idx > 0 ? 1 : 0)} ${units[idx]}`;
 }
 
