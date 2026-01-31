@@ -187,10 +187,33 @@ rows:
 
 | Type | Required Fields | Optional Fields |
 |------|----------------|-----------------|
-| `graph` | `title`, `type`, `query` | `unit` (`bytes`, `percent`, `count`), `legend` |
+| `graph` | `title`, `type`, `query` | `chart_type`, `unit`, `legend` |
 | `markdown` | `title`, `type`, `content` | -- |
 
-When `unit` is `percent`, the y-axis is fixed to 0–100.
+### `chart_type`
+
+Controls the chart visualization style. Defaults to `line` when omitted.
+
+| Value | Description |
+|-------|-------------|
+| `line` | Line chart (default) |
+| `area` | Line chart with filled area |
+| `bar` | Bar chart |
+| `scatter` | Scatter plot |
+| `pie` | Pie chart (uses last value of each series) |
+| `doughnut` | Doughnut chart (uses last value of each series) |
+
+### `unit`
+
+Controls y-axis value formatting.
+
+| Value | Description |
+|-------|-------------|
+| `bytes` | Human-readable byte sizes (e.g. `1.5 GB`) |
+| `percent` | Percentage with one decimal (e.g. `75.0%`). Y-axis is fixed to 0–100. |
+| `count` | Numeric with SI suffixes (e.g. `1.2k`). This is also the default when `unit` is omitted. |
+
+### `legend`
 
 The `legend` field accepts a Go template string for formatting series labels (e.g. `"{{device}} {{direction}}"`).
 
