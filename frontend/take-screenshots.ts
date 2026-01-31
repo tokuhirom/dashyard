@@ -112,6 +112,21 @@ async function main() {
     console.log("Saved: screenshot-chart-types.png");
   }
 
+  // Navigate to thresholds dashboard
+  const thresholdsItem = page.locator(".sidebar-item", {
+    hasText: "thresholds",
+  });
+  if ((await thresholdsItem.count()) > 0) {
+    await thresholdsItem.click();
+    await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
+    await page.waitForTimeout(2000);
+    await page.screenshot({
+      path: path.join(ROOT_DIR, "docs", "screenshot-thresholds.png"),
+      fullPage: true,
+    });
+    console.log("Saved: screenshot-thresholds.png");
+  }
+
   // Navigate to sidebar groups (infra/)
   const groupHeader = page.locator(".sidebar-group-header").first();
   if ((await groupHeader.count()) > 0) {

@@ -323,6 +323,111 @@ func TestDashboardVariablesOmittedJSON(t *testing.T) {
 	}
 }
 
+func TestPanelThresholdsYAMLUnmarshal(t *testing.T) {
+	input := `
+title: "CPU Usage"
+type: "graph"
+query: "rate(cpu[5m])"
+unit: "percent"
+thresholds:
+  - value: 80
+    color: "#f59e0b"
+    label: "Warning"
+  - value: 95
+    color: "#ef4444"
+    label: "Critical"
+`
+	var p Panel
+	if err := yaml.Unmarshal([]byte(input), &p); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(p.Thresholds) != 2 {
+		t.Fatalf("expected 2 thresholds, got %d", len(p.Thresholds))
+	}
+	if p.Thresholds[0].Value != 80 {
+		t.Errorf("expected threshold value 80, got %v", p.Thresholds[0].Value)
+	}
+	if p.Thresholds[0].Color != "#f59e0b" {
+		t.Errorf("expected threshold color '#f59e0b', got %q", p.Thresholds[0].Color)
+	}
+	if p.Thresholds[0].Label != "Warning" {
+		t.Errorf("expected threshold label 'Warning', got %q", p.Thresholds[0].Label)
+	}
+	if p.Thresholds[1].Value != 95 {
+		t.Errorf("expected threshold value 95, got %v", p.Thresholds[1].Value)
+	}
+}
+
+func TestPanelThresholdValueOnlyYAML(t *testing.T) {
+	input := `
+title: "CPU Usage"
+type: "graph"
+query: "rate(cpu[5m])"
+thresholds:
+  - value: 50
+`
+	var p Panel
+	if err := yaml.Unmarshal([]byte(input), &p); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(p.Thresholds) != 1 {
+		t.Fatalf("expected 1 threshold, got %d", len(p.Thresholds))
+	}
+	if p.Thresholds[0].Value != 50 {
+		t.Errorf("expected threshold value 50, got %v", p.Thresholds[0].Value)
+	}
+	if p.Thresholds[0].Color != "" {
+		t.Errorf("expected empty color when omitted, got %q", p.Thresholds[0].Color)
+	}
+	if p.Thresholds[0].Label != "" {
+		t.Errorf("expected empty label when omitted, got %q", p.Thresholds[0].Label)
+	}
+}
+
+func TestPanelThresholdsJSON(t *testing.T) {
+	p := Panel{
+		Title: "Test",
+		Type:  "graph",
+		Query: "up",
+		Thresholds: []Threshold{
+			{Value: 80, Color: "#f59e0b", Label: "Warning"},
+		},
+	}
+	data, err := json.Marshal(p)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded map[string]interface{}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	thresholds, ok := decoded["thresholds"].([]interface{})
+	if !ok || len(thresholds) != 1 {
+		t.Fatalf("expected 1 threshold in JSON, got %v", decoded["thresholds"])
+	}
+	th := thresholds[0].(map[string]interface{})
+	if th["value"] != float64(80) {
+		t.Errorf("expected threshold value 80, got %v", th["value"])
+	}
+	if th["color"] != "#f59e0b" {
+		t.Errorf("expected threshold color '#f59e0b', got %v", th["color"])
+	}
+
+	// Verify thresholds is omitted from JSON when nil
+	p2 := Panel{Title: "Test", Type: "graph", Query: "up"}
+	data2, err := json.Marshal(p2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded2 map[string]interface{}
+	if err := json.Unmarshal(data2, &decoded2); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, ok := decoded2["thresholds"]; ok {
+		t.Errorf("expected thresholds to be omitted from JSON when nil")
+	}
+}
+
 func TestDashboardTreeNodeJSON(t *testing.T) {
 	node := DashboardTreeNode{
 		Name: "infra",

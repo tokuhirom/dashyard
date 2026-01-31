@@ -30,6 +30,12 @@ Automatically repeat a row for each value of a template variable. One row defini
 
 ![Repeat Rows](docs/screenshot-repeat.png)
 
+### Threshold Lines
+
+Draw horizontal reference lines on graph panels to mark warning levels, SLA targets, or capacity limits.
+
+![Thresholds](docs/screenshot-thresholds.png)
+
 ### Sidebar Navigation with Groups
 
 Organize dashboards into subdirectories that become collapsible groups in the sidebar.
@@ -187,7 +193,7 @@ rows:
 
 | Type | Required Fields | Optional Fields |
 |------|----------------|-----------------|
-| `graph` | `title`, `type`, `query` | `chart_type`, `unit`, `legend`, `y_min`, `y_max` |
+| `graph` | `title`, `type`, `query` | `chart_type`, `unit`, `legend`, `y_min`, `y_max`, `thresholds` |
 | `markdown` | `title`, `type`, `content` | -- |
 
 ### `chart_type`
@@ -228,6 +234,30 @@ Set explicit Y-axis bounds. These override the automatic scaling and any unit-ba
 ### `legend`
 
 The `legend` field accepts a Go template string for formatting series labels (e.g. `"{{device}} {{direction}}"`).
+
+### `thresholds`
+
+Add horizontal reference lines to graph panels. Each threshold is drawn as a dashed line at the specified y-axis value. Thresholds are not supported on `pie` or `doughnut` chart types.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `value` | number | yes | Y-axis value where the line is drawn |
+| `color` | string | no | CSS color for the line (default: `#ef4444` red) |
+| `label` | string | no | Text label displayed at the end of the line |
+
+```yaml
+- title: "CPU Utilization"
+  type: "graph"
+  query: 'system_cpu_utilization_ratio'
+  unit: "percent"
+  thresholds:
+    - value: 80
+      color: "#f59e0b"
+      label: "Warning"
+    - value: 95
+      color: "#ef4444"
+      label: "Critical"
+```
 
 JSON schema: [`schemas/dashboard.schema.json`](schemas/dashboard.schema.json)
 

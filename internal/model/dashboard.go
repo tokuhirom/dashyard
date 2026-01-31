@@ -1,16 +1,24 @@
 package model
 
+// Threshold represents a horizontal reference line on a graph panel.
+type Threshold struct {
+	Value float64 `yaml:"value" json:"value"`
+	Color string  `yaml:"color,omitempty" json:"color,omitempty"`
+	Label string  `yaml:"label,omitempty" json:"label,omitempty"`
+}
+
 // Panel represents a single visualization panel within a dashboard row.
 type Panel struct {
-	Title     string `yaml:"title" json:"title"`
-	Type      string `yaml:"type" json:"type"`       // "graph" or "markdown"
-	ChartType string `yaml:"chart_type,omitempty" json:"chart_type,omitempty"`
-	Query     string `yaml:"query,omitempty" json:"query,omitempty"`
-	Unit      string   `yaml:"unit,omitempty" json:"unit,omitempty"` // "bytes", "percent", "count"
-	YMin      *float64 `yaml:"y_min,omitempty" json:"y_min,omitempty"`
-	YMax      *float64 `yaml:"y_max,omitempty" json:"y_max,omitempty"`
-	Legend    string   `yaml:"legend,omitempty" json:"legend,omitempty"`
-	Content   string   `yaml:"content,omitempty" json:"content,omitempty"`
+	Title      string      `yaml:"title" json:"title"`
+	Type       string      `yaml:"type" json:"type"`       // "graph" or "markdown"
+	ChartType  string      `yaml:"chart_type,omitempty" json:"chart_type,omitempty"`
+	Query      string      `yaml:"query,omitempty" json:"query,omitempty"`
+	Unit       string      `yaml:"unit,omitempty" json:"unit,omitempty"` // "bytes", "percent", "count"
+	YMin       *float64    `yaml:"y_min,omitempty" json:"y_min,omitempty"`
+	YMax       *float64    `yaml:"y_max,omitempty" json:"y_max,omitempty"`
+	Legend     string      `yaml:"legend,omitempty" json:"legend,omitempty"`
+	Thresholds []Threshold `yaml:"thresholds,omitempty" json:"thresholds,omitempty"`
+	Content    string      `yaml:"content,omitempty" json:"content,omitempty"`
 }
 
 // Row represents a horizontal row of panels in a dashboard.

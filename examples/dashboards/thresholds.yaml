@@ -1,0 +1,36 @@
+title: "Thresholds Demo"
+rows:
+  - title: "CPU with Warning and Critical Thresholds"
+    panels:
+      - title: "CPU Utilization"
+        type: "graph"
+        query: 'system_cpu_utilization_ratio'
+        unit: "percent"
+        thresholds:
+          - value: 80
+            color: "#f59e0b"
+            label: "Warning"
+          - value: 95
+            color: "#ef4444"
+            label: "Critical"
+
+  - title: "Memory with Threshold (Value Only)"
+    panels:
+      - title: "Memory Usage"
+        type: "graph"
+        query: 'system_memory_usage_bytes{state="used"}'
+        unit: "bytes"
+        thresholds:
+          - value: 8000000000
+
+  - title: "Area Chart with Threshold"
+    panels:
+      - title: "Disk Usage (Area)"
+        type: "graph"
+        query: 'system_disk_usage_bytes{state="used"}'
+        unit: "bytes"
+        chart_type: "area"
+        thresholds:
+          - value: 50000000000
+            color: "#8b5cf6"
+            label: "Capacity Limit"
