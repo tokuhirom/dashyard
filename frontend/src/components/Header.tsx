@@ -1,4 +1,5 @@
 import { TimeRangeSelector } from './TimeRangeSelector';
+import { RefreshIntervalSelector } from './RefreshIntervalSelector';
 import type { TimeRange } from '../types';
 
 interface HeaderProps {
@@ -8,9 +9,11 @@ interface HeaderProps {
   headerColor: string;
   columns: number;
   onColumnsChange: (n: number) => void;
+  refreshInterval: number;
+  onRefreshIntervalChange: (interval: number) => void;
 }
 
-export function Header({ timeRange, onTimeRangeChange, siteTitle, headerColor, columns, onColumnsChange }: HeaderProps) {
+export function Header({ timeRange, onTimeRangeChange, siteTitle, headerColor, columns, onColumnsChange, refreshInterval, onRefreshIntervalChange }: HeaderProps) {
   return (
     <header className="header" style={headerColor ? { background: headerColor } : undefined}>
       <h1 className="header-title">{siteTitle}</h1>
@@ -24,6 +27,7 @@ export function Header({ timeRange, onTimeRangeChange, siteTitle, headerColor, c
             <option key={n} value={n}>{n} columns</option>
           ))}
         </select>
+        <RefreshIntervalSelector value={refreshInterval} onChange={onRefreshIntervalChange} />
         <TimeRangeSelector selected={timeRange} onChange={onTimeRangeChange} />
       </div>
     </header>
