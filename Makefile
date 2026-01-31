@@ -1,4 +1,4 @@
-.PHONY: all frontend backend build test test-e2e clean dev-frontend dev-backend dev-dummyprom
+.PHONY: all frontend backend build test test-e2e lint clean dev-frontend dev-backend dev-dummyprom
 
 all: build
 
@@ -15,6 +15,9 @@ test:
 
 test-e2e:
 	cd frontend && npx playwright test
+
+lint:
+	golangci-lint run ./...
 
 dev-frontend:
 	cd frontend && npm run dev

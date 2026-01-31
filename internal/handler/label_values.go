@@ -35,7 +35,7 @@ func (h *LabelValuesHandler) Handle(c *gin.Context) {
 		c.JSON(http.StatusBadGateway, gin.H{"error": "prometheus label values query failed"})
 		return
 	}
-	defer body.Close()
+	defer func() { _ = body.Close() }()
 
 	c.Header("Content-Type", "application/json")
 	c.Status(statusCode)

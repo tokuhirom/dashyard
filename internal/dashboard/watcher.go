@@ -34,7 +34,7 @@ func (w *Watcher) Watch(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer fsw.Close()
+	defer func() { _ = fsw.Close() }()
 
 	// Add the root dir and all subdirectories.
 	if err := w.addDirs(fsw, w.dir); err != nil {

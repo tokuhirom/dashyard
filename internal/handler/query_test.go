@@ -14,7 +14,7 @@ func TestQueryHandler(t *testing.T) {
 	promServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"success","data":{"resultType":"matrix","result":[]}}`))
+		_, _ = w.Write([]byte(`{"status":"success","data":{"resultType":"matrix","result":[]}}`))
 	}))
 	defer promServer.Close()
 
@@ -71,7 +71,7 @@ func TestQueryHandlerMissingParams(t *testing.T) {
 func TestQueryHandlerPrometheusError(t *testing.T) {
 	promServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"status":"error","error":"internal error"}`))
+		_, _ = w.Write([]byte(`{"status":"error","error":"internal error"}`))
 	}))
 	defer promServer.Close()
 

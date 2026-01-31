@@ -14,7 +14,7 @@ func TestLabelValuesHandler(t *testing.T) {
 	promServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"success","data":["eth0","eth1"]}`))
+		_, _ = w.Write([]byte(`{"status":"success","data":["eth0","eth1"]}`))
 	}))
 	defer promServer.Close()
 
@@ -57,7 +57,7 @@ func TestLabelValuesHandlerMissingLabel(t *testing.T) {
 func TestLabelValuesHandlerPrometheusError(t *testing.T) {
 	promServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"status":"error","error":"internal error"}`))
+		_, _ = w.Write([]byte(`{"status":"error","error":"internal error"}`))
 	}))
 	defer promServer.Close()
 
