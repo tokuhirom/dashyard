@@ -220,7 +220,7 @@ rows:
 | Type | Required Fields | Optional Fields |
 |------|----------------|-----------------|
 | `graph` | `title`, `type`, `query` | `chart_type`, `unit`, `legend`, `y_min`, `y_max`, `thresholds` |
-| `markdown` | `title`, `type`, `content` | -- |
+| `markdown` | `title`, `type`, `content` | `full_width` |
 
 ### `chart_type`
 

@@ -18,6 +18,7 @@ rows:
         unit: "bytes"
       - title: "About"
         type: "markdown"
+        full_width: true
         content: |
           ## System Overview
           This dashboard displays key system metrics collected via **OpenTelemetry Host Metrics**.

@@ -167,6 +167,11 @@
         "content": {
           "type": "string",
           "description": "Markdown text to render."
+        },
+        "full_width": {
+          "type": "boolean",
+          "description": "When true, the panel spans the full row width instead of sharing columns with sibling panels.",
+          "default": false
         }
       },
       "required": ["title", "type", "content"],
