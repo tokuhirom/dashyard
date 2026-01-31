@@ -90,6 +90,44 @@ func TestParseDefaults(t *testing.T) {
 	}
 }
 
+func TestParseTrustedProxies(t *testing.T) {
+	input := []byte(`
+server:
+  session_secret: "test"
+  trusted_proxies:
+    - "10.0.0.1"
+    - "10.0.0.2"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(cfg.Server.TrustedProxies) != 2 {
+		t.Fatalf("expected 2 trusted proxies, got %d", len(cfg.Server.TrustedProxies))
+	}
+	if cfg.Server.TrustedProxies[0] != "10.0.0.1" {
+		t.Errorf("expected first trusted proxy '10.0.0.1', got %q", cfg.Server.TrustedProxies[0])
+	}
+	if cfg.Server.TrustedProxies[1] != "10.0.0.2" {
+		t.Errorf("expected second trusted proxy '10.0.0.2', got %q", cfg.Server.TrustedProxies[1])
+	}
+}
+
+func TestParseDefaultsNoTrustedProxies(t *testing.T) {
+	input := []byte(`{}`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if cfg.Server.TrustedProxies != nil {
+		t.Errorf("expected nil trusted_proxies, got %v", cfg.Server.TrustedProxies)
+	}
+}
+
 func TestParseInvalidYAML(t *testing.T) {
 	input := []byte(`{invalid yaml`)
 	_, err := Parse(input)

@@ -3,6 +3,8 @@ site_title: "My Dashyard"
 
 server:
   session_secret: "change-me-in-production"
+  # trusted_proxies:        # IPs/CIDRs trusted to set X-Forwarded-For
+  #   - "10.0.0.1"
 
 prometheus:
   url: "http://localhost:9090"

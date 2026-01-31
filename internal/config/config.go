@@ -18,7 +18,8 @@ type User struct {
 
 // ServerConfig holds HTTP server settings.
 type ServerConfig struct {
-	SessionSecret string `yaml:"session_secret"`
+	SessionSecret  string   `yaml:"session_secret"`
+	TrustedProxies []string `yaml:"trusted_proxies,omitempty"`
 }
 
 // PrometheusConfig holds Prometheus connection settings.

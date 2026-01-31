@@ -14,12 +14,19 @@ import (
 )
 
 // New creates and configures an http.Server with all routes and middleware.
-func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, host string, port int) *http.Server {
+func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, host string, port int) (*http.Server, error) {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(gin.Logger())
+
+	// Trusted proxies for X-Forwarded-For
+	if len(cfg.Server.TrustedProxies) > 0 {
+		if err := r.SetTrustedProxies(cfg.Server.TrustedProxies); err != nil {
+			return nil, fmt.Errorf("setting trusted proxies: %w", err)
+		}
+	}
 
 	// Session manager
 	sm := auth.NewSessionManager(cfg.Server.SessionSecret, false)
@@ -56,5 +63,5 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 	return &http.Server{
 		Addr:    addr,
 		Handler: r,
-	}
+	}, nil
 }
