@@ -164,19 +164,35 @@ func generateLoadAverage(start, end, step float64) []promResult {
 }
 
 func generateMemoryUsage(start, end, step float64) []promResult {
-	baseBytes := 4.0 * 1024 * 1024 * 1024 // 4 GB base
-	values := generateTimeSeries(start, end, step, func(t float64) float64 {
-		return baseBytes + 512*1024*1024*math.Sin(t/1800) + noise(t, 200)*100*1024*1024
-	})
-	return []promResult{
-		{
+	// Simulate 16 GB total memory split into used/cached/free/buffers.
+	// Each state varies over time but the total stays around 16 GB.
+	type memState struct {
+		name string
+		base float64 // base bytes
+		seed uint64
+	}
+	states := []memState{
+		{"used", 4.0 * 1024 * 1024 * 1024, 200},
+		{"cached", 6.0 * 1024 * 1024 * 1024, 201},
+		{"free", 4.5 * 1024 * 1024 * 1024, 202},
+		{"buffers", 1.5 * 1024 * 1024 * 1024, 203},
+	}
+	var results []promResult
+	for _, s := range states {
+		base := s.base
+		seed := s.seed
+		values := generateTimeSeries(start, end, step, func(t float64) float64 {
+			return math.Max(0, base+512*1024*1024*math.Sin(t/1800)+noise(t, seed)*100*1024*1024)
+		})
+		results = append(results, promResult{
 			Metric: map[string]string{
 				"__name__": "system_memory_usage_bytes",
-				"state":    "used",
+				"state":    s.name,
 			},
 			Values: values,
-		},
+		})
 	}
+	return results
 }
 
 func generateNetworkIO(start, end, step float64, direction string) []promResult {
@@ -253,6 +269,9 @@ var labelRegistry = map[string]map[string][]string{
 	},
 	"system_cpu_utilization_ratio": {
 		"cpu": {"cpu0", "cpu1", "cpu2", "cpu3"},
+	},
+	"system_memory_usage_bytes": {
+		"state": {"used", "cached", "free", "buffers"},
 	},
 	"system_disk_io_bytes_total": {
 		"device":    {"sda"},
