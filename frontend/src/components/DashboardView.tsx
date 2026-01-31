@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { TimeRange } from '../types';
 import { useDashboardDetail } from '../hooks/useDashboards';
 import { useVariables } from '../hooks/useVariables';
@@ -17,6 +17,15 @@ export function DashboardView({ path, timeRange, onAuthError, columns }: Dashboa
   const { dashboard, loading, error } = useDashboardDetail(path, onAuthError);
   const { variables, selectedValues, allValues, setVariableValue, loading: varsLoading } =
     useVariables(dashboard?.variables, onAuthError);
+  // Hide variables that are only used for row repeat (selecting them has no effect)
+  const repeatVarNames = useMemo(() => {
+    if (!dashboard) return new Set<string>();
+    return new Set(dashboard.rows.map((r) => r.repeat).filter(Boolean) as string[]);
+  }, [dashboard]);
+  const visibleVariables = useMemo(
+    () => variables.filter((v) => !repeatVarNames.has(v.name)),
+    [variables, repeatVarNames],
+  );
   const [showSource, setShowSource] = useState(false);
   const [source, setSource] = useState<string | null>(null);
   const [sourceLoading, setSourceLoading] = useState(false);
@@ -71,8 +80,8 @@ export function DashboardView({ path, timeRange, onAuthError, columns }: Dashboa
         )
       ) : (
         <>
-          {variables.length > 0 && (
-            <VariableBar variables={variables} onValueChange={setVariableValue} />
+          {visibleVariables.length > 0 && (
+            <VariableBar variables={visibleVariables} onValueChange={setVariableValue} />
           )}
           {varsLoading ? (
             <div className="dashboard-loading">Loading variables...</div>

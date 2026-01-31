@@ -79,8 +79,8 @@ test.describe("Repeat Rows", () => {
       .locator(".sidebar-item", { hasText: "network-repeat" })
       .click();
 
-    // Wait for the variable bar to appear
-    await expect(page.locator(".variable-bar")).toBeVisible({ timeout: 10000 });
+    // Variable bar is hidden for repeat-only variables, wait for rows instead
+    await expect(page.locator(".row-title").first()).toBeVisible({ timeout: 10000 });
 
     // Should have multiple rows (one per device value from dummyprom: eth0, eth1)
     const rowTitles = page.locator(".row-title");
@@ -110,7 +110,8 @@ test.describe("Repeat Rows", () => {
       .locator(".sidebar-item", { hasText: "network-repeat" })
       .click();
 
-    await expect(page.locator(".variable-bar")).toBeVisible({ timeout: 10000 });
+    // Variable bar is hidden for repeat-only variables, wait for panels instead
+    await expect(page.locator(".panel").first()).toBeVisible({ timeout: 10000 });
 
     // Wait for panels to render
     await expect(page.locator(".panel").first()).toBeVisible();
@@ -137,8 +138,8 @@ test.describe("Repeat Rows", () => {
       .locator(".sidebar-item", { hasText: "network-repeat" })
       .click();
 
-    await expect(page.locator(".variable-bar")).toBeVisible({ timeout: 10000 });
-    await expect(page.locator(".panel-title").first()).toBeVisible();
+    // Variable bar is hidden for repeat-only variables, wait for panel titles instead
+    await expect(page.locator(".panel-title").first()).toBeVisible({ timeout: 10000 });
 
     // No panel title should contain raw $device
     const panelTitles = page.locator(".panel-title");
