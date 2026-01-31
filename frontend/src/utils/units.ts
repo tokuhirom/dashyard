@@ -15,12 +15,25 @@ export function formatCount(value: number): string {
   return value.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
+export function formatSeconds(value: number): string {
+  const abs = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+  if (abs === 0) return '0s';
+  if (abs < 0.001) return `${sign}${(abs * 1_000_000).toFixed(0)}µs`;
+  if (abs < 1) return `${sign}${(abs * 1000).toFixed(1)}ms`;
+  if (abs < 60) return `${sign}${abs.toFixed(2)}s`;
+  if (abs < 3600) return `${sign}${(abs / 60).toFixed(1)}m`;
+  return `${sign}${(abs / 3600).toFixed(1)}h`;
+}
+
 export function formatValue(value: number, unit?: string): string {
   switch (unit) {
     case 'bytes':
       return formatBytes(value);
     case 'percent':
       return formatPercent(value);
+    case 'seconds':
+      return formatSeconds(value);
     case 'count':
       return formatCount(value);
     default:

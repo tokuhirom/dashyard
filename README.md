@@ -241,6 +241,7 @@ Controls y-axis value formatting.
 |-------|-------------|
 | `bytes` | Human-readable byte sizes (e.g. `1.5 GB`) |
 | `percent` | Percentage with one decimal (e.g. `75.0%`). Y-axis is fixed to 0–100 unless overridden by `y_min`/`y_max`. |
+| `seconds` | Human-readable time durations (e.g. `200ms`, `1.50s`, `2.5m`) |
 | `count` | Numeric with SI suffixes (e.g. `1.2k`). This is also the default when `unit` is omitted. |
 
 ### `y_min` / `y_max`

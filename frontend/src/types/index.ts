@@ -9,7 +9,7 @@ export interface Panel {
   type: 'graph' | 'markdown';
   chart_type?: 'line' | 'bar' | 'area' | 'scatter';
   query?: string;
-  unit?: 'bytes' | 'percent' | 'count';
+  unit?: 'bytes' | 'percent' | 'count' | 'seconds';
   y_min?: number;
   y_max?: number;
   legend?: string;
