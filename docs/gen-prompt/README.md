@@ -61,7 +61,7 @@ This will:
 After generating dashboards with an LLM, place the YAML files in `output/dashboards/` and start the full stack:
 
 ```bash
-docker compose -f docs/gen-prompt/docker-compose.yaml up
+make gen-prompt-up
 ```
 
 Open http://localhost:8080 (login: admin / admin).
@@ -71,6 +71,6 @@ Open http://localhost:8080 (login: admin / admin).
 1. `make gen-prompt` — start stack → accumulate metrics → run gen-prompt → stop
 2. Feed `output/prompt.md` + `output/prompt-metrics.md` to an LLM to generate dashboard YAML files
 3. Place generated YAML files in `docs/gen-prompt/output/dashboards/`
-4. `docker compose -f docs/gen-prompt/docker-compose.yaml up` — start Dashyard + monitoring stack
+4. `make gen-prompt-up` — start Dashyard + monitoring stack
 5. Open http://localhost:8080 to verify dashboards render with real metrics
 6. If the dashboards need improvement, refine the prompt and repeat from step 1
