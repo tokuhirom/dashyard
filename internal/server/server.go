@@ -14,7 +14,7 @@ import (
 )
 
 // New creates and configures an http.Server with all routes and middleware.
-func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS) *http.Server {
+func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, host string, port int) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.New()
@@ -51,7 +51,7 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS) *h
 	// Frontend static files (SPA fallback)
 	r.NoRoute(staticHandler.Handle)
 
-	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
+	addr := fmt.Sprintf("%s:%d", host, port)
 
 	return &http.Server{
 		Addr:    addr,

@@ -126,8 +126,6 @@ site_title: "My Monitoring"    # Optional, defaults to "Dashyard"
 header_color: "#dc2626"        # Optional, any CSS color value
 
 server:
-  host: "0.0.0.0"
-  port: 8080
   session_secret: "change-me-in-production"
 
 prometheus:
@@ -140,6 +138,12 @@ dashboards:
 users:
   - id: "admin"
     password_hash: "$6$..."
+```
+
+Host and port are set via CLI flags (defaults: `0.0.0.0:8080`):
+
+```bash
+./dashyard serve --config config.yaml --host 127.0.0.1 --port 9090
 ```
 
 Generate a password hash:
