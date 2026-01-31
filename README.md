@@ -161,24 +161,28 @@ Generate a password hash:
 Generate an LLM prompt for dashboard YAML generation from your Prometheus metrics:
 
 ```bash
-./dashyard gen-prompt http://localhost:9090 -o prompt.md
+./dashyard gen-prompt http://localhost:9090 -o .
 ./dashyard gen-prompt https://prom.example.com --bearer-token "eyJ..."
-./dashyard gen-prompt http://localhost:9090 --match "node_.*" -o prompt.md
+./dashyard gen-prompt http://localhost:9090 --match "node_.*" -o .
 ```
 
-This outputs a prompt file and a labels file (e.g. `prompt.md` + `prompt-labels.md`) that you can feed to an LLM to generate Dashyard dashboard YAML. See [docs/gen-prompt/](docs/gen-prompt/) for example output.
+This writes `prompt.md` and `prompt-metrics.md` to the specified directory. `prompt.md` is a static template (guidelines + format reference) written only on first run — edit it freely to customize the LLM instructions. `prompt-metrics.md` is regenerated every time with the latest metrics. To reset `prompt.md` to the default, use `--force-prompt`.
 
-Include existing dashboards as context for incremental updates:
+Then ask an LLM to generate dashboards. For example, with Claude Code:
 
-```bash
-./dashyard gen-prompt http://localhost:9090 -o prompt.md --dashboards-dir ./dashboards
+```
+Read prompt.md and prompt-metrics.md, then generate Dashyard dashboard
+YAML files for all available metrics. Write the files to ./dashboards/.
 ```
 
-Replace the default guidelines section with your own:
+To update existing dashboards:
 
-```bash
-./dashyard gen-prompt http://localhost:9090 -o prompt.md --guidelines my-guidelines.md
 ```
+Read prompt.md and prompt-metrics.md, then update the dashboards in
+./dashboards/. Add panels for any new metrics that are not yet covered.
+```
+
+See [docs/gen-prompt/](docs/gen-prompt/) for a complete example using a real monitoring stack.
 
 JSON schema: [`schemas/config.schema.json`](schemas/config.schema.json)
 

@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Metrics are received via remote_write from OTel Collector.
+# Traefik is scraped directly since it exposes a Prometheus endpoint.
+scrape_configs:
+  - job_name: "traefik"
+    static_configs:
+      - targets: ["traefik:8080"]

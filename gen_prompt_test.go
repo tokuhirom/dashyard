@@ -1,14 +1,29 @@
 package main
 
 import (
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/tokuhirom/dashyard/internal/prometheus"
 	"github.com/tokuhirom/dashyard/internal/prompt"
 )
+
+func TestGeneratePromptDoc(t *testing.T) {
+	doc := generatePromptDoc()
+
+	// Check guidelines are included
+	if !strings.Contains(doc, "You are a Dashyard dashboard generator") {
+		t.Error("missing LLM role instruction from guidelines")
+	}
+
+	// Check format reference is included
+	if !strings.Contains(doc, "# Dashboard YAML Format") {
+		t.Error("missing dashboard YAML format section")
+	}
+	if !strings.Contains(doc, "# Rules") {
+		t.Error("missing rules section")
+	}
+}
 
 func TestGenerateMetricsDoc(t *testing.T) {
 	metrics := []prometheus.MetricInfo{
@@ -44,72 +59,11 @@ func TestGenerateMetricsDoc(t *testing.T) {
 		},
 	}
 
-	doc := generateMetricsDoc(metrics, "metrics-labels.md", prompt.DefaultGuidelines, "")
+	doc := generateMetricsDoc(metrics)
 
-	// Check LLM role instruction (from default guidelines)
-	if !strings.Contains(doc, "You are a Dashyard dashboard generator") {
-		t.Error("missing LLM role instruction")
-	}
-
-	// Check multi-file generation instruction
-	if !strings.Contains(doc, "generate one or more YAML files") {
-		t.Error("missing multi-file generation instruction")
-	}
-	if !strings.Contains(doc, "# File:") {
-		t.Error("missing file path comment example")
-	}
-
-	// Check file organization section (from guidelines)
-	if !strings.Contains(doc, "# File Organization") {
-		t.Error("missing file organization section")
-	}
-
-	// Check dashboard YAML format section (from format reference)
-	if !strings.Contains(doc, "# Dashboard YAML Format") {
-		t.Error("missing dashboard YAML format section")
-	}
-
-	// Check rules (from format reference)
-	if !strings.Contains(doc, "# Rules") {
-		t.Error("missing rules section")
-	}
-	if !strings.Contains(doc, "rate(") {
-		t.Error("missing rate() guidance")
-	}
-
-	// Check rate/unit correspondence
-	if !strings.Contains(doc, "bytes/sec") {
-		t.Error("missing rate/unit correspondence for bytes")
-	}
-
-	// Check stacked chart guidance
-	if !strings.Contains(doc, "Stacked Charts") {
-		t.Error("missing stacked chart guidance")
-	}
-
-	// Check ratio/percent guidance
-	if !strings.Contains(doc, "Ratio and Percent") {
-		t.Error("missing ratio/percent guidance")
-	}
-
-	// Check default behavior
-	if !strings.Contains(doc, "# Default Behavior") {
-		t.Error("missing default behavior section")
-	}
-
-	// Check complete example
-	if !strings.Contains(doc, "# Complete Example") {
-		t.Error("missing complete example")
-	}
-
-	// Check dashyard validate reference
-	if !strings.Contains(doc, "dashyard validate") {
-		t.Error("missing dashyard validate reference")
-	}
-
-	// Check label details reference
-	if !strings.Contains(doc, "metrics-labels.md") {
-		t.Error("missing labels file reference")
+	// Check metrics listing
+	if !strings.Contains(doc, "# Available Metrics") {
+		t.Error("missing available metrics header")
 	}
 
 	// Check metrics with label value counts
@@ -132,123 +86,61 @@ func TestGenerateMetricsDoc(t *testing.T) {
 	if !strings.Contains(doc, "## node_cpu") {
 		t.Error("missing node_cpu group header")
 	}
-}
 
-func TestGenerateMetricsDocCustomGuidelines(t *testing.T) {
-	metrics := []prometheus.MetricInfo{
-		{Name: "up", Type: "gauge"},
+	// Check label values section is included
+	if !strings.Contains(doc, "# Label Values") {
+		t.Error("missing label values section")
 	}
-	customGuidelines := "You are a custom dashboard bot. Follow my rules."
-	doc := generateMetricsDoc(metrics, "", customGuidelines, "")
-
-	// Custom guidelines should be present
-	if !strings.Contains(doc, "You are a custom dashboard bot") {
-		t.Error("missing custom guidelines")
+	if !strings.Contains(doc, "**cpu**: 0, 1, 2, 3") {
+		t.Error("missing cpu label values")
 	}
-	// Default guidelines should NOT be present
-	if strings.Contains(doc, "You are a Dashyard dashboard generator") {
-		t.Error("default guidelines should not be present when custom guidelines are used")
-	}
-	// Format reference should still be present
-	if !strings.Contains(doc, "# Dashboard YAML Format") {
-		t.Error("format reference should always be present")
-	}
-}
-
-func TestGenerateMetricsDocWithExistingDashboards(t *testing.T) {
-	metrics := []prometheus.MetricInfo{
-		{Name: "up", Type: "gauge"},
-	}
-	existing := "## host.yaml\n\n```yaml\ntitle: Host\n```\n\n"
-	doc := generateMetricsDoc(metrics, "", prompt.DefaultGuidelines, existing)
-
-	if !strings.Contains(doc, "# Existing Dashboards") {
-		t.Error("missing existing dashboards section")
-	}
-	if !strings.Contains(doc, "host.yaml") {
-		t.Error("missing existing dashboard content")
-	}
-	if !strings.Contains(doc, "git log -p") {
-		t.Error("missing git log instruction for existing dashboards")
-	}
-}
-
-func TestGenerateMetricsDocNoLabelsFileName(t *testing.T) {
-	metrics := []prometheus.MetricInfo{
-		{Name: "up", Type: "gauge"},
-	}
-	doc := generateMetricsDoc(metrics, "", prompt.DefaultGuidelines, "")
-	if strings.Contains(doc, "# Label Details") {
-		t.Error("should not contain Label Details section when labelsFileName is empty")
+	if !strings.Contains(doc, "**mode**: idle, system, user") {
+		t.Error("missing mode label values")
 	}
 }
 
 func TestGenerateMetricsDocEmpty(t *testing.T) {
-	doc := generateMetricsDoc(nil, "", prompt.DefaultGuidelines, "")
+	doc := generateMetricsDoc(nil)
 	if !strings.Contains(doc, "No metrics available.") {
 		t.Error("expected 'No metrics available.' for empty metrics")
 	}
 }
 
-func TestGenerateLabelsDoc(t *testing.T) {
+func TestGenerateMetricsDocNoLabelValues(t *testing.T) {
 	metrics := []prometheus.MetricInfo{
-		{
-			Name:   "node_cpu_seconds_total",
-			Labels: []string{"cpu", "mode"},
-			LabelValues: map[string][]string{
-				"cpu":  {"0", "1"},
-				"mode": {"idle", "system", "user"},
-			},
-		},
-		{
-			Name: "up",
-		},
+		{Name: "up", Type: "gauge"},
 	}
-
-	doc := generateLabelsDoc(metrics)
-
-	if !strings.Contains(doc, "# Label Values") {
-		t.Error("missing header")
-	}
-	if !strings.Contains(doc, "## node_cpu_seconds_total") {
-		t.Error("missing metric name")
-	}
-	if !strings.Contains(doc, "**cpu**: 0, 1") {
-		t.Error("missing cpu values")
-	}
-	if !strings.Contains(doc, "**mode**: idle, system, user") {
-		t.Error("missing mode values")
-	}
-	// "up" has no label values, should not appear
-	if strings.Contains(doc, "## up") {
-		t.Error("up should not appear in labels doc")
+	doc := generateMetricsDoc(metrics)
+	if strings.Contains(doc, "# Label Values") {
+		t.Error("should not contain Label Values section when no metrics have label values")
 	}
 }
 
-func TestGenerateLabelsDocEmpty(t *testing.T) {
-	metrics := []prometheus.MetricInfo{
-		{Name: "up"},
-	}
-	doc := generateLabelsDoc(metrics)
-	if doc != "" {
-		t.Errorf("expected empty string for metrics without label values, got %q", doc)
+func TestPromptDocDoesNotContainMetrics(t *testing.T) {
+	doc := generatePromptDoc()
+	if strings.Contains(doc, "# Available Metrics") {
+		t.Error("prompt doc should not contain metrics listing")
 	}
 }
 
-func TestLabelsFilePath(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		{"metrics.md", "metrics-labels.md"},
-		{"output/prompt.md", "output/prompt-labels.md"},
-		{"noext", "noext-labels"},
+func TestMetricsDocDoesNotContainGuidelines(t *testing.T) {
+	metrics := []prometheus.MetricInfo{
+		{Name: "up", Type: "gauge"},
 	}
-	for _, tt := range tests {
-		got := labelsFilePath(tt.input)
-		if got != tt.expected {
-			t.Errorf("labelsFilePath(%q) = %q, want %q", tt.input, got, tt.expected)
-		}
+	doc := generateMetricsDoc(metrics)
+	if strings.Contains(doc, "You are a Dashyard dashboard generator") {
+		t.Error("metrics doc should not contain guidelines")
+	}
+}
+
+func TestGeneratePromptDocContainsDefaultGuidelines(t *testing.T) {
+	doc := generatePromptDoc()
+	// Verify key sections from default guidelines
+	if !strings.Contains(doc, prompt.DefaultGuidelines) {
+		t.Error("prompt doc should contain default guidelines verbatim")
+	}
+	if !strings.Contains(doc, prompt.FormatReference) {
+		t.Error("prompt doc should contain format reference verbatim")
 	}
 }
 
@@ -290,46 +182,5 @@ func TestMetricPrefix(t *testing.T) {
 		if got != tt.expected {
 			t.Errorf("metricPrefix(%q) = %q, want %q", tt.name, got, tt.expected)
 		}
-	}
-}
-
-func TestLoadExistingDashboards(t *testing.T) {
-	dir := t.TempDir()
-
-	// Create test YAML files
-	if err := os.WriteFile(filepath.Join(dir, "host.yaml"), []byte("title: Host\n"), 0644); err != nil {
-		t.Fatal(err)
-	}
-	subdir := filepath.Join(dir, "infra")
-	if err := os.MkdirAll(subdir, 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(subdir, "network.yaml"), []byte("title: Network\n"), 0644); err != nil {
-		t.Fatal(err)
-	}
-	// Non-YAML file should be ignored
-	if err := os.WriteFile(filepath.Join(dir, "readme.txt"), []byte("ignore me"), 0644); err != nil {
-		t.Fatal(err)
-	}
-
-	content, err := loadExistingDashboards(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !strings.Contains(content, "## host.yaml") {
-		t.Error("missing host.yaml")
-	}
-	if !strings.Contains(content, "title: Host") {
-		t.Error("missing host.yaml content")
-	}
-	if !strings.Contains(content, "infra/network.yaml") {
-		t.Error("missing infra/network.yaml")
-	}
-	if !strings.Contains(content, "title: Network") {
-		t.Error("missing network.yaml content")
-	}
-	if strings.Contains(content, "readme.txt") {
-		t.Error("non-YAML file should be excluded")
 	}
 }

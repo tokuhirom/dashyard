@@ -33,12 +33,11 @@ screenshots:
 	docker compose -f docker-compose.screenshots.yaml down
 
 gen-prompt:
-	@echo "Starting dummyprom..."
-	@go run ./cmd/dummyprom & DUMMYPROM_PID=$$!; \
-	sleep 1; \
-	go run . gen-prompt http://localhost:9090 -o docs/gen-prompt/example.md; \
-	kill $$DUMMYPROM_PID 2>/dev/null; \
-	echo "Generated docs/gen-prompt/example.md"
+	docker compose -f docs/gen-prompt/docker-compose.yaml up -d prometheus otelcol traefik redis whoami traffic-gen
+	@echo "Waiting 60s for metrics to accumulate..."
+	@sleep 60
+	docker compose -f docs/gen-prompt/docker-compose.yaml run --rm gen-prompt
+	docker compose -f docs/gen-prompt/docker-compose.yaml down
 
 clean:
 	rm -f dashyard dummyprom
