@@ -49,14 +49,15 @@ async function main() {
   // Login
   await page.fill("#userId", "admin");
   await page.fill("#password", "admin");
-  await page.click('button[type="submit"]');
-  await page.waitForResponse(
+  const loginResponsePromise = page.waitForResponse(
     (resp) =>
       resp.url().includes("/api/login") &&
       resp.request().method() === "POST" &&
       resp.ok(),
     { timeout: 10000 }
   );
+  await page.click('button[type="submit"]');
+  await loginResponsePromise;
 
   // Navigate to overview dashboard with absolute time range
   await page.goto(dashboardUrl("overview"));

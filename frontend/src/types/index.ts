@@ -14,6 +14,7 @@ export interface Panel {
   y_max?: number;
   legend?: string;
   thresholds?: Threshold[];
+  stacked?: boolean;
   content?: string;
 }
 

@@ -122,6 +122,11 @@
           "items": {
             "$ref": "#/$defs/threshold"
           }
+        },
+        "stacked": {
+          "type": "boolean",
+          "description": "Stack series on top of each other. Applies to line, area, and bar charts.",
+          "default": false
         }
       },
       "required": ["title", "type", "query"],
