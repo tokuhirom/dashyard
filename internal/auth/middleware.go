@@ -12,14 +12,14 @@ const userIDKey = "user_id"
 // It sets the user_id in the Gin context on success.
 func AuthMiddleware(sm *SessionManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		payload, err := sm.ValidateSession(c.Request)
+		userID, err := sm.ValidateSession(c.Request)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "unauthorized",
 			})
 			return
 		}
-		c.Set(userIDKey, payload.UserID)
+		c.Set(userIDKey, userID)
 		c.Next()
 	}
 }

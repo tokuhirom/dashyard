@@ -135,3 +135,115 @@ func TestParseInvalidYAML(t *testing.T) {
 		t.Error("expected error for invalid YAML")
 	}
 }
+
+func TestParseOAuthConfig(t *testing.T) {
+	input := []byte(`
+auth:
+  oauth:
+    - provider: github
+      client_id: "my-client-id"
+      client_secret: "my-client-secret"
+      redirect_url: "http://localhost:8080/auth/github/callback"
+      scopes: ["user:email", "read:org"]
+      allowed_users: ["user1"]
+      allowed_orgs: ["my-org"]
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(cfg.Auth.OAuth) != 1 {
+		t.Fatalf("expected 1 oauth provider, got %d", len(cfg.Auth.OAuth))
+	}
+	p := cfg.Auth.OAuth[0]
+	if p.Provider != "github" {
+		t.Errorf("expected provider 'github', got %q", p.Provider)
+	}
+	if p.ClientID != "my-client-id" {
+		t.Errorf("expected client_id 'my-client-id', got %q", p.ClientID)
+	}
+	if p.ClientSecret != "my-client-secret" {
+		t.Errorf("expected client_secret 'my-client-secret', got %q", p.ClientSecret)
+	}
+	if p.RedirectURL != "http://localhost:8080/auth/github/callback" {
+		t.Errorf("expected redirect_url, got %q", p.RedirectURL)
+	}
+	if len(p.Scopes) != 2 {
+		t.Errorf("expected 2 scopes, got %d", len(p.Scopes))
+	}
+	if len(p.AllowedUsers) != 1 || p.AllowedUsers[0] != "user1" {
+		t.Errorf("expected allowed_users [user1], got %v", p.AllowedUsers)
+	}
+	if len(p.AllowedOrgs) != 1 || p.AllowedOrgs[0] != "my-org" {
+		t.Errorf("expected allowed_orgs [my-org], got %v", p.AllowedOrgs)
+	}
+}
+
+func TestParseOAuthValidationMissingProvider(t *testing.T) {
+	input := []byte(`
+auth:
+  oauth:
+    - client_id: "id"
+      client_secret: "secret"
+`)
+	_, err := Parse(input)
+	if err == nil {
+		t.Error("expected error for missing provider")
+	}
+}
+
+func TestParseOAuthValidationMissingClientID(t *testing.T) {
+	input := []byte(`
+auth:
+  oauth:
+    - provider: github
+      client_secret: "secret"
+`)
+	_, err := Parse(input)
+	if err == nil {
+		t.Error("expected error for missing client_id")
+	}
+}
+
+func TestParseOAuthValidationMissingClientSecret(t *testing.T) {
+	input := []byte(`
+auth:
+  oauth:
+    - provider: github
+      client_id: "id"
+`)
+	_, err := Parse(input)
+	if err == nil {
+		t.Error("expected error for missing client_secret")
+	}
+}
+
+func TestParseOAuthValidationDuplicateProvider(t *testing.T) {
+	input := []byte(`
+auth:
+  oauth:
+    - provider: github
+      client_id: "id1"
+      client_secret: "secret1"
+    - provider: github
+      client_id: "id2"
+      client_secret: "secret2"
+`)
+	_, err := Parse(input)
+	if err == nil {
+		t.Error("expected error for duplicate provider")
+	}
+}
+
+func TestParseNoOAuthConfig(t *testing.T) {
+	input := []byte(`{}`)
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(cfg.Auth.OAuth) != 0 {
+		t.Errorf("expected no oauth providers, got %d", len(cfg.Auth.OAuth))
+	}
+}

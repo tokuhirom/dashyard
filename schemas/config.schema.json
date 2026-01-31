@@ -84,6 +84,58 @@
         "required": ["id", "password_hash"],
         "additionalProperties": false
       }
+    },
+    "auth": {
+      "type": "object",
+      "description": "Authentication settings.",
+      "properties": {
+        "oauth": {
+          "type": "array",
+          "description": "List of OAuth/OIDC providers. Currently only 'github' is supported.",
+          "items": {
+            "type": "object",
+            "description": "An OAuth provider configuration.",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "description": "Provider name (e.g. 'github').",
+                "enum": ["github"]
+              },
+              "client_id": {
+                "type": "string",
+                "description": "OAuth client ID."
+              },
+              "client_secret": {
+                "type": "string",
+                "description": "OAuth client secret."
+              },
+              "redirect_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "OAuth callback URL (e.g. 'http://localhost:8080/auth/github/callback')."
+              },
+              "scopes": {
+                "type": "array",
+                "description": "OAuth scopes to request.",
+                "items": { "type": "string" }
+              },
+              "allowed_users": {
+                "type": "array",
+                "description": "List of allowed usernames. If empty, all authenticated users are allowed.",
+                "items": { "type": "string" }
+              },
+              "allowed_orgs": {
+                "type": "array",
+                "description": "List of allowed GitHub organization names.",
+                "items": { "type": "string" }
+              }
+            },
+            "required": ["provider", "client_id", "client_secret"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

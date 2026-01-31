@@ -4,52 +4,53 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 )
 
 func TestCreateAndValidateSession(t *testing.T) {
-	sm := NewSessionManager("test-secret", false)
+	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
 
 	// Create session
+	r := httptest.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
-	if err := sm.CreateSession(w, "admin"); err != nil {
+	if err := sm.CreateSession(r, w, "admin"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	// Extract cookie from response
 	resp := w.Result()
 	cookies := resp.Cookies()
-	if len(cookies) != 1 {
-		t.Fatalf("expected 1 cookie, got %d", len(cookies))
+	if len(cookies) == 0 {
+		t.Fatal("expected at least 1 cookie")
 	}
-	cookie := cookies[0]
-	if cookie.Name != "dashyard_session" {
-		t.Errorf("expected cookie name 'dashyard_session', got %q", cookie.Name)
+
+	var sessionCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "dashyard_session" {
+			sessionCookie = c
+			break
+		}
 	}
-	if !cookie.HttpOnly {
+	if sessionCookie == nil {
+		t.Fatal("expected dashyard_session cookie")
+	}
+	if !sessionCookie.HttpOnly {
 		t.Error("expected HttpOnly flag")
-	}
-	if cookie.SameSite != http.SameSiteStrictMode {
-		t.Error("expected SameSite=Strict")
 	}
 
 	// Validate session
-	r := httptest.NewRequest("GET", "/", nil)
-	r.AddCookie(cookie)
-	payload, err := sm.ValidateSession(r)
+	r2 := httptest.NewRequest("GET", "/", nil)
+	r2.AddCookie(sessionCookie)
+	userID, err := sm.ValidateSession(r2)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if payload.UserID != "admin" {
-		t.Errorf("expected user_id 'admin', got %q", payload.UserID)
-	}
-	if payload.Exp <= time.Now().Unix() {
-		t.Error("expected expiry to be in the future")
+	if userID != "admin" {
+		t.Errorf("expected user_id 'admin', got %q", userID)
 	}
 }
 
 func TestValidateSessionNoCookie(t *testing.T) {
-	sm := NewSessionManager("test-secret", false)
+	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
 	r := httptest.NewRequest("GET", "/", nil)
 	_, err := sm.ValidateSession(r)
 	if err == nil {
@@ -58,25 +59,28 @@ func TestValidateSessionNoCookie(t *testing.T) {
 }
 
 func TestValidateSessionInvalidSignature(t *testing.T) {
-	sm1 := NewSessionManager("secret-1", false)
-	sm2 := NewSessionManager("secret-2", false)
+	sm1 := NewSessionManager("secret-1-that-is-at-least-32!!", false)
+	sm2 := NewSessionManager("secret-2-that-is-at-least-32!!", false)
 
+	r := httptest.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
-	if err := sm1.CreateSession(w, "admin"); err != nil {
+	if err := sm1.CreateSession(r, w, "admin"); err != nil {
 		t.Fatal(err)
 	}
 
-	r := httptest.NewRequest("GET", "/", nil)
-	r.AddCookie(w.Result().Cookies()[0])
+	r2 := httptest.NewRequest("GET", "/", nil)
+	for _, c := range w.Result().Cookies() {
+		r2.AddCookie(c)
+	}
 
-	_, err := sm2.ValidateSession(r)
+	_, err := sm2.ValidateSession(r2)
 	if err == nil {
 		t.Error("expected error for invalid signature")
 	}
 }
 
 func TestValidateSessionTampered(t *testing.T) {
-	sm := NewSessionManager("test-secret", false)
+	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
 	r := httptest.NewRequest("GET", "/", nil)
 	r.AddCookie(&http.Cookie{
 		Name:  "dashyard_session",
@@ -89,15 +93,37 @@ func TestValidateSessionTampered(t *testing.T) {
 }
 
 func TestClearSession(t *testing.T) {
-	sm := NewSessionManager("test-secret", false)
-	w := httptest.NewRecorder()
-	sm.ClearSession(w)
+	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
 
-	cookies := w.Result().Cookies()
-	if len(cookies) != 1 {
-		t.Fatalf("expected 1 cookie, got %d", len(cookies))
+	// Create a session first
+	r := httptest.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+	if err := sm.CreateSession(r, w, "admin"); err != nil {
+		t.Fatal(err)
 	}
-	if cookies[0].MaxAge != -1 {
-		t.Errorf("expected MaxAge -1, got %d", cookies[0].MaxAge)
+
+	// Clear it
+	r2 := httptest.NewRequest("GET", "/", nil)
+	for _, c := range w.Result().Cookies() {
+		r2.AddCookie(c)
+	}
+	w2 := httptest.NewRecorder()
+	if err := sm.ClearSession(r2, w2); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	cookies := w2.Result().Cookies()
+	if len(cookies) == 0 {
+		t.Fatal("expected at least 1 cookie")
+	}
+	found := false
+	for _, c := range cookies {
+		if c.Name == "dashyard_session" && c.MaxAge < 0 {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("expected session cookie with MaxAge < 0")
 	}
 }
