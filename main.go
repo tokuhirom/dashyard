@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"embed"
-	"flag"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -11,6 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/alecthomas/kong"
 	"github.com/tokuhirom/dashyard/internal/config"
 	"github.com/tokuhirom/dashyard/internal/dashboard"
 	"github.com/tokuhirom/dashyard/internal/server"
@@ -19,12 +19,18 @@ import (
 //go:embed frontend/dist/*
 var frontendFiles embed.FS
 
+var cli struct {
+	Config string `help:"Path to config file." default:"config.yaml"`
+}
+
 func main() {
-	configPath := flag.String("config", "config.yaml", "path to config file")
-	flag.Parse()
+	kong.Parse(&cli,
+		kong.Name("dashyard"),
+		kong.Description("Lightweight Prometheus metrics dashboard."),
+	)
 
 	// Load config
-	cfg, err := config.Load(*configPath)
+	cfg, err := config.Load(cli.Config)
 	if err != nil {
 		slog.Error("failed to load config", "error", err)
 		os.Exit(1)

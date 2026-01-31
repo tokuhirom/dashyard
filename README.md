@@ -29,7 +29,7 @@ A lightweight Prometheus metrics dashboard. Define dashboards in YAML, drop them
 make build
 
 # Run with example config
-./dashyard -config examples/config.yaml
+./dashyard --config examples/config.yaml
 ```
 
 Open http://localhost:8080 and log in with `admin` / `admin`.

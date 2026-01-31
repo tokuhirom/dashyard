@@ -22,4 +22,4 @@ WORKDIR /app
 COPY --from=backend-builder /app/dashyard .
 EXPOSE 8080
 ENTRYPOINT ["/app/dashyard"]
-CMD ["-config", "/etc/dashyard/config.yaml"]
+CMD ["--config", "/etc/dashyard/config.yaml"]
