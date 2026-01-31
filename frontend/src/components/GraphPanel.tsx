@@ -184,6 +184,7 @@ export function GraphPanel({ title, data, unit, legend, chartType, loading, erro
       },
       y: {
         beginAtZero: true,
+        ...(unit === 'percent' ? { min: 0, max: 100 } : {}),
         ticks: {
           callback: tickCallback,
         },

@@ -190,6 +190,8 @@ rows:
 | `graph` | `title`, `type`, `query` | `unit` (`bytes`, `percent`, `count`), `legend` |
 | `markdown` | `title`, `type`, `content` | -- |
 
+When `unit` is `percent`, the y-axis is fixed to 0–100.
+
 The `legend` field accepts a Go template string for formatting series labels (e.g. `"{{device}} {{direction}}"`).
 
 JSON schema: [`schemas/dashboard.schema.json`](schemas/dashboard.schema.json)
