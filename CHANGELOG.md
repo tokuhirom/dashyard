@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.0.10](https://github.com/tokuhirom/dashyard/compare/v0.0.9...v0.0.10) - 2026-01-31
+- Add Docker Compose workflow for automated screenshots by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/46
+- Hide variable selectors for repeat-only variables by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/43
+- Add absolute time range support by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/48
+
 ## [v0.0.9](https://github.com/tokuhirom/dashyard/compare/v0.0.8...v0.0.9) - 2026-01-31
 - Support threshold lines on graph panels by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/41
 
