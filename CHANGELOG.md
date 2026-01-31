@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.1.0](https://github.com/tokuhirom/dashyard/compare/v0.0.13...v0.1.0) - 2026-01-31
+- Add oxlint for frontend linting by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/78
+- Add logarithmic Y-axis scale support by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/82
+- Rewrite README with AI-native positioning by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/83
+- Add Dashyard logo by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/84
+
 ## [v0.0.13](https://github.com/tokuhirom/dashyard/compare/v0.0.12...v0.0.13) - 2026-01-31
 - Add gen-prompt subcommand for LLM dashboard generation by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/61
 - Replace dummyprom gen-prompt with real monitoring stack by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/63
