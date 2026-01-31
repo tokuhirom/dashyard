@@ -49,7 +49,7 @@ func TestGenerateMetricsDoc(t *testing.T) {
 	}
 
 	// Check multi-file generation instruction
-	if !strings.Contains(doc, "generate multiple YAML files") {
+	if !strings.Contains(doc, "generate one or more YAML files") {
 		t.Error("missing multi-file generation instruction")
 	}
 	if !strings.Contains(doc, "# File:") {
