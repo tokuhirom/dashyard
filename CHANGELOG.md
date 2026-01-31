@@ -1,5 +1,19 @@
 # Changelog
 
+## [v0.2.0](https://github.com/tokuhirom/dashyard/compare/v0.1.0...v0.2.0) - 2026-01-31
+- Add /ready endpoint by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/90
+- Add frontend unit tests with Vitest by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/91
+- Run Docker container as non-root user by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/93
+- Add Dependabot for dependency scanning by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/94
+- Expose Dashyard's own metrics via /metrics endpoint by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/95
+- Bump actions/setup-go from 5 to 6 by @dependabot[bot] in https://github.com/tokuhirom/dashyard/pull/97
+- Bump actions/upload-artifact from 4 to 6 by @dependabot[bot] in https://github.com/tokuhirom/dashyard/pull/96
+- Bump Songmu/tagpr from 1.11.1 to 1.14.0 by @dependabot[bot] in https://github.com/tokuhirom/dashyard/pull/101
+- Bump @vitejs/plugin-react from 4.7.0 to 5.1.2 in /frontend by @dependabot[bot] in https://github.com/tokuhirom/dashyard/pull/100
+- Bump react-markdown from 9.1.0 to 10.1.0 in /frontend by @dependabot[bot] in https://github.com/tokuhirom/dashyard/pull/102
+- Bump vite from 6.4.1 to 7.3.1 in /frontend by @dependabot[bot] in https://github.com/tokuhirom/dashyard/pull/103
+- Bump actions/checkout from 4 to 6 by @dependabot[bot] in https://github.com/tokuhirom/dashyard/pull/98
+
 ## [v0.1.0](https://github.com/tokuhirom/dashyard/compare/v0.0.13...v0.1.0) - 2026-01-31
 - Add oxlint for frontend linting by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/78
 - Add logarithmic Y-axis scale support by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/82
