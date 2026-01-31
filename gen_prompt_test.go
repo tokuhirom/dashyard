@@ -215,23 +215,6 @@ func TestGenerateLabelsDocEmpty(t *testing.T) {
 	}
 }
 
-func TestLabelsFilePath(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		{"metrics.md", "metrics-labels.md"},
-		{"output/prompt.md", "output/prompt-labels.md"},
-		{"noext", "noext-labels"},
-	}
-	for _, tt := range tests {
-		got := labelsFilePath(tt.input)
-		if got != tt.expected {
-			t.Errorf("labelsFilePath(%q) = %q, want %q", tt.input, got, tt.expected)
-		}
-	}
-}
-
 func TestGroupMetricsByPrefix(t *testing.T) {
 	metrics := []prometheus.MetricInfo{
 		{Name: "go_gc_duration_seconds"},

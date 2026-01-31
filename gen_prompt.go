@@ -20,7 +20,7 @@ type GenPromptCmd struct {
 	BearerToken   string        `help:"Bearer token for authentication." env:"PROMETHEUS_BEARER_TOKEN"`
 	Match         string        `help:"Regex to filter metric names." default:""`
 	Timeout       time.Duration `help:"HTTP timeout." default:"30s"`
-	Output        string        `help:"Output file (default: stdout). A labels file is also written alongside." short:"o" default:""`
+	OutputDir     string        `help:"Output directory for prompt.md and prompt-labels.md (default: stdout)." short:"o" default:""`
 	Guidelines    string        `help:"Custom guidelines markdown file to replace default guidelines." default:""`
 }
 
@@ -115,17 +115,20 @@ func (cmd *GenPromptCmd) Run() error {
 	}
 
 	// Generate output
-	if cmd.Output != "" {
-		labelsFile := labelsFilePath(cmd.Output)
-		labelsBaseName := filepath.Base(labelsFile)
+	if cmd.OutputDir != "" {
+		promptFile := filepath.Join(cmd.OutputDir, "prompt.md")
+		labelsFile := filepath.Join(cmd.OutputDir, "prompt-labels.md")
 
-		mainDoc := generateMetricsDoc(metrics, labelsBaseName, guidelines)
+		mainDoc := generateMetricsDoc(metrics, "prompt-labels.md", guidelines)
 		labelsDoc := generateLabelsDoc(metrics)
 
-		if err := os.WriteFile(cmd.Output, []byte(mainDoc), 0644); err != nil {
-			return fmt.Errorf("writing output file: %w", err)
+		if err := os.MkdirAll(cmd.OutputDir, 0755); err != nil {
+			return fmt.Errorf("creating output directory: %w", err)
 		}
-		slog.Info("wrote prompt file", "file", cmd.Output)
+		if err := os.WriteFile(promptFile, []byte(mainDoc), 0644); err != nil {
+			return fmt.Errorf("writing prompt file: %w", err)
+		}
+		slog.Info("wrote prompt file", "file", promptFile)
 
 		if err := os.WriteFile(labelsFile, []byte(labelsDoc), 0644); err != nil {
 			return fmt.Errorf("writing labels file: %w", err)
@@ -143,14 +146,6 @@ func (cmd *GenPromptCmd) Run() error {
 	}
 
 	return nil
-}
-
-// labelsFilePath derives the labels file path from the main output path.
-// e.g., "metrics.md" -> "metrics-labels.md"
-func labelsFilePath(mainPath string) string {
-	ext := filepath.Ext(mainPath)
-	base := strings.TrimSuffix(mainPath, ext)
-	return base + "-labels" + ext
 }
 
 // groupMetricsByPrefix groups metrics by their common prefix (first two underscore-separated segments).

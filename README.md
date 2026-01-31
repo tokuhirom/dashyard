@@ -161,12 +161,12 @@ Generate a password hash:
 Generate an LLM prompt for dashboard YAML generation from your Prometheus metrics:
 
 ```bash
-./dashyard gen-prompt http://localhost:9090 -o prompt.md
+./dashyard gen-prompt http://localhost:9090 -o .
 ./dashyard gen-prompt https://prom.example.com --bearer-token "eyJ..."
-./dashyard gen-prompt http://localhost:9090 --match "node_.*" -o prompt.md
+./dashyard gen-prompt http://localhost:9090 --match "node_.*" -o .
 ```
 
-This outputs a prompt file and a labels file (e.g. `prompt.md` + `prompt-labels.md`). Then ask an LLM to generate dashboards. For example, with Claude Code:
+This writes `prompt.md` and `prompt-labels.md` to the specified directory. Then ask an LLM to generate dashboards. For example, with Claude Code:
 
 ```
 Read prompt.md and prompt-labels.md, then generate Dashyard dashboard
@@ -185,7 +185,7 @@ See [docs/gen-prompt/](docs/gen-prompt/) for a complete example using a real mon
 Replace the default guidelines section with your own:
 
 ```bash
-./dashyard gen-prompt http://localhost:9090 -o prompt.md --guidelines my-guidelines.md
+./dashyard gen-prompt http://localhost:9090 -o . --guidelines my-guidelines.md
 ```
 
 JSON schema: [`schemas/config.schema.json`](schemas/config.schema.json)
