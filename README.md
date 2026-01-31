@@ -158,19 +158,15 @@ Generate a password hash:
 ./dashyard mkpasswd <password>
 ```
 
-Generate an LLM prompt for dashboard YAML generation (starts dummyprom, queries it, outputs prompt + labels files):
+Generate an LLM prompt for dashboard YAML generation from your Prometheus metrics:
 
 ```bash
-make gen-prompt                  # Output: docs/gen-prompt/example.md + docs/gen-prompt/example-labels.md
-```
-
-Or point at any Prometheus instance directly:
-
-```bash
-./dashyard gen-prompt http://localhost:9090
+./dashyard gen-prompt http://localhost:9090 -o prompt.md
 ./dashyard gen-prompt https://prom.example.com --bearer-token "eyJ..."
 ./dashyard gen-prompt http://localhost:9090 --match "node_.*" -o prompt.md
 ```
+
+This outputs a prompt file and a labels file (e.g. `prompt.md` + `prompt-labels.md`) that you can feed to an LLM to generate Dashyard dashboard YAML. See [docs/gen-prompt/](docs/gen-prompt/) for example output.
 
 JSON schema: [`schemas/config.schema.json`](schemas/config.schema.json)
 
