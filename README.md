@@ -4,15 +4,45 @@
 
 A lightweight Prometheus metrics dashboard. Define dashboards in YAML, drop them in a directory, and view metrics through a simple web UI.
 
-![alt text](screenshot.png)
+![Dashboard Overview](screenshot.png)
 
 ## Features
 
-- **Dashboard as Code** -- YAML-defined dashboards, Git-manageable
-- **Single binary** -- Go backend with embedded React frontend, no external dependencies
-- **Simple auth** -- Session-based login with SHA-512 crypt password hashing
-- **Customizable** -- Configurable site title and header color per environment
-- **Docker-ready** -- Multi-stage Dockerfile, ~30MB final image
+### Dashboard as Code
+
+Define dashboards in YAML and manage them with Git. Rows, panels, queries, and layout are all declarative.
+
+### Graph and Markdown Panels
+
+Display Prometheus metrics as line, area, bar, scatter, pie, or doughnut charts. Mix in Markdown panels for documentation alongside your graphs.
+
+![Chart Types](docs/screenshot-chart-types.png)
+
+### Template Variables
+
+Add dropdown variables that dynamically filter queries. Users can switch between values (e.g. network device) without editing the dashboard definition.
+
+![Template Variables](docs/screenshot-variables.png)
+
+### Repeat Rows
+
+Automatically repeat a row for each value of a template variable. One row definition generates panels for every network interface, disk, or host.
+
+![Repeat Rows](docs/screenshot-repeat.png)
+
+### Sidebar Navigation with Groups
+
+Organize dashboards into subdirectories that become collapsible groups in the sidebar.
+
+### Simple Auth
+
+Session-based login with SHA-512 crypt password hashing.
+
+![Login](docs/screenshot-login.png)
+
+### Single Binary and Docker-Ready
+
+Go backend with embedded React frontend, no external dependencies. Multi-stage Dockerfile produces a ~30MB image.
 
 ## Quick Start
 
@@ -173,4 +203,12 @@ make dev-frontend    # Terminal 3
 make test-e2e                          # Headless
 cd frontend && npm run test:e2e:headed # With browser visible
 cd frontend && npm run test:e2e:ui     # Interactive UI mode
+```
+
+### Updating Screenshots
+
+With all three dev services running:
+
+```bash
+cd frontend && npx tsx take-screenshots.ts
 ```
