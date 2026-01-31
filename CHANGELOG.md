@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.0.3](https://github.com/tokuhirom/dashyard/compare/v0.0.2...v0.0.3) - 2026-01-31
+- Fix goreleaser before hooks YAML format by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/16
+- Add branch creation step to git workflow by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/15
+- Add under-development caution to README by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/9
+- Replace flag with kong for CLI parsing by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/13
+
 ## [v0.0.2](https://github.com/tokuhirom/dashyard/compare/v0.0.1...v0.0.2) - 2026-01-31
 - Add git workflow guidelines to CLAUDE.md by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/7
 - Add E2E testing section to README by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/8
