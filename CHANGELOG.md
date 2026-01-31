@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.0.7](https://github.com/tokuhirom/dashyard/compare/v0.0.6...v0.0.7) - 2026-01-31
+- Add golangci-lint and fix errcheck violations by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/27
+- Update README with feature screenshots by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/29
+- Fix CI lint job: build frontend before linting by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/30
+- Add installation guide to README by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/31
+
 ## [v0.0.6](https://github.com/tokuhirom/dashyard/compare/v0.0.5...v0.0.6) - 2026-01-31
 - Add dashboard template variables and repeat rows by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/25
 
