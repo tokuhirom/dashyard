@@ -4,4 +4,4 @@ WORKDIR /app
 COPY dashyard /app/dashyard
 EXPOSE 8080
 ENTRYPOINT ["/app/dashyard"]
-CMD ["-config", "/etc/dashyard/config.yaml"]
+CMD ["serve", "--config", "/etc/dashyard/config.yaml"]

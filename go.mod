@@ -4,12 +4,12 @@ go 1.25.5
 
 require (
 	github.com/GehirnInc/crypt v0.0.0-20230320061759-8cc1b52080c5
+	github.com/alecthomas/kong v1.13.0
 	github.com/gin-gonic/gin v1.11.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	github.com/alecthomas/kong v1.13.0 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
