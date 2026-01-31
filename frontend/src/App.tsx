@@ -3,7 +3,7 @@ import { LoginForm } from './components/LoginForm';
 import { Layout } from './components/Layout';
 import { DashboardView } from './components/DashboardView';
 import { useDashboards } from './hooks/useDashboards';
-import { DEFAULT_TIME_RANGE, TIME_RANGES } from './utils/time';
+import { DEFAULT_TIME_RANGE, TIME_RANGES, computeStep } from './utils/time';
 import type { TimeRange } from './types';
 
 function parseDashboardPath(): string | null {
@@ -16,6 +16,30 @@ function parseDashboardPath(): string | null {
 
 function parseTimeRange(): TimeRange {
   const params = new URLSearchParams(window.location.search);
+
+  // Check for absolute range (ISO 8601 from/to)
+  const from = params.get('from');
+  const to = params.get('to');
+  if (from && to) {
+    const startUnix = Math.floor(new Date(from).getTime() / 1000);
+    const endUnix = Math.floor(new Date(to).getTime() / 1000);
+    if (!isNaN(startUnix) && !isNaN(endUnix) && startUnix < endUnix) {
+      const duration = endUnix - startUnix;
+      const step = computeStep(duration);
+      const fromDate = new Date(startUnix * 1000);
+      const toDate = new Date(endUnix * 1000);
+      const fmt = (d: Date) => `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      return {
+        type: 'absolute',
+        label: `${fmt(fromDate)} – ${fmt(toDate)}`,
+        start: startUnix,
+        end: endUnix,
+        step,
+      };
+    }
+  }
+
+  // Relative range
   const t = params.get('t');
   if (t) {
     const found = TIME_RANGES.find((r) => r.value === t);
@@ -26,7 +50,11 @@ function parseTimeRange(): TimeRange {
 
 function buildUrl(dashboardPath: string, timeRange: TimeRange): string {
   let url = `/d/${dashboardPath}`;
-  if (timeRange.value !== DEFAULT_TIME_RANGE.value) {
+  if (timeRange.type === 'absolute') {
+    const fromISO = new Date(timeRange.start * 1000).toISOString();
+    const toISO = new Date(timeRange.end * 1000).toISOString();
+    url += `?from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
+  } else if (timeRange.value !== DEFAULT_TIME_RANGE.value) {
     url += `?t=${timeRange.value}`;
   }
   return url;

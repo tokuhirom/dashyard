@@ -72,9 +72,20 @@ export interface PrometheusResponse {
   };
 }
 
-export interface TimeRange {
+export interface RelativeTimeRange {
+  type: 'relative';
   label: string;
   value: string;
   duration: number; // seconds
   step: string;
 }
+
+export interface AbsoluteTimeRange {
+  type: 'absolute';
+  label: string;
+  start: number; // Unix seconds
+  end: number;   // Unix seconds
+  step: string;
+}
+
+export type TimeRange = RelativeTimeRange | AbsoluteTimeRange;
