@@ -1,5 +1,6 @@
 # Go
 /dashyard
+/dummyprom
 *.exe
 
 # Frontend

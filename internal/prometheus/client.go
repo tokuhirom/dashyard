@@ -9,19 +9,40 @@ import (
 	"time"
 )
 
+// ClientOption configures optional Client settings.
+type ClientOption func(*Client)
+
+// WithBearerToken sets a bearer token for authentication.
+func WithBearerToken(token string) ClientOption {
+	return func(c *Client) {
+		c.bearerToken = token
+	}
+}
+
 // Client is an HTTP client for the Prometheus query_range API.
 type Client struct {
-	baseURL    string
-	httpClient *http.Client
+	baseURL     string
+	httpClient  *http.Client
+	bearerToken string
 }
 
 // NewClient creates a new Prometheus client.
-func NewClient(baseURL string, timeout time.Duration) *Client {
-	return &Client{
+func NewClient(baseURL string, timeout time.Duration, opts ...ClientOption) *Client {
+	c := &Client{
 		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: timeout,
 		},
+	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
+}
+
+func (c *Client) applyAuth(req *http.Request) {
+	if c.bearerToken != "" {
+		req.Header.Set("Authorization", "Bearer "+c.bearerToken)
 	}
 }
 
@@ -45,6 +66,7 @@ func (c *Client) QueryRange(ctx context.Context, query, start, end, step string)
 	if err != nil {
 		return nil, 0, fmt.Errorf("creating request: %w", err)
 	}
+	c.applyAuth(req)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -73,6 +95,7 @@ func (c *Client) LabelValues(ctx context.Context, label, match string) (io.ReadC
 	if err != nil {
 		return nil, 0, fmt.Errorf("creating request: %w", err)
 	}
+	c.applyAuth(req)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

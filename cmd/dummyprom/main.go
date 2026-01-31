@@ -10,6 +10,7 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -21,6 +22,8 @@ func main() {
 	}
 
 	http.HandleFunc("/api/v1/query_range", handleQueryRange)
+	http.HandleFunc("/api/v1/metadata", handleMetadata)
+	http.HandleFunc("/api/v1/labels", handleLabels)
 	http.HandleFunc("/api/v1/label/", handleLabelValues)
 
 	slog.Info("dummy prometheus server starting", "port", port)
@@ -263,20 +266,11 @@ func generateTimeSeries(start, end, step float64, fn func(float64) float64) [][2
 
 // labelRegistry maps metric names to their label name -> values.
 var labelRegistry = map[string]map[string][]string{
-	"system_network_io_bytes_total": {
-		"device":    {"eth0", "eth1"},
-		"direction": {"receive", "transmit"},
-	},
-	"system_cpu_utilization_ratio": {
-		"cpu": {"cpu0", "cpu1", "cpu2", "cpu3"},
-	},
-	"system_memory_usage_bytes": {
-		"state": {"used", "cached", "free", "buffers"},
-	},
-	"system_disk_io_bytes_total": {
-		"device":    {"sda"},
-		"direction": {"read", "write"},
-	},
+	"system_cpu_utilization_ratio":      {"cpu": {"cpu0", "cpu1", "cpu2", "cpu3"}},
+	"system_cpu_load_average_1m_ratio":  {},
+	"system_memory_usage_bytes":         {"state": {"used", "cached", "free", "buffers"}},
+	"system_network_io_bytes_total":     {"device": {"eth0", "eth1"}, "direction": {"receive", "transmit"}},
+	"system_disk_io_bytes_total":        {"device": {"sda"}, "direction": {"read", "write"}},
 }
 
 type labelValuesResponse struct {
@@ -320,6 +314,18 @@ func collectLabelValues(label, match string) []string {
 	seen := map[string]bool{}
 	var values []string
 
+	// Special case: __name__ returns all metric names
+	if label == "__name__" {
+		for metric := range labelRegistry {
+			if !seen[metric] {
+				seen[metric] = true
+				values = append(values, metric)
+			}
+		}
+		sort.Strings(values)
+		return values
+	}
+
 	for metric, labels := range labelRegistry {
 		if match != "" && metric != match {
 			continue
@@ -335,4 +341,74 @@ func collectLabelValues(label, match string) []string {
 	}
 
 	return values
+}
+
+// metadataRegistry maps metric names to their type and help text.
+var metadataRegistry = map[string]struct {
+	Type string
+	Help string
+}{
+	"system_cpu_utilization_ratio":    {"gauge", "CPU utilization as a ratio between 0 and 1."},
+	"system_cpu_load_average_1m_ratio": {"gauge", "1-minute CPU load average."},
+	"system_memory_usage_bytes":       {"gauge", "Memory usage in bytes by state."},
+	"system_network_io_bytes_total":   {"counter", "Total network I/O bytes by device and direction."},
+	"system_disk_io_bytes_total":      {"counter", "Total disk I/O bytes by device and direction."},
+}
+
+func handleMetadata(w http.ResponseWriter, r *http.Request) {
+	slog.Info("metadata")
+
+	data := make(map[string][]map[string]string)
+	for name, meta := range metadataRegistry {
+		data[name] = []map[string]string{
+			{"type": meta.Type, "help": meta.Help, "unit": ""},
+		}
+	}
+
+	resp := map[string]interface{}{
+		"status": "success",
+		"data":   data,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		slog.Error("failed to encode metadata response", "error", err)
+	}
+}
+
+func handleLabels(w http.ResponseWriter, r *http.Request) {
+	match := r.URL.Query().Get("match[]")
+	slog.Info("labels", "match", match)
+
+	seen := map[string]bool{"__name__": true}
+	labels := []string{"__name__"}
+
+	for metric, metricLabels := range labelRegistry {
+		// If match[] is provided, parse out the metric name
+		if match != "" {
+			// match[] format: {__name__="metric_name"}
+			metricName := strings.TrimPrefix(match, `{__name__="`)
+			metricName = strings.TrimSuffix(metricName, `"}`)
+			if metric != metricName {
+				continue
+			}
+		}
+		for labelName := range metricLabels {
+			if !seen[labelName] {
+				seen[labelName] = true
+				labels = append(labels, labelName)
+			}
+		}
+	}
+	sort.Strings(labels)
+
+	resp := labelValuesResponse{
+		Status: "success",
+		Data:   labels,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		slog.Error("failed to encode labels response", "error", err)
+	}
 }
