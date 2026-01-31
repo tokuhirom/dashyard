@@ -12,6 +12,18 @@ const ROOT_DIR = path.resolve(__dirname, "..");
 const BASE_URL = process.env.BASE_URL || "http://localhost:5173/";
 const OUTPUT_DIR = process.env.OUTPUT_DIR || ROOT_DIR;
 
+// Fixed absolute time window for deterministic screenshots.
+// Combined with the deterministic dummyprom noise function, this ensures
+// identical chart data and axis labels across runs.
+const TIME_FROM = "2025-01-01T00:00:00Z";
+const TIME_TO = "2025-01-01T01:00:00Z";
+const TIME_QS = `from=${encodeURIComponent(TIME_FROM)}&to=${encodeURIComponent(TIME_TO)}`;
+
+function dashboardUrl(dashPath: string): string {
+  const base = BASE_URL.replace(/\/$/, "");
+  return `${base}/d/${dashPath}?${TIME_QS}`;
+}
+
 async function main() {
   fs.mkdirSync(path.join(OUTPUT_DIR, "docs"), { recursive: true });
 
@@ -45,12 +57,9 @@ async function main() {
       resp.ok(),
     { timeout: 10000 }
   );
-  await page.reload();
-  await page.waitForSelector(".sidebar", { timeout: 15000 });
 
-  // Navigate to overview dashboard
-  await page.locator(".sidebar-item", { hasText: "overview" }).click();
-  // Wait for graphs to render
+  // Navigate to overview dashboard with absolute time range
+  await page.goto(dashboardUrl("overview"));
   await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
   // Give Chart.js a moment to finish animations
   await page.waitForTimeout(2000);
@@ -70,73 +79,51 @@ async function main() {
   console.log("Saved: screenshot-dashboard.png");
 
   // Navigate to a dashboard with variables (network-variable)
-  const varItem = page.locator(".sidebar-item", {
-    hasText: "network-variable",
+  await page.goto(dashboardUrl("network-variable"));
+  await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
+  await page.waitForTimeout(2000);
+  await page.screenshot({
+    path: path.join(OUTPUT_DIR, "docs", "screenshot-variables.png"),
+    fullPage: false,
   });
-  if ((await varItem.count()) > 0) {
-    await varItem.click();
-    await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
-    await page.waitForTimeout(2000);
-    await page.screenshot({
-      path: path.join(OUTPUT_DIR, "docs", "screenshot-variables.png"),
-      fullPage: false,
-    });
-    console.log("Saved: screenshot-variables.png");
-  }
+  console.log("Saved: screenshot-variables.png");
 
   // Navigate to a dashboard with repeat rows (network-repeat)
-  const repeatItem = page.locator(".sidebar-item", {
-    hasText: "network-repeat",
+  await page.goto(dashboardUrl("network-repeat"));
+  await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
+  await page.waitForTimeout(2000);
+  await page.screenshot({
+    path: path.join(OUTPUT_DIR, "docs", "screenshot-repeat.png"),
+    fullPage: true,
   });
-  if ((await repeatItem.count()) > 0) {
-    await repeatItem.click();
-    await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
-    await page.waitForTimeout(2000);
-    await page.screenshot({
-      path: path.join(OUTPUT_DIR, "docs", "screenshot-repeat.png"),
-      fullPage: true,
-    });
-    console.log("Saved: screenshot-repeat.png");
-  }
+  console.log("Saved: screenshot-repeat.png");
 
   // Navigate to chart-types dashboard
-  const chartItem = page.locator(".sidebar-item", {
-    hasText: "chart-types",
+  await page.goto(dashboardUrl("chart-types"));
+  await page.waitForSelector(".panel", { timeout: 15000 });
+  await page.waitForTimeout(2000);
+  await page.screenshot({
+    path: path.join(OUTPUT_DIR, "docs", "screenshot-chart-types.png"),
+    fullPage: true,
   });
-  if ((await chartItem.count()) > 0) {
-    await chartItem.click();
-    await page.waitForSelector(".panel", { timeout: 15000 });
-    await page.waitForTimeout(2000);
-    await page.screenshot({
-      path: path.join(OUTPUT_DIR, "docs", "screenshot-chart-types.png"),
-      fullPage: true,
-    });
-    console.log("Saved: screenshot-chart-types.png");
-  }
+  console.log("Saved: screenshot-chart-types.png");
 
   // Navigate to thresholds dashboard using a fresh page so Chart.js
   // annotation plugin initialises cleanly (accumulated chart instances from
   // earlier dashboards can interfere with annotation rendering).
   {
     const freshPage = await context.newPage();
-    await freshPage.goto(BASE_URL);
-    await freshPage.waitForSelector(".sidebar", { timeout: 15000 });
-    const thresholdsItem = freshPage.locator(".sidebar-item", {
-      hasText: "thresholds",
+    await freshPage.goto(dashboardUrl("thresholds"));
+    await freshPage.waitForSelector(".graph-panel canvas", {
+      timeout: 15000,
     });
-    if ((await thresholdsItem.count()) > 0) {
-      await thresholdsItem.click();
-      await freshPage.waitForSelector(".graph-panel canvas", {
-        timeout: 15000,
-      });
-      // Annotation plugin needs extra time to render after async data loads
-      await freshPage.waitForTimeout(10000);
-      await freshPage.screenshot({
-        path: path.join(OUTPUT_DIR, "docs", "screenshot-thresholds.png"),
-        fullPage: true,
-      });
-      console.log("Saved: screenshot-thresholds.png");
-    }
+    // Annotation plugin needs extra time to render after async data loads
+    await freshPage.waitForTimeout(10000);
+    await freshPage.screenshot({
+      path: path.join(OUTPUT_DIR, "docs", "screenshot-thresholds.png"),
+      fullPage: true,
+    });
+    console.log("Saved: screenshot-thresholds.png");
     await freshPage.close();
   }
 

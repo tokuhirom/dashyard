@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
-	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -112,15 +111,32 @@ func generateData(query string, start, end, step float64) []promResult {
 	}
 }
 
+// noise returns a deterministic pseudo-random value in [0,1) derived from the
+// timestamp t and an optional seed. Using a pure function of t means the same
+// query with the same time range always produces identical data, which makes
+// screenshots stable and easier to review.
+func noise(t float64, seed uint64) float64 {
+	// Mix timestamp bits with the seed using a simple hash (splitmix64-style).
+	x := uint64(t*1000) + seed
+	x ^= x >> 30
+	x *= 0xbf58476d1ce4e5b9
+	x ^= x >> 27
+	x *= 0x94d049bb133111eb
+	x ^= x >> 31
+	return float64(x>>11) / float64(1<<53) // [0, 1)
+}
+
 func generateCPUUtilization(start, end, step float64) []promResult {
 	cpus := []string{"cpu0", "cpu1", "cpu2", "cpu3"}
+	baseVals := []float64{20.0, 25.0, 30.0, 18.0}
 	var results []promResult
-	for _, cpu := range cpus {
-		baseVal := 15.0 + rand.Float64()*20
+	for i, cpu := range cpus {
+		seed := uint64(i)
+		base := baseVals[i]
 		values := generateTimeSeries(start, end, step, func(t float64) float64 {
 			// Simulate CPU with some periodic pattern + noise
 			return math.Max(0, math.Min(100,
-				baseVal+15*math.Sin(t/600)+rand.Float64()*10-5))
+				base+15*math.Sin(t/600)+noise(t, seed)*10-5))
 		})
 		results = append(results, promResult{
 			Metric: map[string]string{
@@ -135,7 +151,7 @@ func generateCPUUtilization(start, end, step float64) []promResult {
 
 func generateLoadAverage(start, end, step float64) []promResult {
 	values := generateTimeSeries(start, end, step, func(t float64) float64 {
-		return math.Max(0, 1.5+0.8*math.Sin(t/1200)+rand.Float64()*0.3)
+		return math.Max(0, 1.5+0.8*math.Sin(t/1200)+noise(t, 100)*0.3)
 	})
 	return []promResult{
 		{
@@ -150,7 +166,7 @@ func generateLoadAverage(start, end, step float64) []promResult {
 func generateMemoryUsage(start, end, step float64) []promResult {
 	baseBytes := 4.0 * 1024 * 1024 * 1024 // 4 GB base
 	values := generateTimeSeries(start, end, step, func(t float64) float64 {
-		return baseBytes + 512*1024*1024*math.Sin(t/1800) + rand.Float64()*100*1024*1024
+		return baseBytes + 512*1024*1024*math.Sin(t/1800) + noise(t, 200)*100*1024*1024
 	})
 	return []promResult{
 		{
@@ -165,11 +181,13 @@ func generateMemoryUsage(start, end, step float64) []promResult {
 
 func generateNetworkIO(start, end, step float64, direction string) []promResult {
 	devices := []string{"eth0", "eth1"}
+	baseRates := []float64{1024.0 * 1024 * 8, 1024.0 * 1024 * 12} // 8 MB/s, 12 MB/s
 	var results []promResult
-	for _, dev := range devices {
-		baseRate := 1024.0 * 1024 * (5 + rand.Float64()*10) // 5-15 MB/s
+	for i, dev := range devices {
+		baseRate := baseRates[i]
+		seed := uint64(300 + i)
 		values := generateTimeSeries(start, end, step, func(t float64) float64 {
-			return math.Max(0, baseRate+baseRate*0.3*math.Sin(t/900)+rand.Float64()*1024*512)
+			return math.Max(0, baseRate+baseRate*0.3*math.Sin(t/900)+noise(t, seed)*1024*512)
 		})
 		results = append(results, promResult{
 			Metric: map[string]string{
@@ -186,7 +204,7 @@ func generateNetworkIO(start, end, step float64, direction string) []promResult 
 func generateDiskIO(start, end, step float64, direction string) []promResult {
 	baseRate := 1024.0 * 1024 * 50 // 50 MB/s
 	values := generateTimeSeries(start, end, step, func(t float64) float64 {
-		return math.Max(0, baseRate+baseRate*0.4*math.Sin(t/600)+rand.Float64()*1024*1024*10)
+		return math.Max(0, baseRate+baseRate*0.4*math.Sin(t/600)+noise(t, 400)*1024*1024*10)
 	})
 	return []promResult{
 		{
@@ -202,7 +220,7 @@ func generateDiskIO(start, end, step float64, direction string) []promResult {
 
 func generateGeneric(query string, start, end, step float64) []promResult {
 	values := generateTimeSeries(start, end, step, func(t float64) float64 {
-		return math.Max(0, 50+30*math.Sin(t/600)+rand.Float64()*10)
+		return math.Max(0, 50+30*math.Sin(t/600)+noise(t, 500)*10)
 	})
 	return []promResult{
 		{
@@ -217,9 +235,11 @@ func generateGeneric(query string, start, end, step float64) []promResult {
 func generateTimeSeries(start, end, step float64, fn func(float64) float64) [][2]interface{} {
 	var values [][2]interface{}
 	for t := start; t <= end; t += step {
+		// Pass relative time (offset from start) so data shape is
+		// independent of when the query is made.
 		values = append(values, [2]interface{}{
 			t,
-			fmt.Sprintf("%.6f", fn(t)),
+			fmt.Sprintf("%.6f", fn(t-start)),
 		})
 	}
 	return values
