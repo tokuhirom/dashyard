@@ -2,10 +2,8 @@ version: 2
 
 before:
   hooks:
-    - cmd: npm ci
-      dir: frontend
-    - cmd: npm run build
-      dir: frontend
+    - bash -c "cd frontend && npm ci"
+    - bash -c "cd frontend && npm run build"
 
 builds:
   - env:
