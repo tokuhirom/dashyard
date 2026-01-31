@@ -35,6 +35,8 @@ interface GraphPanelProps {
   title: string;
   data: PrometheusResponse | null;
   unit?: string;
+  yMin?: number;
+  yMax?: number;
   legend?: string;
   chartType?: 'line' | 'bar' | 'area' | 'scatter' | 'pie' | 'doughnut';
   loading: boolean;
@@ -58,7 +60,7 @@ function buildLabel(metric: Record<string, string>, legend?: string): string {
   return entries.map(([k, v]) => `${k}="${v}"`).join(', ');
 }
 
-export function GraphPanel({ title, data, unit, legend, chartType, loading, error, id }: GraphPanelProps) {
+export function GraphPanel({ title, data, unit, yMin, yMax, legend, chartType, loading, error, id }: GraphPanelProps) {
   const titleContent = (
     <h3 className="panel-title">
       {title}
@@ -185,6 +187,8 @@ export function GraphPanel({ title, data, unit, legend, chartType, loading, erro
       y: {
         beginAtZero: true,
         ...(unit === 'percent' ? { min: 0, max: 100 } : {}),
+        ...(yMin !== undefined ? { min: yMin } : {}),
+        ...(yMax !== undefined ? { max: yMax } : {}),
         ticks: {
           callback: tickCallback,
         },

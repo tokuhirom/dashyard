@@ -107,6 +107,14 @@
         "legend": {
           "type": "string",
           "description": "Go template string for formatting legend labels. Metric label names can be used as placeholders (e.g. \"{{device}} {{direction}}\")."
+        },
+        "y_min": {
+          "type": "number",
+          "description": "Explicit minimum value for the Y axis. Overrides unit-based defaults (e.g. 0 for percent)."
+        },
+        "y_max": {
+          "type": "number",
+          "description": "Explicit maximum value for the Y axis. Overrides unit-based defaults (e.g. 100 for percent)."
         }
       },
       "required": ["title", "type", "query"],

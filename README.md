@@ -187,7 +187,7 @@ rows:
 
 | Type | Required Fields | Optional Fields |
 |------|----------------|-----------------|
-| `graph` | `title`, `type`, `query` | `chart_type`, `unit`, `legend` |
+| `graph` | `title`, `type`, `query` | `chart_type`, `unit`, `legend`, `y_min`, `y_max` |
 | `markdown` | `title`, `type`, `content` | -- |
 
 ### `chart_type`
@@ -210,8 +210,20 @@ Controls y-axis value formatting.
 | Value | Description |
 |-------|-------------|
 | `bytes` | Human-readable byte sizes (e.g. `1.5 GB`) |
-| `percent` | Percentage with one decimal (e.g. `75.0%`). Y-axis is fixed to 0–100. |
+| `percent` | Percentage with one decimal (e.g. `75.0%`). Y-axis is fixed to 0–100 unless overridden by `y_min`/`y_max`. |
 | `count` | Numeric with SI suffixes (e.g. `1.2k`). This is also the default when `unit` is omitted. |
+
+### `y_min` / `y_max`
+
+Set explicit Y-axis bounds. These override the automatic scaling and any unit-based defaults (e.g. the 0–100 range for `unit: percent`). Both fields are optional and can be used independently.
+
+```yaml
+- title: "Temperature"
+  type: "graph"
+  query: 'sensor_temperature_celsius'
+  y_min: -20
+  y_max: 50
+```
 
 ### `legend`
 
