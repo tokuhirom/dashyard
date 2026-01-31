@@ -48,6 +48,19 @@ func TestGenerateMetricsDoc(t *testing.T) {
 		t.Error("missing LLM role instruction")
 	}
 
+	// Check multi-file generation instruction
+	if !strings.Contains(doc, "generate multiple YAML files") {
+		t.Error("missing multi-file generation instruction")
+	}
+	if !strings.Contains(doc, "# File:") {
+		t.Error("missing file path comment example")
+	}
+
+	// Check file organization section
+	if !strings.Contains(doc, "## File Organization") {
+		t.Error("missing file organization section")
+	}
+
 	// Check dashboard YAML format section
 	if !strings.Contains(doc, "# Dashboard YAML Format") {
 		t.Error("missing dashboard YAML format section")

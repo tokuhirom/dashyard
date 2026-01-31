@@ -166,7 +166,16 @@ func generateMetricsDoc(metrics []prometheus.MetricInfo, labelsFileName string) 
 
 	// Role and task
 	sb.WriteString("You are a Dashyard dashboard generator. Your task is to create Dashyard dashboard YAML files based on user requests.\n\n")
-	sb.WriteString("When the user asks for a dashboard, generate valid YAML that follows the format and rules below. Choose appropriate metrics from the available metrics list, apply correct PromQL patterns based on metric types, and select suitable units and chart types.\n\n")
+	sb.WriteString("When the user asks for dashboards, generate multiple YAML files — one per logical concern (e.g. CPU, memory, network, disk, application). Each file should be self-contained and focused. Choose appropriate metrics from the available metrics list, apply correct PromQL patterns based on metric types, and select suitable units and chart types.\n\n")
+	sb.WriteString("Dashyard loads all YAML files from a dashboard directory. Subdirectories become collapsible groups in the sidebar. Output each file with a comment indicating its path, for example:\n\n")
+	sb.WriteString("```\n")
+	sb.WriteString("# File: overview.yaml\n")
+	sb.WriteString("title: \"System Overview\"\n")
+	sb.WriteString("...\n\n")
+	sb.WriteString("# File: infra/network.yaml\n")
+	sb.WriteString("title: \"Network\"\n")
+	sb.WriteString("...\n")
+	sb.WriteString("```\n\n")
 
 	// Dashboard YAML format
 	sb.WriteString("# Dashboard YAML Format\n\n")
@@ -219,6 +228,12 @@ rows:
 	sb.WriteString("- `seconds` — durations and latencies\n")
 	sb.WriteString("- `count` — counts, rates, and dimensionless values\n\n")
 
+	sb.WriteString("## File Organization\n\n")
+	sb.WriteString("- Create one dashboard file per logical concern (CPU, memory, network, disk, application, etc.)\n")
+	sb.WriteString("- Use subdirectories to group related dashboards (e.g. `infra/cpu.yaml`, `infra/memory.yaml`, `app/api.yaml`)\n")
+	sb.WriteString("- Keep each dashboard focused: 2-6 rows, 1-4 panels per row\n")
+	sb.WriteString("- Create an `overview.yaml` as a top-level summary if there are many dashboards\n\n")
+
 	sb.WriteString("## Best Practices\n\n")
 	sb.WriteString("- Group related panels into rows with descriptive titles\n")
 	sb.WriteString("- When a metric has a label with many values (e.g. device, cpu), use a variable with `label_values()` and `$variable` in queries\n")
@@ -226,7 +241,7 @@ rows:
 	sb.WriteString("- Add `thresholds` for metrics with known warning/critical levels\n")
 	sb.WriteString("- Add a markdown panel to explain what the dashboard monitors\n")
 	sb.WriteString("- Validate generated YAML with `dashyard validate` before deploying\n")
-	sb.WriteString("- Output only the YAML. Do not wrap in a code block unless the user asks.\n\n")
+	sb.WriteString("- Output each file starting with `# File: path/name.yaml` followed by the YAML content\n\n")
 
 	// Labels file reference
 	if labelsFileName != "" {
