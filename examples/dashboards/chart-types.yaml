@@ -23,6 +23,20 @@ rows:
         chart_type: "scatter"
         query: "system_cpu_utilization_ratio"
         unit: "percent"
+  - title: "Stacked Area & Stacked Bar"
+    panels:
+      - title: "Memory by State (Stacked Area)"
+        type: "graph"
+        chart_type: "area"
+        stacked: true
+        query: "system_memory_usage_bytes"
+        unit: "bytes"
+      - title: "Memory by State (Stacked Bar)"
+        type: "graph"
+        chart_type: "bar"
+        stacked: true
+        query: "system_memory_usage_bytes"
+        unit: "bytes"
   - title: "Pie & Doughnut"
     panels:
       - title: "Memory by State (Pie)"

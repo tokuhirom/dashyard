@@ -42,6 +42,7 @@ interface GraphPanelProps {
   legend?: string;
   thresholds?: Threshold[];
   chartType?: 'line' | 'bar' | 'area' | 'scatter' | 'pie' | 'doughnut';
+  stacked?: boolean;
   loading: boolean;
   error: string | null;
   id?: string;
@@ -93,7 +94,7 @@ function buildLabel(metric: Record<string, string>, legend?: string): string {
   return entries.map(([k, v]) => `${k}="${v}"`).join(', ');
 }
 
-export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, chartType, loading, error, id }: GraphPanelProps) {
+export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, chartType, stacked, loading, error, id }: GraphPanelProps) {
   const titleContent = (
     <h3 className="panel-title">
       {title}
@@ -174,6 +175,8 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
     );
   }
 
+  const shouldStack = stacked && (effectiveType === 'line' || effectiveType === 'area' || effectiveType === 'bar');
+
   const datasets = data.data.result.map((result, idx) => ({
     label: buildLabel(result.metric, legend),
     data: result.values.map(([ts, val]) => ({
@@ -181,11 +184,11 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
       y: parseFloat(val),
     })),
     borderColor: COLORS[idx % COLORS.length],
-    backgroundColor: COLORS[idx % COLORS.length] + '20',
+    backgroundColor: shouldStack ? COLORS[idx % COLORS.length] + '80' : COLORS[idx % COLORS.length] + '20',
     borderWidth: 1.5,
     pointRadius: effectiveType === 'scatter' ? 3 : 0,
     tension: 0.1,
-    fill: effectiveType === 'area',
+    fill: effectiveType === 'area' || (shouldStack && effectiveType === 'line') ? 'origin' : false,
   }));
 
   const tickCallback = getYAxisTickCallback(unit);
@@ -212,6 +215,7 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
     scales: {
       x: {
         type: 'time' as const,
+        ...(shouldStack ? { stacked: true } : {}),
         time: {
           tooltipFormat: 'HH:mm:ss',
         },
@@ -221,6 +225,7 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
       },
       y: {
         beginAtZero: true,
+        ...(shouldStack ? { stacked: true } : {}),
         ...(unit === 'percent' ? { min: 0, max: 100 } : {}),
         ...(yMin !== undefined ? { min: yMin } : {}),
         ...(yMax !== undefined ? { max: yMax } : {}),

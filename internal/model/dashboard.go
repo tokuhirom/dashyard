@@ -18,6 +18,7 @@ type Panel struct {
 	YMax       *float64    `yaml:"y_max,omitempty" json:"y_max,omitempty"`
 	Legend     string      `yaml:"legend,omitempty" json:"legend,omitempty"`
 	Thresholds []Threshold `yaml:"thresholds,omitempty" json:"thresholds,omitempty"`
+	Stacked    bool        `yaml:"stacked,omitempty" json:"stacked,omitempty"`
 	Content    string      `yaml:"content,omitempty" json:"content,omitempty"`
 }
 

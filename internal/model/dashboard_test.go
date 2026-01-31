@@ -428,6 +428,68 @@ func TestPanelThresholdsJSON(t *testing.T) {
 	}
 }
 
+func TestPanelStackedYAMLUnmarshal(t *testing.T) {
+	input := `
+title: "Memory Stacked"
+type: "graph"
+chart_type: "area"
+stacked: true
+query: "system_memory_usage_bytes"
+unit: "bytes"
+`
+	var p Panel
+	if err := yaml.Unmarshal([]byte(input), &p); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !p.Stacked {
+		t.Errorf("expected stacked to be true")
+	}
+}
+
+func TestPanelStackedOmittedYAML(t *testing.T) {
+	input := `
+title: "CPU Usage"
+type: "graph"
+query: "rate(cpu[5m])"
+`
+	var p Panel
+	if err := yaml.Unmarshal([]byte(input), &p); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if p.Stacked {
+		t.Errorf("expected stacked to be false when omitted")
+	}
+}
+
+func TestPanelStackedJSON(t *testing.T) {
+	p := Panel{Title: "Test", Type: "graph", Query: "up", Stacked: true}
+	data, err := json.Marshal(p)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded map[string]interface{}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if decoded["stacked"] != true {
+		t.Errorf("expected stacked true, got %v", decoded["stacked"])
+	}
+
+	// Verify stacked is omitted from JSON when false
+	p2 := Panel{Title: "Test", Type: "graph", Query: "up"}
+	data2, err := json.Marshal(p2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded2 map[string]interface{}
+	if err := json.Unmarshal(data2, &decoded2); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, ok := decoded2["stacked"]; ok {
+		t.Errorf("expected stacked to be omitted from JSON when false")
+	}
+}
+
 func TestDashboardTreeNodeJSON(t *testing.T) {
 	node := DashboardTreeNode{
 		Name: "infra",
