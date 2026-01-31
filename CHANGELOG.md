@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.6](https://github.com/tokuhirom/dashyard/compare/v0.0.5...v0.0.6) - 2026-01-31
+- Add dashboard template variables and repeat rows by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/25
+
 ## [v0.0.5](https://github.com/tokuhirom/dashyard/compare/v0.0.4...v0.0.5) - 2026-01-31
 - Add hot-reload for dashboard files using fsnotify by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/20
 
