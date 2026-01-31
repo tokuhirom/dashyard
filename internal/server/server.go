@@ -14,7 +14,7 @@ import (
 )
 
 // New creates and configures an http.Server with all routes and middleware.
-func New(cfg *config.Config, store *dashboard.Store, frontendFS fs.FS) *http.Server {
+func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.New()
@@ -29,7 +29,7 @@ func New(cfg *config.Config, store *dashboard.Store, frontendFS fs.FS) *http.Ser
 
 	// Handlers
 	loginHandler := handler.NewLoginHandler(cfg.Users, sm)
-	dashboardsHandler := handler.NewDashboardsHandler(store, cfg.SiteTitle, cfg.HeaderColor)
+	dashboardsHandler := handler.NewDashboardsHandler(holder, cfg.SiteTitle, cfg.HeaderColor)
 	queryHandler := handler.NewQueryHandler(promClient)
 	staticHandler := handler.NewStaticHandler(frontendFS)
 

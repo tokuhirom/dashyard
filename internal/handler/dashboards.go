@@ -9,24 +9,26 @@ import (
 
 // DashboardsHandler handles dashboard listing and detail requests.
 type DashboardsHandler struct {
-	store       *dashboard.Store
+	holder      *dashboard.StoreHolder
 	siteTitle   string
 	headerColor string
 }
 
 // NewDashboardsHandler creates a new DashboardsHandler.
-func NewDashboardsHandler(store *dashboard.Store, siteTitle string, headerColor string) *DashboardsHandler {
-	return &DashboardsHandler{store: store, siteTitle: siteTitle, headerColor: headerColor}
+func NewDashboardsHandler(holder *dashboard.StoreHolder, siteTitle string, headerColor string) *DashboardsHandler {
+	return &DashboardsHandler{holder: holder, siteTitle: siteTitle, headerColor: headerColor}
 }
 
 // List handles GET /api/dashboards - returns all dashboards with flat list and tree.
 func (h *DashboardsHandler) List(c *gin.Context) {
+	store := h.holder.Store()
+
 	type listItem struct {
 		Path  string `json:"path"`
 		Title string `json:"title"`
 	}
 
-	dashboards := h.store.List()
+	dashboards := store.List()
 	items := make([]listItem, len(dashboards))
 	for i, d := range dashboards {
 		items[i] = listItem{Path: d.Path, Title: d.Title}
@@ -34,7 +36,7 @@ func (h *DashboardsHandler) List(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"dashboards":   items,
-		"tree":         h.store.Tree(),
+		"tree":         store.Tree(),
 		"site_title":   h.siteTitle,
 		"header_color": h.headerColor,
 	})
@@ -42,13 +44,15 @@ func (h *DashboardsHandler) List(c *gin.Context) {
 
 // Get handles GET /api/dashboards/:path - returns a single dashboard definition.
 func (h *DashboardsHandler) Get(c *gin.Context) {
+	store := h.holder.Store()
+
 	path := c.Param("path")
 	// Gin captures the wildcard with a leading slash, strip it
 	if len(path) > 0 && path[0] == '/' {
 		path = path[1:]
 	}
 
-	d := h.store.Get(path)
+	d := store.Get(path)
 	if d == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "dashboard not found"})
 		return
@@ -59,12 +63,14 @@ func (h *DashboardsHandler) Get(c *gin.Context) {
 
 // GetSource handles GET /api/dashboard-source/:path - returns raw YAML source.
 func (h *DashboardsHandler) GetSource(c *gin.Context) {
+	store := h.holder.Store()
+
 	path := c.Param("path")
 	if len(path) > 0 && path[0] == '/' {
 		path = path[1:]
 	}
 
-	src, ok := h.store.GetSource(path)
+	src, ok := store.GetSource(path)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "dashboard not found"})
 		return

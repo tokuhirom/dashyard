@@ -10,18 +10,18 @@ import (
 	"github.com/tokuhirom/dashyard/internal/dashboard"
 )
 
-func loadTestStore(t *testing.T) *dashboard.Store {
+func loadTestHolder(t *testing.T) *dashboard.StoreHolder {
 	t.Helper()
 	store, err := dashboard.LoadDir("../../testdata/dashboards")
 	if err != nil {
 		t.Fatalf("failed to load test dashboards: %v", err)
 	}
-	return store
+	return dashboard.NewStoreHolder(store)
 }
 
 func TestDashboardsList(t *testing.T) {
-	store := loadTestStore(t)
-	handler := NewDashboardsHandler(store, "Dashyard", "")
+	holder := loadTestHolder(t)
+	handler := NewDashboardsHandler(holder, "Dashyard", "")
 
 	router := gin.New()
 	router.GET("/api/dashboards", handler.List)
@@ -51,8 +51,8 @@ func TestDashboardsList(t *testing.T) {
 }
 
 func TestDashboardsGetDeepNested(t *testing.T) {
-	store := loadTestStore(t)
-	handler := NewDashboardsHandler(store, "Dashyard", "")
+	holder := loadTestHolder(t)
+	handler := NewDashboardsHandler(holder, "Dashyard", "")
 
 	router := gin.New()
 	router.GET("/api/dashboards/*path", handler.Get)
@@ -81,8 +81,8 @@ func TestDashboardsGetDeepNested(t *testing.T) {
 }
 
 func TestDashboardsGet(t *testing.T) {
-	store := loadTestStore(t)
-	handler := NewDashboardsHandler(store, "Dashyard", "")
+	holder := loadTestHolder(t)
+	handler := NewDashboardsHandler(holder, "Dashyard", "")
 
 	router := gin.New()
 	router.GET("/api/dashboards/*path", handler.Get)
@@ -111,8 +111,8 @@ func TestDashboardsGet(t *testing.T) {
 }
 
 func TestDashboardsGetNested(t *testing.T) {
-	store := loadTestStore(t)
-	handler := NewDashboardsHandler(store, "Dashyard", "")
+	holder := loadTestHolder(t)
+	handler := NewDashboardsHandler(holder, "Dashyard", "")
 
 	router := gin.New()
 	router.GET("/api/dashboards/*path", handler.Get)
@@ -137,8 +137,8 @@ func TestDashboardsGetNested(t *testing.T) {
 }
 
 func TestDashboardsGetNotFound(t *testing.T) {
-	store := loadTestStore(t)
-	handler := NewDashboardsHandler(store, "Dashyard", "")
+	holder := loadTestHolder(t)
+	handler := NewDashboardsHandler(holder, "Dashyard", "")
 
 	router := gin.New()
 	router.GET("/api/dashboards/*path", handler.Get)
