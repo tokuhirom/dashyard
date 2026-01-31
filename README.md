@@ -158,6 +158,20 @@ Generate a password hash:
 ./dashyard mkpasswd <password>
 ```
 
+Generate a Prometheus metrics reference document (starts dummyprom, queries it, outputs Markdown):
+
+```bash
+make metrics-doc                 # Output: examples/metrics-doc-example.md
+```
+
+Or point at any Prometheus instance directly:
+
+```bash
+./dashyard metrics-doc http://localhost:9090
+./dashyard metrics-doc https://prom.example.com --bearer-token "eyJ..."
+./dashyard metrics-doc http://localhost:9090 --match "node_.*" -o metrics.md
+```
+
 JSON schema: [`schemas/config.schema.json`](schemas/config.schema.json)
 
 ## Dashboard Definition
