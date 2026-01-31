@@ -95,6 +95,7 @@ services:
       - http://prometheus:9090
       - -o
       - /output
+      - --force-prompt
     depends_on:
       prometheus:
         condition: service_healthy

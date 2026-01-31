@@ -36,6 +36,7 @@ gen-prompt:
 	docker compose -f docs/gen-prompt/docker-compose.yaml up -d prometheus otelcol traefik redis whoami traffic-gen
 	@echo "Waiting 60s for metrics to accumulate..."
 	@sleep 60
+	docker compose -f docs/gen-prompt/docker-compose.yaml build gen-prompt
 	docker compose -f docs/gen-prompt/docker-compose.yaml run --rm gen-prompt
 	docker compose -f docs/gen-prompt/docker-compose.yaml down
 
