@@ -53,6 +53,11 @@ go test ./internal/config/...    # Specific package
 cd frontend && npm run build     # Type-checks and builds frontend
 ```
 
+## Git Workflow
+
+- Create a separate branch and pull request for each feature or change
+- Do not mix unrelated changes in a single branch/PR
+
 ## Go Module
 
 `github.com/tokuhirom/dashyard` -- Go 1.25, Gin web framework, `gopkg.in/yaml.v3`
