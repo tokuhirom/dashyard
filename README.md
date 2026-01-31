@@ -44,37 +44,30 @@ Session-based login with SHA-512 crypt password hashing.
 
 Go backend with embedded React frontend, no external dependencies. Multi-stage Dockerfile produces a ~30MB image.
 
-## Quick Start
+## Installation
 
-### Prerequisites
+### Download a pre-built binary
 
-- Go 1.23+
-- Node.js 20+
-- A Prometheus server (or use the built-in dummy server for testing)
-
-### Build and Run
+Download the latest release from the [Releases page](https://github.com/tokuhirom/dashyard/releases). Binaries are available for Linux and macOS (amd64/arm64).
 
 ```bash
-# Build frontend and backend
-make build
-
-# Run with example config
-./dashyard serve --config examples/config.yaml
-```
-
-Open http://localhost:8080 and log in with `admin` / `admin`.
-
-### Development
-
-Run the three components in separate terminals:
-
-```bash
-make dev-dummyprom   # Fake Prometheus on :9090
-make dev-backend     # Go server on :8080
-make dev-frontend    # Vite dev server on :5173
+# Example for Linux amd64 (replace VERSION with the desired release)
+VERSION=0.0.6
+curl -Lo dashyard.tar.gz "https://github.com/tokuhirom/dashyard/releases/download/v${VERSION}/dashyard_${VERSION}_linux_amd64.tar.gz"
+tar xzf dashyard.tar.gz
+./dashyard serve --config config.yaml
 ```
 
 ### Docker
+
+```bash
+docker run -p 8080:8080 \
+  -v ./config.yaml:/etc/dashyard/config.yaml:ro \
+  -v ./dashboards:/dashboards:ro \
+  ghcr.io/tokuhirom/dashyard
+```
+
+Or build the image locally:
 
 ```bash
 docker build -t dashyard .
@@ -88,6 +81,40 @@ Or use the example Docker Compose setup:
 
 ```bash
 docker compose -f examples/docker-compose.yaml up
+```
+
+### Build from source
+
+Requires Go 1.23+ and Node.js 20+.
+
+```bash
+git clone https://github.com/tokuhirom/dashyard.git
+cd dashyard
+make build
+./dashyard serve --config examples/config.yaml
+```
+
+## Quick Start
+
+1. Install Dashyard using one of the methods above.
+2. Create a `config.yaml` (see [Configuration](#configuration) below or use `examples/config.yaml`).
+3. Create dashboard YAML files in a directory (see [Dashboard Definition](#dashboard-definition) below or use `examples/dashboards/`).
+4. Start the server:
+
+```bash
+./dashyard serve --config config.yaml
+```
+
+5. Open http://localhost:8080 and log in with the credentials defined in your config.
+
+### Development
+
+Run the three components in separate terminals:
+
+```bash
+make dev-dummyprom   # Fake Prometheus on :9090
+make dev-backend     # Go server on :8080
+make dev-frontend    # Vite dev server on :5173
 ```
 
 ## Configuration
