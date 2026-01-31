@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"fmt"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -10,6 +11,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/GehirnInc/crypt"
+	_ "github.com/GehirnInc/crypt/sha512_crypt"
 	"github.com/alecthomas/kong"
 	"github.com/tokuhirom/dashyard/internal/config"
 	"github.com/tokuhirom/dashyard/internal/dashboard"
@@ -20,17 +23,17 @@ import (
 var frontendFiles embed.FS
 
 var cli struct {
+	Serve    ServeCmd    `cmd:"" help:"Start the dashboard server."`
+	Mkpasswd MkpasswdCmd `cmd:"" help:"Generate a SHA-512 crypt password hash."`
+}
+
+type ServeCmd struct {
 	Config string `help:"Path to config file." default:"config.yaml"`
 }
 
-func main() {
-	kong.Parse(&cli,
-		kong.Name("dashyard"),
-		kong.Description("Lightweight Prometheus metrics dashboard."),
-	)
-
+func (cmd *ServeCmd) Run() error {
 	// Load config
-	cfg, err := config.Load(cli.Config)
+	cfg, err := config.Load(cmd.Config)
 	if err != nil {
 		slog.Error("failed to load config", "error", err)
 		os.Exit(1)
@@ -76,4 +79,30 @@ func main() {
 		slog.Error("shutdown error", "error", err)
 	}
 	slog.Info("server stopped")
+	return nil
+}
+
+type MkpasswdCmd struct {
+	Password string `arg:"" help:"Password to hash."`
+}
+
+func (cmd *MkpasswdCmd) Run() error {
+	c := crypt.SHA512.New()
+	hash, err := c.Generate([]byte(cmd.Password), nil)
+	if err != nil {
+		return fmt.Errorf("failed to generate hash: %w", err)
+	}
+	fmt.Println(hash)
+	return nil
+}
+
+func main() {
+	ctx := kong.Parse(&cli,
+		kong.Name("dashyard"),
+		kong.Description("Lightweight Prometheus metrics dashboard."),
+	)
+	if err := ctx.Run(); err != nil {
+		slog.Error("error", "error", err)
+		os.Exit(1)
+	}
 }

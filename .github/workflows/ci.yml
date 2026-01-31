@@ -67,7 +67,7 @@ jobs:
       - name: Start dummyprom
         run: go run ./cmd/dummyprom &
       - name: Start backend
-        run: go run . --config examples/config.yaml &
+        run: go run . serve --config examples/config.yaml &
       - name: Start Vite dev server
         run: cd frontend && npm run dev &
       - name: Wait for services

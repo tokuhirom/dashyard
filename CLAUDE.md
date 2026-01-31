@@ -34,7 +34,6 @@ make dev-frontend                # Vite dev server on :5173
 - `frontend/` -- React 19 + TypeScript + Vite + Chart.js
 - `schemas/` -- JSON schemas for config.yaml and dashboard YAML
 - `examples/` -- Example config and dashboard files
-- `cmd/genhash/` -- CLI to generate password hashes
 - `cmd/dummyprom/` -- Fake Prometheus that generates synthetic metrics
 
 ## Key Patterns

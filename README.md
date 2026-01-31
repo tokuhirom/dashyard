@@ -29,7 +29,7 @@ A lightweight Prometheus metrics dashboard. Define dashboards in YAML, drop them
 make build
 
 # Run with example config
-./dashyard --config examples/config.yaml
+./dashyard serve --config examples/config.yaml
 ```
 
 Open http://localhost:8080 and log in with `admin` / `admin`.
@@ -88,7 +88,7 @@ users:
 Generate a password hash:
 
 ```bash
-go run ./cmd/genhash <password>
+./dashyard mkpasswd <password>
 ```
 
 JSON schema: [`schemas/config.schema.json`](schemas/config.schema.json)
@@ -138,7 +138,6 @@ JSON schema: [`schemas/dashboard.schema.json`](schemas/dashboard.schema.json)
 ```
 cmd/
   dummyprom/          Fake Prometheus server for demos
-  genhash/            Password hash generator
 internal/
   auth/               Session management & middleware
   config/             YAML config parsing
