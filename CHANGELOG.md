@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.0.8](https://github.com/tokuhirom/dashyard/compare/v0.0.7...v0.0.8) - 2026-01-31
+- Move host/port from config file to CLI flags by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/32
+- Limit percent y-axis range to 0–100 by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/33
+- Document chart_type and unit options in README by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/35
+- Support y_min and y_max on graph panels by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/36
+
 ## [v0.0.7](https://github.com/tokuhirom/dashyard/compare/v0.0.6...v0.0.7) - 2026-01-31
 - Add golangci-lint and fix errcheck violations by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/27
 - Update README with feature screenshots by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/29
