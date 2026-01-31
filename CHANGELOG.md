@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.9](https://github.com/tokuhirom/dashyard/compare/v0.0.8...v0.0.9) - 2026-01-31
+- Support threshold lines on graph panels by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/41
+
 ## [v0.0.8](https://github.com/tokuhirom/dashyard/compare/v0.0.7...v0.0.8) - 2026-01-31
 - Move host/port from config file to CLI flags by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/32
 - Limit percent y-axis range to 0–100 by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/33
