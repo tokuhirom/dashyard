@@ -11,8 +11,6 @@ site_title: "My Monitoring"
 header_color: "#dc2626"
 
 server:
-  host: "127.0.0.1"
-  port: 9090
   session_secret: "my-secret"
 
 prometheus:
@@ -39,12 +37,6 @@ users:
 	}
 	if cfg.HeaderColor != "#dc2626" {
 		t.Errorf("expected header_color '#dc2626', got %q", cfg.HeaderColor)
-	}
-	if cfg.Server.Host != "127.0.0.1" {
-		t.Errorf("expected host '127.0.0.1', got %q", cfg.Server.Host)
-	}
-	if cfg.Server.Port != 9090 {
-		t.Errorf("expected port 9090, got %d", cfg.Server.Port)
 	}
 	if cfg.Server.SessionSecret != "my-secret" {
 		t.Errorf("expected session_secret 'my-secret', got %q", cfg.Server.SessionSecret)
@@ -79,12 +71,6 @@ func TestParseDefaults(t *testing.T) {
 	}
 	if cfg.HeaderColor != "" {
 		t.Errorf("expected default header_color '', got %q", cfg.HeaderColor)
-	}
-	if cfg.Server.Host != "0.0.0.0" {
-		t.Errorf("expected default host '0.0.0.0', got %q", cfg.Server.Host)
-	}
-	if cfg.Server.Port != 8080 {
-		t.Errorf("expected default port 8080, got %d", cfg.Server.Port)
 	}
 	if cfg.Prometheus.URL != "http://localhost:9090" {
 		t.Errorf("expected default prometheus url, got %q", cfg.Prometheus.URL)

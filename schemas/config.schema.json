@@ -19,18 +19,6 @@
       "type": "object",
       "description": "HTTP server settings.",
       "properties": {
-        "host": {
-          "type": "string",
-          "description": "Bind address for the HTTP server.",
-          "default": "0.0.0.0"
-        },
-        "port": {
-          "type": "integer",
-          "description": "Port number for the HTTP server.",
-          "default": 8080,
-          "minimum": 1,
-          "maximum": 65535
-        },
         "session_secret": {
           "type": "string",
           "description": "Secret key for session signing. Auto-generated if omitted."

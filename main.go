@@ -29,6 +29,8 @@ var cli struct {
 
 type ServeCmd struct {
 	Config string `help:"Path to config file." default:"config.yaml"`
+	Host   string `help:"Host to listen on." default:"0.0.0.0"`
+	Port   int    `help:"Port to listen on." default:"8080"`
 }
 
 func (cmd *ServeCmd) Run() error {
@@ -57,7 +59,7 @@ func (cmd *ServeCmd) Run() error {
 	}
 
 	// Create server
-	srv := server.New(cfg, holder, frontendFS)
+	srv := server.New(cfg, holder, frontendFS, cmd.Host, cmd.Port)
 
 	// Graceful shutdown
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

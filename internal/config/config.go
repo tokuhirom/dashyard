@@ -18,8 +18,6 @@ type User struct {
 
 // ServerConfig holds HTTP server settings.
 type ServerConfig struct {
-	Host          string `yaml:"host"`
-	Port          int    `yaml:"port"`
 	SessionSecret string `yaml:"session_secret"`
 }
 
@@ -57,10 +55,6 @@ func Load(path string) (*Config, error) {
 func Parse(data []byte) (*Config, error) {
 	cfg := &Config{
 		SiteTitle: "Dashyard",
-		Server: ServerConfig{
-			Host: "0.0.0.0",
-			Port: 8080,
-		},
 		Prometheus: PrometheusConfig{
 			URL:     "http://localhost:9090",
 			Timeout: 30 * time.Second,
