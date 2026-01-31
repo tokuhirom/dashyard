@@ -59,7 +59,11 @@ func (cmd *ServeCmd) Run() error {
 	}
 
 	// Create server
-	srv := server.New(cfg, holder, frontendFS, cmd.Host, cmd.Port)
+	srv, err := server.New(cfg, holder, frontendFS, cmd.Host, cmd.Port)
+	if err != nil {
+		slog.Error("failed to create server", "error", err)
+		os.Exit(1)
+	}
 
 	// Graceful shutdown
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
