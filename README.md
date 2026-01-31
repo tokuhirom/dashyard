@@ -170,9 +170,13 @@ This outputs a prompt file and a labels file (e.g. `prompt.md` + `prompt-labels.
 
 > Read the attached files and generate Dashyard dashboard YAML files for all available metrics.
 
+To update existing dashboards, also attach the current dashboard files so the LLM can add new panels without overwriting manual edits:
+
+> Read the attached files and update the dashboards. Add panels for any new metrics that are not yet covered.
+
 See [docs/gen-prompt/](docs/gen-prompt/) for a complete example using a real monitoring stack.
 
-Include existing dashboards as context for incremental updates:
+You can also embed existing dashboards directly into the prompt file with `--dashboards-dir`:
 
 ```bash
 ./dashyard gen-prompt http://localhost:9090 -o prompt.md --dashboards-dir ./dashboards
