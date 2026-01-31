@@ -13,8 +13,9 @@ import {
   TimeScale,
   Filler,
 } from 'chart.js';
+import annotationPlugin from 'chartjs-plugin-annotation';
 import 'chartjs-adapter-date-fns';
-import type { PrometheusResponse } from '../types';
+import type { PrometheusResponse, Threshold } from '../types';
 import { getYAxisTickCallback } from '../utils/units';
 
 ChartJS.register(
@@ -29,6 +30,7 @@ ChartJS.register(
   Legend,
   TimeScale,
   Filler,
+  annotationPlugin,
 );
 
 interface GraphPanelProps {
@@ -38,10 +40,41 @@ interface GraphPanelProps {
   yMin?: number;
   yMax?: number;
   legend?: string;
+  thresholds?: Threshold[];
   chartType?: 'line' | 'bar' | 'area' | 'scatter' | 'pie' | 'doughnut';
   loading: boolean;
   error: string | null;
   id?: string;
+}
+
+function buildAnnotations(thresholds?: Threshold[]) {
+  if (!thresholds || thresholds.length === 0) return {};
+  return {
+    annotation: {
+      annotations: thresholds.map((th) => {
+        const color = th.color || '#ef4444';
+        return {
+          type: 'line' as const,
+          scaleID: 'y',
+          value: th.value,
+          borderColor: color,
+          borderWidth: 2,
+          borderDash: [6, 3],
+          drawTime: 'afterDatasetsDraw' as const,
+          ...(th.label ? {
+            label: {
+              display: true,
+              content: th.label,
+              position: 'end' as const,
+              backgroundColor: color,
+              color: '#fff',
+              font: { size: 11 },
+            },
+          } : {}),
+        };
+      }),
+    },
+  };
 }
 
 const COLORS = [
@@ -60,7 +93,7 @@ function buildLabel(metric: Record<string, string>, legend?: string): string {
   return entries.map(([k, v]) => `${k}="${v}"`).join(', ');
 }
 
-export function GraphPanel({ title, data, unit, yMin, yMax, legend, chartType, loading, error, id }: GraphPanelProps) {
+export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, chartType, loading, error, id }: GraphPanelProps) {
   const titleContent = (
     <h3 className="panel-title">
       {title}
@@ -157,7 +190,8 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, chartType, l
 
   const tickCallback = getYAxisTickCallback(unit);
 
-  const options = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const options: any = {
     responsive: true,
     maintainAspectRatio: true,
     aspectRatio: 2.5,
@@ -173,6 +207,7 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, chartType, l
           usePointStyle: true,
         },
       },
+      ...buildAnnotations(thresholds),
     },
     scales: {
       x: {

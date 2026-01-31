@@ -67,6 +67,7 @@ function PanelRenderer({ panel, panelId, timeRange, variableValues }: PanelRende
       yMin={panel.y_min}
       yMax={panel.y_max}
       legend={panel.legend}
+      thresholds={panel.thresholds}
       chartType={panel.chart_type}
       loading={loading}
       error={error}

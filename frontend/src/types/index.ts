@@ -1,3 +1,9 @@
+export interface Threshold {
+  value: number;
+  color?: string;
+  label?: string;
+}
+
 export interface Panel {
   title: string;
   type: 'graph' | 'markdown';
@@ -7,6 +13,7 @@ export interface Panel {
   y_min?: number;
   y_max?: number;
   legend?: string;
+  thresholds?: Threshold[];
   content?: string;
 }
 

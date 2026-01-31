@@ -115,9 +115,37 @@
         "y_max": {
           "type": "number",
           "description": "Explicit maximum value for the Y axis. Overrides unit-based defaults (e.g. 100 for percent)."
+        },
+        "thresholds": {
+          "type": "array",
+          "description": "Horizontal reference lines drawn on the chart.",
+          "items": {
+            "$ref": "#/$defs/threshold"
+          }
         }
       },
       "required": ["title", "type", "query"],
+      "additionalProperties": false
+    },
+    "threshold": {
+      "type": "object",
+      "description": "A horizontal threshold line on a graph panel.",
+      "properties": {
+        "value": {
+          "type": "number",
+          "description": "Y-axis value where the line is drawn."
+        },
+        "color": {
+          "type": "string",
+          "description": "CSS color for the line. Defaults to '#ef4444' (red) when omitted.",
+          "default": "#ef4444"
+        },
+        "label": {
+          "type": "string",
+          "description": "Text label displayed at the end of the line."
+        }
+      },
+      "required": ["value"],
       "additionalProperties": false
     },
     "markdownPanel": {
