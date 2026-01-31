@@ -30,14 +30,6 @@
             "type": "string"
           },
           "examples": [["10.0.0.1", "172.16.0.0/12"]]
-        },
-        "allow": {
-          "type": "array",
-          "description": "IP allow list. Only listed IPs/CIDRs can access the server. Omit to allow all.",
-          "items": {
-            "type": "string"
-          },
-          "examples": [["192.168.1.0/24", "10.0.0.1"]]
         }
       },
       "additionalProperties": false
