@@ -49,29 +49,32 @@ interface GraphPanelProps {
 
 function buildAnnotations(thresholds?: Threshold[]) {
   if (!thresholds || thresholds.length === 0) return {};
-  const annotations: Record<string, object> = {};
-  thresholds.forEach((th, idx) => {
-    const color = th.color || '#ef4444';
-    annotations[`threshold${idx}`] = {
-      type: 'line' as const,
-      yMin: th.value,
-      yMax: th.value,
-      borderColor: color,
-      borderWidth: 2,
-      borderDash: [6, 3],
-      ...(th.label ? {
-        label: {
-          display: true,
-          content: th.label,
-          position: 'end' as const,
-          backgroundColor: color,
-          color: '#fff',
-          font: { size: 11 },
-        },
-      } : {}),
-    };
-  });
-  return { annotation: { annotations } };
+  return {
+    annotation: {
+      annotations: thresholds.map((th) => {
+        const color = th.color || '#ef4444';
+        return {
+          type: 'line' as const,
+          scaleID: 'y',
+          value: th.value,
+          borderColor: color,
+          borderWidth: 2,
+          borderDash: [6, 3],
+          drawTime: 'afterDatasetsDraw' as const,
+          ...(th.label ? {
+            label: {
+              display: true,
+              content: th.label,
+              position: 'end' as const,
+              backgroundColor: color,
+              color: '#fff',
+              font: { size: 11 },
+            },
+          } : {}),
+        };
+      }),
+    },
+  };
 }
 
 const COLORS = [
@@ -187,7 +190,8 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
 
   const tickCallback = getYAxisTickCallback(unit);
 
-  const options = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const options: any = {
     responsive: true,
     maintainAspectRatio: true,
     aspectRatio: 2.5,

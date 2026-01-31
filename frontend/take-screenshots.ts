@@ -112,19 +112,30 @@ async function main() {
     console.log("Saved: screenshot-chart-types.png");
   }
 
-  // Navigate to thresholds dashboard
-  const thresholdsItem = page.locator(".sidebar-item", {
-    hasText: "thresholds",
-  });
-  if ((await thresholdsItem.count()) > 0) {
-    await thresholdsItem.click();
-    await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
-    await page.waitForTimeout(2000);
-    await page.screenshot({
-      path: path.join(ROOT_DIR, "docs", "screenshot-thresholds.png"),
-      fullPage: true,
+  // Navigate to thresholds dashboard using a fresh page so Chart.js
+  // annotation plugin initialises cleanly (accumulated chart instances from
+  // earlier dashboards can interfere with annotation rendering).
+  {
+    const freshPage = await context.newPage();
+    await freshPage.goto("http://localhost:5173/");
+    await freshPage.waitForSelector(".sidebar", { timeout: 15000 });
+    const thresholdsItem = freshPage.locator(".sidebar-item", {
+      hasText: "thresholds",
     });
-    console.log("Saved: screenshot-thresholds.png");
+    if ((await thresholdsItem.count()) > 0) {
+      await thresholdsItem.click();
+      await freshPage.waitForSelector(".graph-panel canvas", {
+        timeout: 15000,
+      });
+      // Annotation plugin needs extra time to render after async data loads
+      await freshPage.waitForTimeout(10000);
+      await freshPage.screenshot({
+        path: path.join(ROOT_DIR, "docs", "screenshot-thresholds.png"),
+        fullPage: true,
+      });
+      console.log("Saved: screenshot-thresholds.png");
+    }
+    await freshPage.close();
   }
 
   // Navigate to sidebar groups (infra/)

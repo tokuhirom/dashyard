@@ -7,30 +7,31 @@ rows:
         query: 'system_cpu_utilization_ratio'
         unit: "percent"
         thresholds:
-          - value: 80
+          - value: 30
             color: "#f59e0b"
             label: "Warning"
-          - value: 95
+          - value: 50
             color: "#ef4444"
             label: "Critical"
 
-  - title: "Memory with Threshold (Value Only)"
+  - title: "Memory with Threshold"
     panels:
       - title: "Memory Usage"
         type: "graph"
         query: 'system_memory_usage_bytes{state="used"}'
         unit: "bytes"
         thresholds:
-          - value: 8000000000
+          - value: 4500000000
+            color: "#ef4444"
+            label: "Limit"
 
-  - title: "Area Chart with Threshold"
+  - title: "Load Average with Threshold (Area)"
     panels:
-      - title: "Disk Usage (Area)"
+      - title: "Load Average 1m"
         type: "graph"
-        query: 'system_disk_usage_bytes{state="used"}'
-        unit: "bytes"
+        query: 'system_cpu_load_average_1m_ratio'
         chart_type: "area"
         thresholds:
-          - value: 50000000000
+          - value: 2
             color: "#8b5cf6"
-            label: "Capacity Limit"
+            label: "High Load"
