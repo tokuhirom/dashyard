@@ -37,8 +37,7 @@ traffic-gen ──► Traefik ──► whoami
 | `traefik-dynamic.yaml` | Traefik routing rules |
 | `config.yaml` | Dashyard config (points to Prometheus) |
 | `dashboards/` | LLM-generated dashboard YAML files |
-| `example.md` | Generated: main prompt file |
-| `example-labels.md` | Generated: label values detail file |
+| `output/` | Generated files (`example.md`, `example-labels.md`) |
 
 ## Quick Start: Generate Prompt
 
@@ -52,7 +51,7 @@ This will:
 1. Start Prometheus, OTel Collector, Traefik, Redis, whoami, and traffic-gen
 2. Wait 60 seconds for metrics to accumulate
 3. Run `gen-prompt` against Prometheus
-4. Write `example.md` and `example-labels.md`
+4. Write `output/example.md` and `output/example-labels.md`
 5. Shut down all services
 
 ## View Dashboards
@@ -68,7 +67,7 @@ Open http://localhost:8080 (login: admin / admin).
 ## Workflow
 
 1. `make gen-prompt` — start stack → accumulate metrics → run gen-prompt → stop
-2. Feed `example.md` + `example-labels.md` to an LLM to generate dashboard YAML files
+2. Feed `output/example.md` + `output/example-labels.md` to an LLM to generate dashboard YAML files
 3. Place generated YAML files in `docs/gen-prompt/dashboards/`
 4. `docker compose -f docs/gen-prompt/docker-compose.yaml up` — start Dashyard + monitoring stack
 5. Open http://localhost:8080 to verify dashboards render with real metrics
