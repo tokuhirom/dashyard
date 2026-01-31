@@ -14,7 +14,7 @@ rows:
         type: graph                 # "graph" or "markdown"
         query: 'promql_expression'  # required for graph
         unit: bytes                 # bytes, percent, count, seconds
-        chart_type: line            # line, bar, area, scatter, pie, doughnut
+        chart_type: line            # line, bar, area, scatter
         legend: "{label_name}"      # legend template
         y_min: 0                    # optional y-axis bounds
         y_max: 100

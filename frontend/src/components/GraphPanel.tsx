@@ -1,4 +1,4 @@
-import { Line, Bar, Scatter, Pie, Doughnut } from 'react-chartjs-2';
+import { Line, Bar, Scatter } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -6,7 +6,6 @@ import {
   PointElement,
   LineElement,
   BarElement,
-  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -24,7 +23,6 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
-  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -41,7 +39,7 @@ interface GraphPanelProps {
   yMax?: number;
   legend?: string;
   thresholds?: Threshold[];
-  chartType?: 'line' | 'bar' | 'area' | 'scatter' | 'pie' | 'doughnut';
+  chartType?: 'line' | 'bar' | 'area' | 'scatter';
   stacked?: boolean;
   loading: boolean;
   error: string | null;
@@ -130,50 +128,6 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
   }
 
   const effectiveType = chartType || 'line';
-
-  if (effectiveType === 'pie' || effectiveType === 'doughnut') {
-    const labels = data.data.result.map((result) => buildLabel(result.metric, legend));
-    const values = data.data.result.map((result) => {
-      const lastValue = result.values[result.values.length - 1];
-      return lastValue ? parseFloat(lastValue[1]) : 0;
-    });
-    const backgroundColors = data.data.result.map((_, idx) => COLORS[idx % COLORS.length]);
-
-    const chartData = {
-      labels,
-      datasets: [{
-        data: values,
-        backgroundColor: backgroundColors,
-        borderWidth: 1,
-      }],
-    };
-
-    const options = {
-      responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 2.5,
-      plugins: {
-        legend: {
-          position: 'bottom' as const,
-          labels: {
-            boxWidth: 12,
-            usePointStyle: true,
-          },
-        },
-      },
-    };
-
-    const ChartComponent = effectiveType === 'pie' ? Pie : Doughnut;
-
-    return (
-      <div className="panel graph-panel" id={id}>
-        {titleContent}
-        <div className="panel-chart">
-          <ChartComponent data={chartData} options={options} />
-        </div>
-      </div>
-    );
-  }
 
   const shouldStack = stacked && (effectiveType === 'line' || effectiveType === 'area' || effectiveType === 'bar');
 

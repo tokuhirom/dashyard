@@ -63,7 +63,7 @@ For each service endpoint, organize panels by:
   - `line` — latency, timing, general time series
   - `bar` — rates, counts per interval
   - `area` with `stacked: true` — parts of a whole over time (e.g. memory by state)
-  - `pie`/`doughnut` — current composition snapshots
+  - `scatter` — correlation between series
 - **Timing metrics** — prefer max, p99, or p75 percentiles. Avoid mean/median which hide tail latency.
 - **Add a markdown panel** at the top of each dashboard explaining what the dashboard monitors and where the metrics come from.
 
@@ -112,13 +112,8 @@ rows:
         type: graph
         query: 'system_memory_usage_bytes'
         unit: bytes
+        chart_type: area
         stacked: true
-        legend: "{state}"
-      - title: "Memory Composition"
-        type: graph
-        query: 'system_memory_usage_bytes'
-        unit: bytes
-        chart_type: pie
         legend: "{state}"
 
   - title: "Disk I/O"
