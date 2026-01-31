@@ -1,4 +1,4 @@
-.PHONY: all frontend backend build test test-e2e lint clean dev-frontend dev-backend dev-dummyprom screenshots gen-prompt
+.PHONY: all frontend backend build test test-e2e lint clean dev-frontend dev-backend dev-dummyprom screenshots gen-prompt gen-prompt-up
 
 all: build
 
@@ -39,6 +39,9 @@ gen-prompt:
 	docker compose -f docs/gen-prompt/docker-compose.yaml build gen-prompt
 	docker compose -f docs/gen-prompt/docker-compose.yaml run --rm gen-prompt
 	docker compose -f docs/gen-prompt/docker-compose.yaml down
+
+gen-prompt-up:
+	docker compose -f docs/gen-prompt/docker-compose.yaml up --build
 
 clean:
 	rm -f dashyard dummyprom
