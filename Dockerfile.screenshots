@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/playwright:v1.58.1-noble
+WORKDIR /app/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/take-screenshots.ts frontend/tsconfig.json ./
+CMD ["npx", "tsx", "take-screenshots.ts"]

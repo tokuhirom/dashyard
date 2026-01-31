@@ -9,9 +9,11 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
+const BASE_URL = process.env.BASE_URL || "http://localhost:5173/";
+const OUTPUT_DIR = process.env.OUTPUT_DIR || ROOT_DIR;
 
 async function main() {
-  fs.mkdirSync(path.join(ROOT_DIR, "docs"), { recursive: true });
+  fs.mkdirSync(path.join(OUTPUT_DIR, "docs"), { recursive: true });
 
   const browser = await chromium.launch();
   const context = await browser.newContext({
@@ -20,14 +22,14 @@ async function main() {
   const page = await context.newPage();
 
   // Go to login page
-  await page.goto("http://localhost:5173/");
+  await page.goto(BASE_URL);
 
   // Wait for login form
   await page.waitForSelector(".login-form", { timeout: 15000 });
 
   // Screenshot: Login page
   await page.screenshot({
-    path: path.join(ROOT_DIR, "docs", "screenshot-login.png"),
+    path: path.join(OUTPUT_DIR, "docs", "screenshot-login.png"),
     fullPage: false,
   });
   console.log("Saved: screenshot-login.png");
@@ -55,14 +57,14 @@ async function main() {
 
   // Screenshot: Main dashboard view (overview)
   await page.screenshot({
-    path: path.join(ROOT_DIR, "screenshot.png"),
+    path: path.join(OUTPUT_DIR, "screenshot.png"),
     fullPage: false,
   });
   console.log("Saved: screenshot.png (main)");
 
   // Screenshot: Full page dashboard
   await page.screenshot({
-    path: path.join(ROOT_DIR, "docs", "screenshot-dashboard.png"),
+    path: path.join(OUTPUT_DIR, "docs", "screenshot-dashboard.png"),
     fullPage: true,
   });
   console.log("Saved: screenshot-dashboard.png");
@@ -76,7 +78,7 @@ async function main() {
     await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
     await page.waitForTimeout(2000);
     await page.screenshot({
-      path: path.join(ROOT_DIR, "docs", "screenshot-variables.png"),
+      path: path.join(OUTPUT_DIR, "docs", "screenshot-variables.png"),
       fullPage: false,
     });
     console.log("Saved: screenshot-variables.png");
@@ -91,7 +93,7 @@ async function main() {
     await page.waitForSelector(".graph-panel canvas", { timeout: 15000 });
     await page.waitForTimeout(2000);
     await page.screenshot({
-      path: path.join(ROOT_DIR, "docs", "screenshot-repeat.png"),
+      path: path.join(OUTPUT_DIR, "docs", "screenshot-repeat.png"),
       fullPage: true,
     });
     console.log("Saved: screenshot-repeat.png");
@@ -106,7 +108,7 @@ async function main() {
     await page.waitForSelector(".panel", { timeout: 15000 });
     await page.waitForTimeout(2000);
     await page.screenshot({
-      path: path.join(ROOT_DIR, "docs", "screenshot-chart-types.png"),
+      path: path.join(OUTPUT_DIR, "docs", "screenshot-chart-types.png"),
       fullPage: true,
     });
     console.log("Saved: screenshot-chart-types.png");
@@ -117,7 +119,7 @@ async function main() {
   // earlier dashboards can interfere with annotation rendering).
   {
     const freshPage = await context.newPage();
-    await freshPage.goto("http://localhost:5173/");
+    await freshPage.goto(BASE_URL);
     await freshPage.waitForSelector(".sidebar", { timeout: 15000 });
     const thresholdsItem = freshPage.locator(".sidebar-item", {
       hasText: "thresholds",
@@ -130,7 +132,7 @@ async function main() {
       // Annotation plugin needs extra time to render after async data loads
       await freshPage.waitForTimeout(10000);
       await freshPage.screenshot({
-        path: path.join(ROOT_DIR, "docs", "screenshot-thresholds.png"),
+        path: path.join(OUTPUT_DIR, "docs", "screenshot-thresholds.png"),
         fullPage: true,
       });
       console.log("Saved: screenshot-thresholds.png");
@@ -149,7 +151,7 @@ async function main() {
       await page.waitForSelector(".panel", { timeout: 15000 });
       await page.waitForTimeout(2000);
       await page.screenshot({
-        path: path.join(ROOT_DIR, "docs", "screenshot-sidebar-groups.png"),
+        path: path.join(OUTPUT_DIR, "docs", "screenshot-sidebar-groups.png"),
         fullPage: false,
       });
       console.log("Saved: screenshot-sidebar-groups.png");
