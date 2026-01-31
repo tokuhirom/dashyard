@@ -73,6 +73,7 @@ function PanelRenderer({ panel, panelId, timeRange, variableValues }: PanelRende
       thresholds={panel.thresholds}
       chartType={panel.chart_type}
       stacked={panel.stacked}
+      yScale={panel.y_scale}
       loading={loading}
       error={error}
       id={panelId}

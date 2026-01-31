@@ -603,6 +603,28 @@ func TestValidateGraphPanelValidUnits(t *testing.T) {
 	}
 }
 
+func TestValidateGraphPanelInvalidYScale(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", YScale: "invalid"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for invalid y_scale")
+	}
+}
+
+func TestValidateGraphPanelValidYScales(t *testing.T) {
+	for _, s := range []string{"linear", "log"} {
+		d := Dashboard{
+			Title: "Test",
+			Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", YScale: s}}}},
+		}
+		if err := d.Validate(); err != nil {
+			t.Errorf("expected no error for y_scale %q, got %v", s, err)
+		}
+	}
+}
+
 func TestValidateMarkdownPanelNoContent(t *testing.T) {
 	d := Dashboard{
 		Title: "Test",

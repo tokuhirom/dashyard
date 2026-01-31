@@ -21,6 +21,7 @@ type Panel struct {
 	Legend     string      `yaml:"legend,omitempty" json:"legend,omitempty"`
 	Thresholds []Threshold `yaml:"thresholds,omitempty" json:"thresholds,omitempty"`
 	Stacked    bool        `yaml:"stacked,omitempty" json:"stacked,omitempty"`
+	YScale     string      `yaml:"y_scale,omitempty" json:"y_scale,omitempty"` // "linear" or "log"
 	Content    string      `yaml:"content,omitempty" json:"content,omitempty"`
 	FullWidth  bool        `yaml:"full_width,omitempty" json:"full_width,omitempty"`
 }
@@ -50,6 +51,10 @@ type Dashboard struct {
 var validChartTypes = map[string]bool{
 	"line": true, "bar": true, "area": true,
 	"scatter": true,
+}
+
+var validYScales = map[string]bool{
+	"linear": true, "log": true,
 }
 
 var validUnits = map[string]bool{
@@ -96,6 +101,9 @@ func (d *Dashboard) Validate() error {
 				}
 				if panel.ChartType != "" && !validChartTypes[panel.ChartType] {
 					return fmt.Errorf("graph panel[%d] %q in row %q has invalid chart_type %q in dashboard %q", j, panel.Title, row.Title, panel.ChartType, d.Title)
+				}
+				if panel.YScale != "" && !validYScales[panel.YScale] {
+					return fmt.Errorf("graph panel[%d] %q in row %q has invalid y_scale %q in dashboard %q", j, panel.Title, row.Title, panel.YScale, d.Title)
 				}
 				if panel.Unit != "" && !validUnits[panel.Unit] {
 					return fmt.Errorf("graph panel[%d] %q in row %q has invalid unit %q in dashboard %q", j, panel.Title, row.Title, panel.Unit, d.Title)

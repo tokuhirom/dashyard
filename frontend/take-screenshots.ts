@@ -150,6 +150,16 @@ async function main() {
     await freshPage.close();
   }
 
+  // Navigate to y-axis-bounds dashboard (includes log scale demo)
+  await captureDashboard(
+    page,
+    dashboardUrl("y-axis-bounds"),
+    ".graph-panel canvas",
+    path.join(OUTPUT_DIR, "docs", "screenshot-y-axis-bounds.png"),
+    { fullPage: true }
+  );
+  console.log("Saved: screenshot-y-axis-bounds.png");
+
   // Navigate to sidebar groups (infra/)
   const groupHeader = page.locator(".sidebar-group-header").first();
   if ((await groupHeader.count()) > 0) {

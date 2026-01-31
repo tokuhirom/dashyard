@@ -162,6 +162,7 @@ rows:
         y_min: 0                    # optional y-axis bounds
         y_max: 100
         stacked: false              # stack series
+        y_scale: linear             # linear (default) or log
         thresholds:                 # optional reference lines
           - value: 80
             color: orange

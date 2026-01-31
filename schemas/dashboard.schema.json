@@ -127,6 +127,12 @@
           "type": "boolean",
           "description": "Stack series on top of each other. Applies to line, area, and bar charts.",
           "default": false
+        },
+        "y_scale": {
+          "type": "string",
+          "description": "Y-axis scale type. Defaults to 'linear' if omitted.",
+          "enum": ["linear", "log"],
+          "default": "linear"
         }
       },
       "required": ["title", "type", "query"],

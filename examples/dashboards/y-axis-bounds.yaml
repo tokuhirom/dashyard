@@ -24,3 +24,16 @@ rows:
         query: 'system_memory_usage_bytes{state="used"}'
         unit: "bytes"
         y_min: 0
+  - title: "Logarithmic Scale"
+    panels:
+      - title: "Requests by Endpoint (log scale)"
+        type: "graph"
+        query: "demo_requests_per_second"
+        unit: "count"
+        legend: "{endpoint}"
+        y_scale: "log"
+      - title: "Requests by Endpoint (linear scale)"
+        type: "graph"
+        query: "demo_requests_per_second"
+        unit: "count"
+        legend: "{endpoint}"

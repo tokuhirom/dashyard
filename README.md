@@ -219,7 +219,7 @@ rows:
 
 | Type | Required Fields | Optional Fields |
 |------|----------------|-----------------|
-| `graph` | `title`, `type`, `query` | `chart_type`, `unit`, `legend`, `y_min`, `y_max`, `thresholds` |
+| `graph` | `title`, `type`, `query` | `chart_type`, `unit`, `legend`, `y_min`, `y_max`, `y_scale`, `thresholds`, `stacked` |
 | `markdown` | `title`, `type`, `content` | `full_width` |
 
 ### `chart_type`
@@ -255,6 +255,15 @@ Set explicit Y-axis bounds. These override the automatic scaling and any unit-ba
   y_min: -20
   y_max: 50
 ```
+
+### `y_scale`
+
+Set the Y-axis scale type. Defaults to `linear`. Use `log` for metrics that span multiple orders of magnitude.
+
+| Value | Description |
+|-------|-------------|
+| `linear` | Linear scale (default) |
+| `log` | Logarithmic scale (base 10) |
 
 ### `legend`
 
