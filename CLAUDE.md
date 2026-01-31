@@ -21,6 +21,7 @@ Development (three terminals):
 make dev-dummyprom               # Fake Prometheus on :9090
 make dev-backend                 # Go server on :8080 (uses examples/config.yaml)
 make dev-frontend                # Vite dev server on :5173
+make dev-dummygithub             # Fake GitHub OAuth server on :5555
 ```
 
 ## Project Layout
@@ -37,6 +38,7 @@ make dev-frontend                # Vite dev server on :5173
 - `schemas/` -- JSON schemas for config.yaml and dashboard YAML
 - `examples/` -- Example config and dashboard files
 - `cmd/dummyprom/` -- Fake Prometheus that generates synthetic metrics
+- `cmd/dummygithub/` -- Fake GitHub OAuth server for local development
 
 ## Key Patterns
 

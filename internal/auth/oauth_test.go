@@ -75,6 +75,30 @@ func TestInitGothProviders(t *testing.T) {
 	}
 }
 
+func TestInitGothProvidersWithBaseURL(t *testing.T) {
+	providers := []config.OAuthProviderConfig{
+		{
+			Provider:     "github",
+			ClientID:     "test-id",
+			ClientSecret: "test-secret",
+			RedirectURL:  "http://localhost:8080/auth/github/callback",
+			BaseURL:      "https://ghe.example.com",
+		},
+	}
+
+	// Should not panic
+	InitGothProviders(providers)
+
+	// Verify provider was registered
+	p, err := goth.GetProvider("github")
+	if err != nil {
+		t.Fatalf("expected github provider to be registered: %v", err)
+	}
+	if p.Name() != "github" {
+		t.Errorf("expected provider name 'github', got %q", p.Name())
+	}
+}
+
 func TestFindOAuthProvider(t *testing.T) {
 	providers := []config.OAuthProviderConfig{
 		{Provider: "github", ClientID: "gh-id"},

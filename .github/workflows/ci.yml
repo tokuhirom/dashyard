@@ -84,14 +84,18 @@ jobs:
         run: cd frontend && npx playwright install chromium --with-deps
       - name: Start dummyprom
         run: go run ./cmd/dummyprom &
+      - name: Start dummygithub
+        run: go run ./cmd/dummygithub &
       - name: Start backend
-        run: go run . serve --config examples/config.yaml &
+        run: go run . serve --config examples/config-e2e.yaml &
       - name: Start Vite dev server
         run: cd frontend && npm run dev &
       - name: Wait for services
         run: |
           echo "Waiting for dummyprom on :9090..."
           timeout 30 bash -c 'until curl -sf http://localhost:9090/-/ready 2>/dev/null || curl -sf http://localhost:9090/api/v1/query?query=up 2>/dev/null; do sleep 1; done' || echo "dummyprom may be ready"
+          echo "Waiting for dummygithub on :5555..."
+          timeout 30 bash -c 'until curl -sf http://localhost:5555/api/v3/user 2>/dev/null; do sleep 1; done'
           echo "Waiting for backend on :8080..."
           timeout 30 bash -c 'until curl -so /dev/null http://localhost:8080/ 2>/dev/null; do sleep 1; done'
           echo "Waiting for Vite on :5173..."

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/github"
@@ -21,7 +22,17 @@ func InitGothProviders(providers []config.OAuthProviderConfig) {
 			if len(scopes) == 0 {
 				scopes = []string{"user:email"}
 			}
-			gp := github.New(p.ClientID, p.ClientSecret, p.RedirectURL, scopes...)
+			var gp *github.Provider
+			if p.BaseURL != "" {
+				base := strings.TrimRight(p.BaseURL, "/")
+				authURL := base + "/login/oauth/authorize"
+				tokenURL := base + "/login/oauth/access_token"
+				profileURL := base + "/api/v3/user"
+				emailURL := base + "/api/v3/user/emails"
+				gp = github.NewCustomisedURL(p.ClientID, p.ClientSecret, p.RedirectURL, authURL, tokenURL, profileURL, emailURL, scopes...)
+			} else {
+				gp = github.New(p.ClientID, p.ClientSecret, p.RedirectURL, scopes...)
+			}
 			gothProviders = append(gothProviders, gp)
 		}
 	}
@@ -44,7 +55,7 @@ func CheckUserAllowed(user goth.User, providerCfg config.OAuthProviderConfig) (b
 
 	// Check allowed orgs (GitHub-specific)
 	if len(providerCfg.AllowedOrgs) > 0 && providerCfg.Provider == "github" {
-		orgs, err := FetchGitHubOrgs(user.AccessToken)
+		orgs, err := FetchGitHubOrgs(user.AccessToken, providerCfg.BaseURL)
 		if err != nil {
 			return false, fmt.Errorf("fetching GitHub orgs: %w", err)
 		}
@@ -59,8 +70,13 @@ func CheckUserAllowed(user goth.User, providerCfg config.OAuthProviderConfig) (b
 }
 
 // FetchGitHubOrgs retrieves the list of organization login names for the authenticated user.
-func FetchGitHubOrgs(accessToken string) ([]string, error) {
-	req, err := http.NewRequest("GET", "https://api.github.com/user/orgs", nil)
+// If baseURL is set, it uses the GitHub Enterprise API endpoint instead of api.github.com.
+func FetchGitHubOrgs(accessToken string, baseURL string) ([]string, error) {
+	orgsURL := "https://api.github.com/user/orgs"
+	if baseURL != "" {
+		orgsURL = strings.TrimRight(baseURL, "/") + "/api/v3/user/orgs"
+	}
+	req, err := http.NewRequest("GET", orgsURL, nil)
 	if err != nil {
 		return nil, err
 	}

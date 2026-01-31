@@ -26,6 +26,7 @@ users:
 #       client_id: "your-github-client-id"
 #       client_secret: "your-github-client-secret"
 #       redirect_url: "http://localhost:8080/auth/github/callback"
+#       base_url: "https://ghe.example.com"    # optional: for GitHub Enterprise
 #       scopes: ["user:email", "read:org"]
 #       allowed_users: ["user1", "user2"]       # optional: restrict by GitHub username
 #       allowed_orgs: ["my-org"]                 # optional: restrict by GitHub org membership

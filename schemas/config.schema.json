@@ -114,6 +114,12 @@
                 "format": "uri",
                 "description": "OAuth callback URL (e.g. 'http://localhost:8080/auth/github/callback')."
               },
+              "base_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Base URL for GitHub Enterprise. When set, uses custom OAuth endpoints derived from this URL. Leave unset for github.com.",
+                "examples": ["https://ghe.example.com"]
+              },
               "scopes": {
                 "type": "array",
                 "description": "OAuth scopes to request.",

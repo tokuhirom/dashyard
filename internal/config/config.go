@@ -22,6 +22,7 @@ type OAuthProviderConfig struct {
 	ClientID     string   `yaml:"client_id"`
 	ClientSecret string   `yaml:"client_secret"`
 	RedirectURL  string   `yaml:"redirect_url"`
+	BaseURL      string   `yaml:"base_url,omitempty"`
 	Scopes       []string `yaml:"scopes,omitempty"`
 	AllowedUsers []string `yaml:"allowed_users,omitempty"`
 	AllowedOrgs  []string `yaml:"allowed_orgs,omitempty"`

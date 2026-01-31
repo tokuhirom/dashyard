@@ -181,6 +181,51 @@ auth:
 	}
 }
 
+func TestParseOAuthConfigWithBaseURL(t *testing.T) {
+	input := []byte(`
+auth:
+  oauth:
+    - provider: github
+      client_id: "my-client-id"
+      client_secret: "my-client-secret"
+      redirect_url: "http://localhost:8080/auth/github/callback"
+      base_url: "https://ghe.example.com"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(cfg.Auth.OAuth) != 1 {
+		t.Fatalf("expected 1 oauth provider, got %d", len(cfg.Auth.OAuth))
+	}
+	p := cfg.Auth.OAuth[0]
+	if p.BaseURL != "https://ghe.example.com" {
+		t.Errorf("expected base_url 'https://ghe.example.com', got %q", p.BaseURL)
+	}
+}
+
+func TestParseOAuthConfigWithoutBaseURL(t *testing.T) {
+	input := []byte(`
+auth:
+  oauth:
+    - provider: github
+      client_id: "my-client-id"
+      client_secret: "my-client-secret"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	p := cfg.Auth.OAuth[0]
+	if p.BaseURL != "" {
+		t.Errorf("expected empty base_url, got %q", p.BaseURL)
+	}
+}
+
 func TestParseOAuthValidationMissingProvider(t *testing.T) {
 	input := []byte(`
 auth:
