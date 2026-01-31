@@ -168,6 +168,18 @@ Generate an LLM prompt for dashboard YAML generation from your Prometheus metric
 
 This outputs a prompt file and a labels file (e.g. `prompt.md` + `prompt-labels.md`) that you can feed to an LLM to generate Dashyard dashboard YAML. See [docs/gen-prompt/](docs/gen-prompt/) for example output.
 
+Include existing dashboards as context for incremental updates:
+
+```bash
+./dashyard gen-prompt http://localhost:9090 -o prompt.md --dashboards-dir ./dashboards
+```
+
+Replace the default guidelines section with your own:
+
+```bash
+./dashyard gen-prompt http://localhost:9090 -o prompt.md --guidelines my-guidelines.md
+```
+
 JSON schema: [`schemas/config.schema.json`](schemas/config.schema.json)
 
 ## Dashboard Definition

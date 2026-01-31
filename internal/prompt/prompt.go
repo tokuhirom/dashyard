@@ -2,5 +2,8 @@ package prompt
 
 import _ "embed"
 
-//go:embed prompt_template.md
-var Template string
+//go:embed format_reference.md
+var FormatReference string
+
+//go:embed default_guidelines.md
+var DefaultGuidelines string
