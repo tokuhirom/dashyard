@@ -18,6 +18,7 @@ test-e2e:
 
 lint:
 	golangci-lint run ./...
+	cd frontend && npm run lint
 
 dev-frontend:
 	cd frontend && npm run dev
