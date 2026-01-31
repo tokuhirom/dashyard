@@ -74,7 +74,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./config.yaml:/etc/dashyard/config.yaml:ro
-      - ./dashboards:/etc/dashyard/dashboards:ro
+      - ./output/dashboards:/etc/dashyard/dashboards:ro
     ports:
       - "8080:8080"
     depends_on:
