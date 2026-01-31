@@ -1,4 +1,4 @@
-.PHONY: all frontend backend build test test-e2e lint clean dev-frontend dev-backend dev-dummyprom
+.PHONY: all frontend backend build test test-e2e lint clean dev-frontend dev-backend dev-dummyprom screenshots
 
 all: build
 
@@ -27,6 +27,10 @@ dev-backend:
 
 dev-dummyprom:
 	go run ./cmd/dummyprom
+
+screenshots:
+	docker compose -f docker-compose.screenshots.yaml up --build --abort-on-container-exit screenshots
+	docker compose -f docker-compose.screenshots.yaml down
 
 clean:
 	rm -f dashyard dummyprom
