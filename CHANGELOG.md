@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.0.12](https://github.com/tokuhirom/dashyard/compare/v0.0.11...v0.0.12) - 2026-01-31
+- Add auto-refresh interval selector for dashboards by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/53
+- Add issue linking convention to CLAUDE.md by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/56
+- Add stacked chart support for graph panels by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/55
+- Add trusted proxy support for X-Forwarded-For by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/57
+- Remove IP ACL feature, keep only trusted proxy support by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/58
+- Add validate subcommand by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/59
+- Make screenshot script stable with networkidle waits by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/60
+
 ## [v0.0.11](https://github.com/tokuhirom/dashyard/compare/v0.0.10...v0.0.11) - 2026-01-31
 - Make dummyprom output deterministic for stable screenshots by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/49
 - Fix Go version requirement in README by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/51
