@@ -12,6 +12,7 @@ Dashyard is a lightweight Prometheus metrics dashboard. Go/Gin backend serves a 
 make build                       # Build frontend then backend
 make test                        # Go tests
 make gen-prompt                  # Generate LLM prompt from dummyprom metrics
+make screenshots                 # Regenerate README screenshots (Docker)
 cd frontend && npm run build     # Frontend build (TypeScript check + Vite)
 ```
 
