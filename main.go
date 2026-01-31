@@ -24,6 +24,7 @@ var frontendFiles embed.FS
 
 var cli struct {
 	Serve    ServeCmd    `cmd:"" help:"Start the dashboard server."`
+	Validate ValidateCmd `cmd:"" help:"Validate config and dashboard files."`
 	Mkpasswd MkpasswdCmd `cmd:"" help:"Generate a SHA-512 crypt password hash."`
 }
 
@@ -95,6 +96,26 @@ func (cmd *ServeCmd) Run() error {
 		slog.Error("shutdown error", "error", err)
 	}
 	slog.Info("server stopped")
+	return nil
+}
+
+type ValidateCmd struct {
+	Config string `help:"Path to config file." default:"config.yaml"`
+}
+
+func (cmd *ValidateCmd) Run() error {
+	cfg, err := config.Load(cmd.Config)
+	if err != nil {
+		return fmt.Errorf("config %s: %w", cmd.Config, err)
+	}
+	fmt.Printf("Config OK: %s\n", cmd.Config)
+
+	store, err := dashboard.LoadDir(cfg.Dashboards.Dir)
+	if err != nil {
+		return fmt.Errorf("dashboards: %w", err)
+	}
+	fmt.Printf("Dashboards OK: loaded %d dashboards from %q\n", len(store.List()), cfg.Dashboards.Dir)
+
 	return nil
 }
 

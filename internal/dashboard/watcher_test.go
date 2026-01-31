@@ -10,7 +10,8 @@ import (
 
 const validDashboardYAML = `title: Test Dashboard
 rows:
-  - panels:
+  - title: Test Row
+    panels:
       - title: Test Panel
         type: markdown
         content: hello
