@@ -109,6 +109,8 @@ func generateData(query string, start, end, step float64) []promResult {
 		return generateDiskIO(start, end, step, "read")
 	case strings.Contains(query, "disk_io") && strings.Contains(query, "write"):
 		return generateDiskIO(start, end, step, "write")
+	case strings.Contains(query, "demo_requests_per_second"):
+		return generateDemoRequestsPerSecond(start, end, step)
 	default:
 		return generateGeneric(query, start, end, step)
 	}
@@ -237,6 +239,42 @@ func generateDiskIO(start, end, step float64, direction string) []promResult {
 	}
 }
 
+func generateDemoRequestsPerSecond(start, end, step float64) []promResult {
+	// Endpoints with request rates spanning 5 orders of magnitude.
+	// This makes a clear visual difference between linear and log scale:
+	// linear squishes everything except /health to the bottom;
+	// log scale shows all endpoints distinctly.
+	type endpoint struct {
+		path string
+		base float64 // requests per second
+		seed uint64
+	}
+	endpoints := []endpoint{
+		{"/health", 100000, 600},
+		{"/api/users", 1000, 601},
+		{"/api/search", 100, 602},
+		{"/api/reports", 10, 603},
+		{"/admin", 1, 604},
+	}
+	var results []promResult
+	for _, ep := range endpoints {
+		base := ep.base
+		seed := ep.seed
+		values := generateTimeSeries(start, end, step, func(t float64) float64 {
+			// ±30% periodic variation + ±10% noise
+			return math.Max(0.1, base+base*0.3*math.Sin(t/900)+base*0.1*noise(t, seed))
+		})
+		results = append(results, promResult{
+			Metric: map[string]string{
+				"__name__": "demo_requests_per_second",
+				"endpoint": ep.path,
+			},
+			Values: values,
+		})
+	}
+	return results
+}
+
 func generateGeneric(query string, start, end, step float64) []promResult {
 	values := generateTimeSeries(start, end, step, func(t float64) float64 {
 		return math.Max(0, 50+30*math.Sin(t/600)+noise(t, 500)*10)
@@ -271,6 +309,7 @@ var labelRegistry = map[string]map[string][]string{
 	"system_memory_usage_bytes":         {"state": {"used", "cached", "free", "buffers"}},
 	"system_network_io_bytes_total":     {"device": {"eth0", "eth1"}, "direction": {"receive", "transmit"}},
 	"system_disk_io_bytes_total":        {"device": {"sda"}, "direction": {"read", "write"}},
+	"demo_requests_per_second":          {"endpoint": {"/health", "/api/users", "/api/search", "/api/reports", "/admin"}},
 }
 
 type labelValuesResponse struct {
@@ -353,6 +392,7 @@ var metadataRegistry = map[string]struct {
 	"system_memory_usage_bytes":       {"gauge", "Memory usage in bytes by state."},
 	"system_network_io_bytes_total":   {"counter", "Total network I/O bytes by device and direction."},
 	"system_disk_io_bytes_total":      {"counter", "Total disk I/O bytes by device and direction."},
+	"demo_requests_per_second":        {"gauge", "Request rate per endpoint (spans multiple orders of magnitude)."},
 }
 
 func handleMetadata(w http.ResponseWriter, r *http.Request) {
