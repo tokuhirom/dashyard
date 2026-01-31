@@ -6,20 +6,25 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tokuhirom/dashyard/internal/auth"
 	"github.com/tokuhirom/dashyard/internal/config"
 	"github.com/tokuhirom/dashyard/internal/dashboard"
 	"github.com/tokuhirom/dashyard/internal/handler"
+	"github.com/tokuhirom/dashyard/internal/metrics"
 	"github.com/tokuhirom/dashyard/internal/prometheus"
 )
 
 // New creates and configures an http.Server with all routes and middleware.
-func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, host string, port int) (*http.Server, error) {
+func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, host string, port int, metricsEnabled bool) (*http.Server, error) {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(gin.Logger())
+	if metricsEnabled {
+		r.Use(metrics.Middleware())
+	}
 
 	// Trusted proxies
 	if len(cfg.Server.TrustedProxies) > 0 {
@@ -44,6 +49,9 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 
 	// Public routes
 	r.GET("/ready", readyHandler.Handle)
+	if metricsEnabled {
+		r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	}
 	r.POST("/api/login", loginHandler.Handle)
 
 	// Authenticated API routes

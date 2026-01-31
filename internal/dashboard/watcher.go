@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/tokuhirom/dashyard/internal/metrics"
 )
 
 // Watcher watches a dashboard directory for file changes and hot-reloads
@@ -113,7 +114,10 @@ func (w *Watcher) reload() {
 		return
 	}
 	w.holder.Replace(store)
-	slog.Info("reloaded dashboards", "count", len(store.List()))
+	count := len(store.List())
+	metrics.DashboardsLoaded.Set(float64(count))
+	metrics.DashboardReloadsTotal.Inc()
+	slog.Info("reloaded dashboards", "count", count)
 }
 
 // addDirs recursively adds dir and all subdirectories to the watcher.
