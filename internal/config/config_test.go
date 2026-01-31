@@ -90,16 +90,13 @@ func TestParseDefaults(t *testing.T) {
 	}
 }
 
-func TestParseTrustedProxiesAndAllow(t *testing.T) {
+func TestParseTrustedProxies(t *testing.T) {
 	input := []byte(`
 server:
   session_secret: "test"
   trusted_proxies:
     - "10.0.0.1"
     - "10.0.0.2"
-  allow:
-    - "192.168.1.0/24"
-    - "10.0.0.0/8"
 `)
 
 	cfg, err := Parse(input)
@@ -116,19 +113,9 @@ server:
 	if cfg.Server.TrustedProxies[1] != "10.0.0.2" {
 		t.Errorf("expected second trusted proxy '10.0.0.2', got %q", cfg.Server.TrustedProxies[1])
 	}
-
-	if len(cfg.Server.Allow) != 2 {
-		t.Fatalf("expected 2 allow entries, got %d", len(cfg.Server.Allow))
-	}
-	if cfg.Server.Allow[0] != "192.168.1.0/24" {
-		t.Errorf("expected first allow '192.168.1.0/24', got %q", cfg.Server.Allow[0])
-	}
-	if cfg.Server.Allow[1] != "10.0.0.0/8" {
-		t.Errorf("expected second allow '10.0.0.0/8', got %q", cfg.Server.Allow[1])
-	}
 }
 
-func TestParseDefaultsNoProxiesOrAllow(t *testing.T) {
+func TestParseDefaultsNoTrustedProxies(t *testing.T) {
 	input := []byte(`{}`)
 
 	cfg, err := Parse(input)
@@ -138,9 +125,6 @@ func TestParseDefaultsNoProxiesOrAllow(t *testing.T) {
 
 	if cfg.Server.TrustedProxies != nil {
 		t.Errorf("expected nil trusted_proxies, got %v", cfg.Server.TrustedProxies)
-	}
-	if cfg.Server.Allow != nil {
-		t.Errorf("expected nil allow, got %v", cfg.Server.Allow)
 	}
 }
 

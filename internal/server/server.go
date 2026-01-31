@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tokuhirom/dashyard/internal/acl"
 	"github.com/tokuhirom/dashyard/internal/auth"
 	"github.com/tokuhirom/dashyard/internal/config"
 	"github.com/tokuhirom/dashyard/internal/dashboard"
@@ -28,13 +27,6 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 			return nil, fmt.Errorf("setting trusted proxies: %w", err)
 		}
 	}
-
-	// IP allow list
-	allowList, err := acl.New(cfg.Server.Allow)
-	if err != nil {
-		return nil, fmt.Errorf("creating IP allow list: %w", err)
-	}
-	r.Use(acl.Middleware(allowList))
 
 	// Session manager
 	sm := auth.NewSessionManager(cfg.Server.SessionSecret, false)
