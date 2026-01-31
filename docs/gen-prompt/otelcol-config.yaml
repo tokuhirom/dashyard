@@ -1,0 +1,22 @@
+receivers:
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      cpu:
+      memory:
+      disk:
+      network:
+
+  redis:
+    endpoint: "redis:6379"
+    collection_interval: 10s
+
+exporters:
+  prometheusremotewrite:
+    endpoint: "http://prometheus:9090/api/v1/write"
+
+service:
+  pipelines:
+    metrics:
+      receivers: [hostmetrics, redis]
+      exporters: [prometheusremotewrite]

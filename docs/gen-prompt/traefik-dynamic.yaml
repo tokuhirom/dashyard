@@ -1,0 +1,13 @@
+http:
+  routers:
+    whoami:
+      rule: "PathPrefix(`/`)"
+      service: whoami
+      entryPoints:
+        - web
+
+  services:
+    whoami:
+      loadBalancer:
+        servers:
+          - url: "http://whoami:80"
