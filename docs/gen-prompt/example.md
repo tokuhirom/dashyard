@@ -33,13 +33,46 @@ When the user asks to "generate dashboards" or "create dashboards for all metric
 - Use subdirectories when there are many dashboards (e.g. `app/api.yaml`, `app/workers.yaml`)
 - Use rows within a dashboard to separate sub-topics (e.g. CPU row, Memory row, Disk row)
 
+# Updating Existing Dashboards
+
+Dashboard YAML files are managed in git. When you need to modify an existing file, first check its history with `git log -p <file>` to see whether the user has made manual edits (e.g. adjusted thresholds, reordered panels, added custom queries). If the file has manual changes, ask the user before overwriting those parts. For files with no manual edits, you can regenerate them freely.
+
+# Dashboard Structure Methods
+
+## USE Method (for infrastructure/host dashboards)
+
+For each resource (CPU, memory, disk, network), organize panels by:
+- **Utilization** — how busy the resource is (e.g. CPU usage %)
+- **Saturation** — how overloaded it is (e.g. load average, disk queue)
+- **Errors** — error counts or rates (e.g. disk errors, network drops)
+
+A common layout: one row per resource, utilization panel on the left, saturation/errors on the right.
+
+## RED Method (for service/application dashboards)
+
+For each service endpoint, organize panels by:
+- **Rate** — requests per second
+- **Errors** — error rate or error ratio
+- **Duration** — latency (p99, p95, or max)
+
+# Graph Design
+
+- **Keep each graph focused** — ideally 4 or fewer series per panel. More than that makes it hard to read and causes axis scaling issues. Split into separate panels or use stacked bars if needed.
+- **Y-axis should start at zero** (`y_min: 0`) for most metrics. This prevents small fluctuations from looking dramatic.
+- **Chart type choice:**
+  - `line` — latency, timing, general time series
+  - `bar` — rates, counts per interval
+  - `area` with `stacked: true` — parts of a whole over time (e.g. memory by state)
+  - `pie`/`doughnut` — current composition snapshots
+- **Timing metrics** — prefer max, p99, or p75 percentiles. Avoid mean/median which hide tail latency.
+- **Add a markdown panel** at the top of each dashboard explaining what the dashboard monitors and where the metrics come from.
+
 # Best Practices
 
 - Group related panels into rows with descriptive titles
 - When a metric has a label with many values (e.g. device, cpu), use a variable with `label_values()` and `$variable` in queries
 - Use `repeat` on a row to auto-expand for each variable value
 - Add `thresholds` for metrics with known warning/critical levels
-- Add a markdown panel to explain what the dashboard monitors
 - Validate generated YAML with `dashyard validate` before deploying
 - Output each file starting with `# File: path/name.yaml` followed by the YAML content
 
