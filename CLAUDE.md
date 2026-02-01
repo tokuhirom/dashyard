@@ -46,6 +46,7 @@ make gen-prompt-up               # Start full real-world stack (dashyard on :808
 - Dashboard files support subdirectories which become tree groups in the sidebar
 - Panel types: `graph` (PromQL query) and `markdown` (rendered content)
 - Tests are colocated: `foo.go` has `foo_test.go` in the same package
+- Logging: always use `log/slog` (structured logging). Do not use `log.Printf` or `fmt.Printf` for logging
 
 ## Testing
 
