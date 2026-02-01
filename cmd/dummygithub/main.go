@@ -40,7 +40,7 @@ func handleAuthorize(w http.ResponseWriter, r *http.Request) {
 	slog.Info("authorize", "redirect_uri", redirectURI, "state", state)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintf(w, `<!DOCTYPE html>
+	_, _ = fmt.Fprintf(w, `<!DOCTYPE html>
 <html>
 <head><title>Dummy GitHub Login</title></head>
 <body style="font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f6f8fa;">
@@ -62,7 +62,7 @@ func handleAccessToken(w http.ResponseWriter, r *http.Request) {
 	slog.Info("access_token", "code", code)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	_ = json.NewEncoder(w).Encode(map[string]string{
 		"access_token": "dummy-access-token",
 		"token_type":   "bearer",
 		"scope":        "user:email,read:org",
@@ -74,7 +74,7 @@ func handleUser(w http.ResponseWriter, r *http.Request) {
 	slog.Info("user profile requested")
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"login":      "dummyuser",
 		"id":         12345,
 		"avatar_url": "https://avatars.githubusercontent.com/u/0?v=4",
@@ -88,7 +88,7 @@ func handleEmails(w http.ResponseWriter, r *http.Request) {
 	slog.Info("user emails requested")
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode([]map[string]interface{}{
+	_ = json.NewEncoder(w).Encode([]map[string]interface{}{
 		{
 			"email":      "dummy@example.com",
 			"primary":    true,
@@ -103,7 +103,7 @@ func handleOrgs(w http.ResponseWriter, r *http.Request) {
 	slog.Info("user orgs requested")
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode([]map[string]interface{}{
+	_ = json.NewEncoder(w).Encode([]map[string]interface{}{
 		{
 			"login":       "dummy-org",
 			"id":          100,

@@ -148,8 +148,7 @@ func TestOAuthIntegrationFullFlow(t *testing.T) {
 	sm := auth.NewSessionManager("test-secret-that-is-at-least-32-bytes-long!", false)
 
 	// We need to create the test server first to know its URL for the redirect_url
-	var router *gin.Engine
-	router = gin.New()
+	router := gin.New()
 
 	oauthHandler := NewOAuthHandler(providers, sm)
 	router.GET("/auth/:provider", oauthHandler.BeginAuth)
@@ -175,7 +174,7 @@ func TestOAuthIntegrationFullFlow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("BeginAuth request failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusTemporaryRedirect && resp.StatusCode != http.StatusFound {
 		t.Fatalf("expected redirect from BeginAuth, got %d", resp.StatusCode)
@@ -194,7 +193,7 @@ func TestOAuthIntegrationFullFlow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("dummygithub authorize request failed: %v", err)
 	}
-	defer resp2.Body.Close()
+	defer func() { _ = resp2.Body.Close() }()
 
 	if resp2.StatusCode != http.StatusFound {
 		t.Fatalf("expected redirect from dummygithub, got %d", resp2.StatusCode)
@@ -217,7 +216,7 @@ func TestOAuthIntegrationFullFlow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("callback request failed: %v", err)
 	}
-	defer resp3.Body.Close()
+	defer func() { _ = resp3.Body.Close() }()
 
 	// The callback should redirect to "/" after successful auth
 	if resp3.StatusCode != http.StatusTemporaryRedirect {
@@ -284,7 +283,7 @@ func TestOAuthIntegrationWithAllowedUsers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("BeginAuth request failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	cookies := resp.Cookies()
 
 	// Step 2: Follow redirect to dummygithub
@@ -292,7 +291,7 @@ func TestOAuthIntegrationWithAllowedUsers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("dummygithub request failed: %v", err)
 	}
-	defer resp2.Body.Close()
+	defer func() { _ = resp2.Body.Close() }()
 
 	// Step 3: Follow redirect to callback
 	req, _ := http.NewRequest("GET", resp2.Header.Get("Location"), nil)
@@ -304,7 +303,7 @@ func TestOAuthIntegrationWithAllowedUsers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("callback request failed: %v", err)
 	}
-	defer resp3.Body.Close()
+	defer func() { _ = resp3.Body.Close() }()
 
 	// Should redirect with access_denied error since "dummyuser" is not in allowed list
 	if resp3.StatusCode != http.StatusTemporaryRedirect {
@@ -359,7 +358,7 @@ func TestOAuthIntegrationWithAllowedOrgs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("BeginAuth request failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	cookies := resp.Cookies()
 
 	// Step 2: Follow redirect to dummygithub
@@ -367,7 +366,7 @@ func TestOAuthIntegrationWithAllowedOrgs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("dummygithub request failed: %v", err)
 	}
-	defer resp2.Body.Close()
+	defer func() { _ = resp2.Body.Close() }()
 
 	// Step 3: Follow redirect to callback
 	req, _ := http.NewRequest("GET", resp2.Header.Get("Location"), nil)
@@ -379,7 +378,7 @@ func TestOAuthIntegrationWithAllowedOrgs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("callback request failed: %v", err)
 	}
-	defer resp3.Body.Close()
+	defer func() { _ = resp3.Body.Close() }()
 
 	// Should succeed because "dummy-org" is in allowed orgs
 	if resp3.StatusCode != http.StatusTemporaryRedirect {
