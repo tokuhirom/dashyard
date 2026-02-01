@@ -92,6 +92,88 @@ func TestValidateSessionTampered(t *testing.T) {
 	}
 }
 
+func TestCreateSessionOverwritesExisting(t *testing.T) {
+	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
+
+	// Create session for user1
+	r := httptest.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+	if err := sm.CreateSession(r, w, "user1"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Create a new session for user2 using the same cookie
+	r2 := httptest.NewRequest("GET", "/", nil)
+	for _, c := range w.Result().Cookies() {
+		r2.AddCookie(c)
+	}
+	w2 := httptest.NewRecorder()
+	if err := sm.CreateSession(r2, w2, "user2"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Validate the session now has user2
+	r3 := httptest.NewRequest("GET", "/", nil)
+	for _, c := range w2.Result().Cookies() {
+		r3.AddCookie(c)
+	}
+	userID, err := sm.ValidateSession(r3)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if userID != "user2" {
+		t.Errorf("expected user_id 'user2', got %q", userID)
+	}
+}
+
+func TestValidateSessionEmptyUserID(t *testing.T) {
+	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
+
+	// Create session with empty user ID
+	r := httptest.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+	if err := sm.CreateSession(r, w, ""); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	r2 := httptest.NewRequest("GET", "/", nil)
+	for _, c := range w.Result().Cookies() {
+		r2.AddCookie(c)
+	}
+	_, err := sm.ValidateSession(r2)
+	if err == nil {
+		t.Error("expected error for empty user_id in session")
+	}
+}
+
+func TestNewSessionManagerSecureFlag(t *testing.T) {
+	sm := NewSessionManager("test-secret-that-is-32bytes!!", true)
+
+	r := httptest.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+	if err := sm.CreateSession(r, w, "admin"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	for _, c := range w.Result().Cookies() {
+		if c.Name == "dashyard_session" {
+			if !c.Secure {
+				t.Error("expected Secure flag on cookie")
+			}
+			return
+		}
+	}
+	t.Fatal("session cookie not found")
+}
+
+func TestStoreReturnsUnderlyingStore(t *testing.T) {
+	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
+	store := sm.Store()
+	if store == nil {
+		t.Fatal("expected non-nil store")
+	}
+}
+
 func TestClearSession(t *testing.T) {
 	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
 

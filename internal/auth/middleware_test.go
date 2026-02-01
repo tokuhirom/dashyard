@@ -75,6 +75,26 @@ func TestAuthMiddlewareNoCookie(t *testing.T) {
 	}
 }
 
+func TestGetUserIDNoSession(t *testing.T) {
+	router := gin.New()
+	router.GET("/test", func(c *gin.Context) {
+		userID := GetUserID(c)
+		c.JSON(http.StatusOK, gin.H{"user_id": userID})
+	})
+
+	req := httptest.NewRequest("GET", "/test", nil)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	var body map[string]string
+	if err := json.Unmarshal(resp.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if body["user_id"] != "" {
+		t.Errorf("expected empty user_id, got %q", body["user_id"])
+	}
+}
+
 func TestAuthMiddlewareInvalidCookie(t *testing.T) {
 	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
 
