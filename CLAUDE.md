@@ -39,6 +39,7 @@ make dev-dummygithub             # Fake GitHub OAuth server on :5555
 - `examples/kitchensink/` -- Kitchen-sink demo configs and dashboards
 - `examples/real-world/` -- Real monitoring stack with gen-prompt workflow
 - `cmd/dummyprom/` -- Fake Prometheus that generates synthetic metrics
+- `cmd/dummyapp/` -- Fake web app exposing custom Prometheus metrics (HTTP RED, business KPIs)
 - `cmd/dummygithub/` -- Fake GitHub OAuth server for local development
 
 ## Key Patterns

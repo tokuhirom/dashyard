@@ -1,0 +1,86 @@
+title: "App Database & Cache"
+rows:
+  - title: "Overview"
+    panels:
+      - title: "About"
+        type: markdown
+        content: |
+          Database connection pool, query performance, and application cache metrics.
+          DB queries are broken down by operation type (select, insert).
+
+  - title: "DB Connections"
+    panels:
+      - title: "Active Connections"
+        type: graph
+        query: 'myapp_db_connections_active'
+        unit: count
+        y_min: 0
+        thresholds:
+          - value: 80
+            color: "#f59e0b"
+            label: "Warning"
+      - title: "Idle Connections"
+        type: graph
+        query: 'myapp_db_connections_idle'
+        unit: count
+        y_min: 0
+
+  - title: "DB Query Duration"
+    panels:
+      - title: "Query Duration p99 by Operation"
+        type: graph
+        query: 'histogram_quantile(0.99, sum by (le, operation) (rate(myapp_db_query_duration_seconds_bucket[5m])))'
+        unit: seconds
+        legend: "{operation}"
+        y_min: 0
+        thresholds:
+          - value: 0.1
+            color: "#f59e0b"
+            label: "Slow"
+          - value: 1
+            color: "#ef4444"
+            label: "Very Slow"
+      - title: "Query Duration p75 by Operation"
+        type: graph
+        query: 'histogram_quantile(0.75, sum by (le, operation) (rate(myapp_db_query_duration_seconds_bucket[5m])))'
+        unit: seconds
+        legend: "{operation}"
+        y_min: 0
+      - title: "Query Rate by Operation"
+        type: graph
+        query: 'sum by (operation) (rate(myapp_db_query_duration_seconds_count[5m]))'
+        unit: count
+        chart_type: bar
+        legend: "{operation}"
+        y_min: 0
+      - title: "Avg Query Duration by Operation"
+        type: graph
+        query: 'sum by (operation) (rate(myapp_db_query_duration_seconds_sum[5m])) / (sum by (operation) (rate(myapp_db_query_duration_seconds_count[5m])) > 0)'
+        unit: seconds
+        legend: "{operation}"
+        y_min: 0
+
+  - title: "Cache"
+    panels:
+      - title: "Cache Hit Rate"
+        type: graph
+        query: 'rate(myapp_cache_hits_total[5m]) / (rate(myapp_cache_hits_total[5m]) + rate(myapp_cache_misses_total[5m]) > 0) * 100'
+        unit: percent
+        y_min: 0
+        y_max: 100
+        thresholds:
+          - value: 80
+            color: "#f59e0b"
+            label: "Low Hit Rate"
+      - title: "Cache Hits Rate"
+        type: graph
+        query: 'rate(myapp_cache_hits_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+      - title: "Cache Misses Rate"
+        type: graph
+        query: 'rate(myapp_cache_misses_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0

@@ -1,0 +1,11 @@
+FROM golang:1.25-alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o dummyapp ./cmd/dummyapp
+
+FROM alpine:3.20
+COPY --from=builder /app/dummyapp /usr/local/bin/dummyapp
+EXPOSE 3000
+ENTRYPOINT ["/usr/local/bin/dummyapp"]

@@ -1,0 +1,74 @@
+title: "App Business KPIs"
+rows:
+  - title: "Overview"
+    panels:
+      - title: "About"
+        type: markdown
+        content: |
+          Business-level key performance indicators: active users, registrations,
+          order volume, revenue, and application error breakdown.
+
+  - title: "Users"
+    panels:
+      - title: "Active Users"
+        type: graph
+        query: 'myapp_users_active'
+        unit: count
+        y_min: 0
+      - title: "Registration Rate"
+        type: graph
+        query: 'rate(myapp_users_registered_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+
+  - title: "Orders"
+    panels:
+      - title: "Order Rate by Status"
+        type: graph
+        query: 'sum by (status) (rate(myapp_orders_created_total[5m]))'
+        unit: count
+        chart_type: bar
+        legend: "{status}"
+        y_min: 0
+      - title: "Failed Order Rate"
+        type: graph
+        query: 'rate(myapp_orders_created_total{status="failed"}[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+        thresholds:
+          - value: 1
+            color: "#f59e0b"
+            label: "Warning"
+
+  - title: "Revenue"
+    panels:
+      - title: "Revenue Rate"
+        type: graph
+        query: 'rate(myapp_revenue_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+
+  - title: "Errors"
+    panels:
+      - title: "Error Rate by Type"
+        type: graph
+        query: 'sum by (type) (rate(myapp_errors_total[5m]))'
+        unit: count
+        chart_type: bar
+        legend: "{type}"
+        y_min: 0
+        thresholds:
+          - value: 1
+            color: "#f59e0b"
+            label: "Warning"
+      - title: "Error Rate (Stacked)"
+        type: graph
+        query: 'sum by (type) (rate(myapp_errors_total[5m]))'
+        unit: count
+        chart_type: area
+        stacked: true
+        legend: "{type}"
+        y_min: 0

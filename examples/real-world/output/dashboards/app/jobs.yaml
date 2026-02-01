@@ -1,0 +1,83 @@
+title: "App Background Jobs"
+variables:
+  - name: queue
+    label: "Queue"
+    query: "label_values(myapp_jobs_queue_depth, queue)"
+rows:
+  - title: "Overview"
+    panels:
+      - title: "About"
+        type: markdown
+        content: |
+          Background job processing metrics. Jobs are organized by queue
+          (cleanup, email, export) and tracked by throughput, failures, queue depth,
+          and processing duration.
+
+  - title: "Queue Depth"
+    panels:
+      - title: "Pending Jobs by Queue"
+        type: graph
+        query: 'myapp_jobs_queue_depth'
+        unit: count
+        legend: "{queue}"
+        y_min: 0
+        thresholds:
+          - value: 100
+            color: "#f59e0b"
+            label: "Backlog Warning"
+          - value: 1000
+            color: "#ef4444"
+            label: "Backlog Critical"
+
+  - title: "Throughput - $queue"
+    repeat: queue
+    panels:
+      - title: "Processed Rate ($queue)"
+        type: graph
+        query: 'sum by (status) (rate(myapp_jobs_processed_total{queue="$queue"}[5m]))'
+        unit: count
+        chart_type: bar
+        legend: "{status}"
+        y_min: 0
+      - title: "Failure Rate ($queue)"
+        type: graph
+        query: 'rate(myapp_jobs_processed_total{queue="$queue", status="failure"}[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+        thresholds:
+          - value: 1
+            color: "#f59e0b"
+            label: "Failures"
+      - title: "Failure Ratio ($queue)"
+        type: graph
+        query: 'rate(myapp_jobs_processed_total{queue="$queue", status="failure"}[5m]) / (sum(rate(myapp_jobs_processed_total{queue="$queue"}[5m])) > 0) * 100'
+        unit: percent
+        y_min: 0
+        y_max: 100
+        thresholds:
+          - value: 5
+            color: "#f59e0b"
+            label: "Warning"
+          - value: 25
+            color: "#ef4444"
+            label: "Critical"
+
+  - title: "Duration - $queue"
+    repeat: queue
+    panels:
+      - title: "Job Duration p99 ($queue)"
+        type: graph
+        query: 'histogram_quantile(0.99, sum by (le) (rate(myapp_jobs_duration_seconds_bucket{queue="$queue"}[5m])))'
+        unit: seconds
+        y_min: 0
+      - title: "Job Duration p75 ($queue)"
+        type: graph
+        query: 'histogram_quantile(0.75, sum by (le) (rate(myapp_jobs_duration_seconds_bucket{queue="$queue"}[5m])))'
+        unit: seconds
+        y_min: 0
+      - title: "Avg Job Duration ($queue)"
+        type: graph
+        query: 'rate(myapp_jobs_duration_seconds_sum{queue="$queue"}[5m]) / (rate(myapp_jobs_duration_seconds_count{queue="$queue"}[5m]) > 0)'
+        unit: seconds
+        y_min: 0
