@@ -70,7 +70,7 @@ Open http://localhost:8080 (login: admin / admin).
 
 1. `make gen-prompt` — start stack → accumulate metrics → run gen-prompt → stop
 2. Feed `output/prompt.md` + `output/prompt-metrics.md` to an LLM to generate dashboard YAML files
-3. Place generated YAML files in `docs/gen-prompt/output/dashboards/`
+3. Place generated YAML files in `examples/real-world/output/dashboards/`
 4. `make gen-prompt-up` — start Dashyard + monitoring stack
 5. Open http://localhost:8080 to verify dashboards render with real metrics
 6. If the dashboards need improvement, refine the prompt and repeat from step 1

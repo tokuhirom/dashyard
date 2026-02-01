@@ -24,8 +24,8 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./examples/config-docker.yaml:/etc/dashyard/config.yaml:ro
-      - ./examples/dashboards:/etc/dashyard/dashboards:ro
+      - ./examples/kitchensink/config-docker.yaml:/etc/dashyard/config.yaml:ro
+      - ./examples/kitchensink/dashboards:/etc/dashyard/dashboards:ro
     depends_on:
       dummyprom:
         condition: service_healthy
@@ -40,8 +40,8 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./examples/config-docker-oauth.yaml:/etc/dashyard/config.yaml:ro
-      - ./examples/dashboards:/etc/dashyard/dashboards:ro
+      - ./examples/kitchensink/config-docker-oauth.yaml:/etc/dashyard/config.yaml:ro
+      - ./examples/kitchensink/dashboards:/etc/dashyard/dashboards:ro
     depends_on:
       dummyprom:
         condition: service_healthy

@@ -44,7 +44,7 @@ Read prompt.md and prompt-metrics.md, then update the dashboards in
 ./dashboards/. Add panels for any new metrics that are not yet covered.
 ```
 
-See [docs/gen-prompt/](docs/gen-prompt/) for a complete example using a real monitoring stack.
+See [examples/real-world/](examples/real-world/) for a complete example using a real monitoring stack.
 
 ### Dashboards as Code
 
@@ -150,7 +150,7 @@ docker run -p 8080:8080 \
 Or use the example Docker Compose setup:
 
 ```bash
-docker compose -f examples/docker-compose.yaml up
+docker compose -f examples/kitchensink/docker-compose.yaml up
 ```
 
 ### Build from source
@@ -161,14 +161,14 @@ Requires Go 1.25+ and Node.js 20+.
 git clone https://github.com/tokuhirom/dashyard.git
 cd dashyard
 make build
-./dashyard serve --config examples/config.yaml --dashboards-dir examples/dashboards
+./dashyard serve --config examples/kitchensink/config.yaml --dashboards-dir examples/kitchensink/dashboards
 ```
 
 ## Quick Start
 
 1. Install Dashyard using one of the methods above.
-2. Create a `config.yaml` (see [Configuration](#configuration) below or use `examples/config.yaml`).
-3. Create dashboard YAML files in a directory (see [Dashboard Definition](#dashboard-definition) below or use `examples/dashboards/`).
+2. Create a `config.yaml` (see [Configuration](#configuration) below or use `examples/kitchensink/config.yaml`).
+3. Create dashboard YAML files in a directory (see [Dashboard Definition](#dashboard-definition) below or use `examples/kitchensink/dashboards/`).
 4. Start the server:
 
 ```bash
@@ -193,11 +193,11 @@ To test GitHub OAuth locally, also start the fake GitHub server:
 make dev-dummygithub # Fake GitHub OAuth on :5555
 ```
 
-Then use `examples/config-dummygithub.yaml` as the config (it has GitHub OAuth pointing to the dummy server).
+Then use `examples/kitchensink/config-dummygithub.yaml` as the config (it has GitHub OAuth pointing to the dummy server).
 
 ## Configuration
 
-Create a `config.yaml` file (see `examples/config.yaml`):
+Create a `config.yaml` file (see `examples/kitchensink/config.yaml`):
 
 ```yaml
 site_title: "My Monitoring"    # Optional, defaults to "Dashyard"
@@ -371,7 +371,9 @@ internal/
   server/             Gin router setup
 frontend/             React/TypeScript/Vite SPA
 schemas/              JSON schemas for YAML validation
-examples/             Example configs and dashboards
+examples/
+  kitchensink/        Kitchen-sink demo configs and dashboards
+  real-world/         Real monitoring stack with gen-prompt workflow
 ```
 
 ## Testing

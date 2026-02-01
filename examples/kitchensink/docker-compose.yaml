@@ -1,7 +1,7 @@
 services:
   dashyard:
     build:
-      context: ..
+      context: ../..
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
@@ -14,7 +14,7 @@ services:
 
   dummyprom:
     build:
-      context: ..
+      context: ../..
       dockerfile: Dockerfile.dummyprom
     ports:
       - "9090:9090"
