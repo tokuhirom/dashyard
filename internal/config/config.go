@@ -36,6 +36,7 @@ type AuthConfig struct {
 // ServerConfig holds HTTP server settings.
 type ServerConfig struct {
 	SessionSecret  string   `yaml:"session_secret"`
+	CookieSecure   bool     `yaml:"cookie_secure"`
 	TrustedProxies []string `yaml:"trusted_proxies,omitempty"`
 }
 

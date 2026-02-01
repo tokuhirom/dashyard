@@ -35,7 +35,7 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 	}
 
 	// Session manager
-	sm := auth.NewSessionManager(cfg.Server.SessionSecret, false)
+	sm := auth.NewSessionManager(cfg.Server.SessionSecret, cfg.Server.CookieSecure)
 
 	// Initialize OAuth providers and set gothic store
 	if len(cfg.Auth.OAuth) > 0 {

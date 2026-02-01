@@ -23,6 +23,11 @@
           "type": "string",
           "description": "Secret key for session signing. Auto-generated if omitted."
         },
+        "cookie_secure": {
+          "type": "boolean",
+          "description": "Set the Secure flag on session cookies. Enable when serving over HTTPS (directly or behind a TLS-terminating reverse proxy).",
+          "default": false
+        },
         "trusted_proxies": {
           "type": "array",
           "description": "List of IP addresses or CIDRs trusted to set X-Forwarded-For headers.",
