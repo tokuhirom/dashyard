@@ -45,9 +45,12 @@ func (h *QueryHandler) Handle(c *gin.Context) {
 	}
 	defer func() { _ = body.Close() }()
 
-	c.Header("Content-Type", "application/json")
-	c.Status(statusCode)
-	if _, err := io.Copy(c.Writer, body); err != nil {
-		slog.Error("failed to stream datasource response", "error", err)
+	data, err := io.ReadAll(body)
+	if err != nil {
+		slog.Error("failed to read datasource response", "error", err)
+		c.JSON(http.StatusBadGateway, gin.H{"error": "failed to read datasource response"})
+		return
 	}
+
+	c.Data(statusCode, "application/json", data)
 }
