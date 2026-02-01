@@ -7,9 +7,6 @@ prometheus:
   url: "http://localhost:9090"
   timeout: 30s
 
-dashboards:
-  dir: "examples/dashboards"
-
 auth:
   oauth:
     - provider: github

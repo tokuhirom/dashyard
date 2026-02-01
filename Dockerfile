@@ -25,4 +25,4 @@ USER dashyard
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:8080/ready || exit 1
 ENTRYPOINT ["/app/dashyard"]
-CMD ["serve", "--config", "/etc/dashyard/config.yaml"]
+CMD ["serve", "--config", "/etc/dashyard/config.yaml", "--dashboards-dir", "/etc/dashyard/dashboards"]

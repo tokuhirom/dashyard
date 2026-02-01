@@ -9,9 +9,6 @@ prometheus:
   url: "http://prometheus:9090"
   timeout: 30s
 
-dashboards:
-  dir: "/etc/dashyard/dashboards"
-
 users:
   - id: "admin"
     password_hash: "$6$D/BkIQYiHD.cKL4A$pbAApV8cWXOv3hTyITrHNmlWe3FyfIJyM2CVFuJxbmXwDZPIVbcXKJbM2dxmJqG/ZJZBtrt8e9bVxt0d7rQKK."

@@ -125,7 +125,7 @@ Download the latest release from the [Releases page](https://github.com/tokuhiro
 VERSION=0.0.6
 curl -Lo dashyard.tar.gz "https://github.com/tokuhirom/dashyard/releases/download/v${VERSION}/dashyard_${VERSION}_linux_amd64.tar.gz"
 tar xzf dashyard.tar.gz
-./dashyard serve --config config.yaml
+./dashyard serve --config config.yaml --dashboards-dir dashboards
 ```
 
 ### Docker
@@ -133,7 +133,7 @@ tar xzf dashyard.tar.gz
 ```bash
 docker run -p 8080:8080 \
   -v ./config.yaml:/etc/dashyard/config.yaml:ro \
-  -v ./dashboards:/dashboards:ro \
+  -v ./dashboards:/etc/dashyard/dashboards:ro \
   ghcr.io/tokuhirom/dashyard
 ```
 
@@ -143,7 +143,7 @@ Or build the image locally:
 docker build -t dashyard .
 docker run -p 8080:8080 \
   -v ./config.yaml:/etc/dashyard/config.yaml:ro \
-  -v ./dashboards:/dashboards:ro \
+  -v ./dashboards:/etc/dashyard/dashboards:ro \
   dashyard
 ```
 
@@ -161,7 +161,7 @@ Requires Go 1.25+ and Node.js 20+.
 git clone https://github.com/tokuhirom/dashyard.git
 cd dashyard
 make build
-./dashyard serve --config examples/config.yaml
+./dashyard serve --config examples/config.yaml --dashboards-dir examples/dashboards
 ```
 
 ## Quick Start
@@ -172,7 +172,7 @@ make build
 4. Start the server:
 
 ```bash
-./dashyard serve --config config.yaml
+./dashyard serve --config config.yaml --dashboards-dir dashboards
 ```
 
 5. Open http://localhost:8080 and log in with the credentials defined in your config.
@@ -210,9 +210,6 @@ prometheus:
   url: "http://localhost:9090"
   timeout: 30s
 
-dashboards:
-  dir: "dashboards"
-
 users:
   - id: "admin"
     password_hash: "$6$..."
@@ -229,10 +226,16 @@ auth:
       # allowed_orgs: ["my-org"]
 ```
 
-Host and port are set via CLI flags (defaults: `0.0.0.0:8080`):
+The dashboards directory is specified via the `--dashboards-dir` CLI flag:
 
 ```bash
-./dashyard serve --config config.yaml --host 127.0.0.1 --port 9090
+./dashyard serve --config config.yaml --dashboards-dir ./dashboards
+```
+
+Host and port are also set via CLI flags (defaults: `0.0.0.0:8080`):
+
+```bash
+./dashyard serve --config config.yaml --dashboards-dir ./dashboards --host 127.0.0.1 --port 9090
 ```
 
 Generate a password hash:

@@ -31,10 +31,11 @@ var cli struct {
 }
 
 type ServeCmd struct {
-	Config  string `help:"Path to config file." default:"config.yaml"`
-	Host    string `help:"Host to listen on." default:"0.0.0.0"`
-	Port    int    `help:"Port to listen on." default:"8080"`
-	Metrics bool   `help:"Enable /metrics endpoint exposing Prometheus metrics." default:"false"`
+	Config        string `help:"Path to config file." default:"config.yaml"`
+	Host          string `help:"Host to listen on." default:"0.0.0.0"`
+	Port          int    `help:"Port to listen on." default:"8080"`
+	Metrics       bool   `help:"Enable /metrics endpoint exposing Prometheus metrics." default:"false"`
+	DashboardsDir string `name:"dashboards-dir" help:"Path to dashboards directory. Overrides config file value." default:""`
 }
 
 func (cmd *ServeCmd) Run() error {
@@ -43,6 +44,10 @@ func (cmd *ServeCmd) Run() error {
 	if err != nil {
 		slog.Error("failed to load config", "error", err)
 		os.Exit(1)
+	}
+
+	if cmd.DashboardsDir != "" {
+		cfg.Dashboards.Dir = cmd.DashboardsDir
 	}
 
 	// Load dashboards
@@ -104,7 +109,8 @@ func (cmd *ServeCmd) Run() error {
 }
 
 type ValidateCmd struct {
-	Config string `help:"Path to config file." default:"config.yaml"`
+	Config        string `help:"Path to config file." default:"config.yaml"`
+	DashboardsDir string `name:"dashboards-dir" help:"Path to dashboards directory. Overrides config file value." default:""`
 }
 
 func (cmd *ValidateCmd) Run() error {
@@ -113,6 +119,10 @@ func (cmd *ValidateCmd) Run() error {
 		return fmt.Errorf("config %s: %w", cmd.Config, err)
 	}
 	fmt.Printf("Config OK: %s\n", cmd.Config)
+
+	if cmd.DashboardsDir != "" {
+		cfg.Dashboards.Dir = cmd.DashboardsDir
+	}
 
 	store, err := dashboard.LoadDir(cfg.Dashboards.Dir)
 	if err != nil {

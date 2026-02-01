@@ -10,9 +10,6 @@ prometheus:
   url: "http://localhost:9090"
   timeout: 30s
 
-dashboards:
-  dir: "examples/dashboards"
-
 # Default user: admin / admin
 # Generate a new hash with: go run ./cmd/genhash <password>
 users:

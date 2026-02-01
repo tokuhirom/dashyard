@@ -7,9 +7,6 @@ prometheus:
   url: "http://localhost:9090"
   timeout: 30s
 
-dashboards:
-  dir: "examples/dashboards"
-
 # Password auth (used by most E2E tests)
 users:
   - id: "admin"
