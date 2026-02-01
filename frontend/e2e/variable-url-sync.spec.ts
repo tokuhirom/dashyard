@@ -90,9 +90,8 @@ test.describe("Variable URL Sync", () => {
     });
     expect(page.url()).toContain("/d/overview");
 
-    // Go back
-    await page.goBack();
-    await page.waitForURL(/\/d\/network-variable/);
+    // Go back — SPA popstate, no real page load so use "commit"
+    await page.goBack({ waitUntil: "commit" });
 
     // Should be back on network-variable with variable bar visible
     await expect(page.locator(".variable-bar")).toBeVisible({ timeout: 15000 });
