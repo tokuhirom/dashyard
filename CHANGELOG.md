@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.2.1](https://github.com/tokuhirom/dashyard/compare/v0.2.0...v0.2.1) - 2026-02-01
+- Bump actions/setup-node from 4 to 6 by @dependabot[bot] in https://github.com/tokuhirom/dashyard/pull/99
+- Add OAuth/OIDC support with Goth and gorilla/sessions by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/106
+- Add GitHub OAuth documentation and screenshot to README by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/107
+- Add --dashboards-dir CLI flag, remove dashboards.dir from config files by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/108
+- Run validate on example config and dashboards in CI by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/109
+
 ## [v0.2.0](https://github.com/tokuhirom/dashyard/compare/v0.1.0...v0.2.0) - 2026-01-31
 - Add /ready endpoint by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/90
 - Add frontend unit tests with Vitest by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/91
