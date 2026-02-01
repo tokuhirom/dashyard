@@ -4,32 +4,37 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tokuhirom/dashyard/internal/prometheus"
+	"github.com/tokuhirom/dashyard/internal/datasource"
 )
 
-// ReadyHandler handles GET /ready - checks upstream Prometheus connectivity.
+// ReadyHandler handles GET /ready - checks upstream datasource connectivity.
 type ReadyHandler struct {
-	client *prometheus.Client
+	registry *datasource.Registry
 }
 
 // NewReadyHandler creates a new ReadyHandler.
-func NewReadyHandler(client *prometheus.Client) *ReadyHandler {
-	return &ReadyHandler{client: client}
+func NewReadyHandler(registry *datasource.Registry) *ReadyHandler {
+	return &ReadyHandler{registry: registry}
 }
 
 // Handle returns whether the server is ready to serve traffic.
 func (h *ReadyHandler) Handle(c *gin.Context) {
-	promStatus := "reachable"
 	status := http.StatusOK
+	datasources := make(map[string]string)
 
-	if err := h.client.Ping(c.Request.Context()); err != nil {
-		promStatus = "unreachable"
-		status = http.StatusServiceUnavailable
+	for _, name := range h.registry.Names() {
+		client, _ := h.registry.Get(name)
+		if err := client.Ping(c.Request.Context()); err != nil {
+			datasources[name] = "unreachable"
+			status = http.StatusServiceUnavailable
+		} else {
+			datasources[name] = "reachable"
+		}
 	}
 
 	c.JSON(status, gin.H{
-		"status":     readyStatusText(status),
-		"prometheus": promStatus,
+		"status":      readyStatusText(status),
+		"datasources": datasources,
 	})
 }
 

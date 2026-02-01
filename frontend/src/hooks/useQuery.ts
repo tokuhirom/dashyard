@@ -9,7 +9,7 @@ interface UseQueryResult {
   error: string | null;
 }
 
-export function useQuery(query: string | undefined, timeRange: TimeRange): UseQueryResult {
+export function useQuery(query: string | undefined, timeRange: TimeRange, datasource?: string): UseQueryResult {
   const [data, setData] = useState<PrometheusResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +23,7 @@ export function useQuery(query: string | undefined, timeRange: TimeRange): UseQu
 
     const { start, end, step } = getTimeRangeParams(timeRange);
 
-    queryPrometheus(query, start, end, step)
+    queryPrometheus(query, start, end, step, datasource)
       .then((result) => {
         if (!cancelled) {
           setData(result);
@@ -44,7 +44,7 @@ export function useQuery(query: string | undefined, timeRange: TimeRange): UseQu
     return () => {
       cancelled = true;
     };
-  }, [query, timeRange]);
+  }, [query, timeRange, datasource]);
 
   return { data, loading, error };
 }

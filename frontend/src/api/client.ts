@@ -54,6 +54,7 @@ export async function queryPrometheus(
   start: number,
   end: number,
   step: string,
+  datasource?: string,
 ): Promise<PrometheusResponse> {
   const params = new URLSearchParams({
     query,
@@ -61,13 +62,19 @@ export async function queryPrometheus(
     end: end.toString(),
     step,
   });
+  if (datasource) {
+    params.set('datasource', datasource);
+  }
   return request(`/api/query?${params}`);
 }
 
-export async function fetchLabelValues(label: string, match?: string): Promise<LabelValuesResponse> {
+export async function fetchLabelValues(label: string, match?: string, datasource?: string): Promise<LabelValuesResponse> {
   const params = new URLSearchParams({ label });
   if (match) {
     params.set('match', match);
+  }
+  if (datasource) {
+    params.set('datasource', datasource);
   }
   return request(`/api/label-values?${params}`);
 }

@@ -56,6 +56,7 @@ function PanelRenderer({ panel, panelId, timeRange, variableValues }: PanelRende
   const { data, loading, error } = useQuery(
     panel.type === 'graph' ? substitutedQuery : undefined,
     timeRange,
+    panel.datasource,
   );
 
   if (panel.type === 'markdown') {

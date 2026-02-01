@@ -6,17 +6,17 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tokuhirom/dashyard/internal/prometheus"
+	"github.com/tokuhirom/dashyard/internal/datasource"
 )
 
 // QueryHandler handles GET /api/query - proxies requests to Prometheus.
 type QueryHandler struct {
-	client *prometheus.Client
+	registry *datasource.Registry
 }
 
 // NewQueryHandler creates a new QueryHandler.
-func NewQueryHandler(client *prometheus.Client) *QueryHandler {
-	return &QueryHandler{client: client}
+func NewQueryHandler(registry *datasource.Registry) *QueryHandler {
+	return &QueryHandler{registry: registry}
 }
 
 // Handle processes a Prometheus query_range proxy request.
@@ -31,7 +31,13 @@ func (h *QueryHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	body, statusCode, err := h.client.QueryRange(c.Request.Context(), query, start, end, step)
+	client, err := h.registry.Get(c.Query("datasource"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	body, statusCode, err := client.QueryRange(c.Request.Context(), query, start, end, step)
 	if err != nil {
 		slog.Error("prometheus query failed", "error", err)
 		c.JSON(http.StatusBadGateway, gin.H{"error": "prometheus query failed"})

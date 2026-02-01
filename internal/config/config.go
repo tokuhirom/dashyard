@@ -45,6 +45,15 @@ type PrometheusConfig struct {
 	Timeout time.Duration `yaml:"timeout"`
 }
 
+// DatasourceConfig holds settings for a single named datasource.
+type DatasourceConfig struct {
+	Name    string        `yaml:"name"`
+	Type    string        `yaml:"type"`
+	URL     string        `yaml:"url"`
+	Timeout time.Duration `yaml:"timeout"`
+	Default bool          `yaml:"default"`
+}
+
 // DashboardsConfig holds dashboard directory settings.
 type DashboardsConfig struct {
 	Dir string `yaml:"dir"`
@@ -52,13 +61,14 @@ type DashboardsConfig struct {
 
 // Config is the top-level application configuration.
 type Config struct {
-	SiteTitle   string           `yaml:"site_title"`
-	HeaderColor string           `yaml:"header_color"`
-	Server      ServerConfig     `yaml:"server"`
-	Prometheus  PrometheusConfig `yaml:"prometheus"`
-	Dashboards  DashboardsConfig `yaml:"dashboards"`
-	Users       []User           `yaml:"users"`
-	Auth        AuthConfig       `yaml:"auth"`
+	SiteTitle   string             `yaml:"site_title"`
+	HeaderColor string             `yaml:"header_color"`
+	Server      ServerConfig       `yaml:"server"`
+	Prometheus  PrometheusConfig   `yaml:"prometheus"`
+	Datasources []DatasourceConfig `yaml:"datasources"`
+	Dashboards  DashboardsConfig   `yaml:"dashboards"`
+	Users       []User             `yaml:"users"`
+	Auth        AuthConfig         `yaml:"auth"`
 }
 
 // Load reads and parses a YAML config file, applying defaults for missing values.
@@ -99,7 +109,78 @@ func Parse(data []byte) (*Config, error) {
 		return nil, err
 	}
 
+	// Backward compatibility: migrate legacy prometheus section to datasources
+	if len(cfg.Datasources) == 0 {
+		cfg.Datasources = []DatasourceConfig{
+			{
+				Name:    "default",
+				Type:    "prometheus",
+				URL:     cfg.Prometheus.URL,
+				Timeout: cfg.Prometheus.Timeout,
+				Default: true,
+			},
+		}
+	}
+
+	if err := validateDatasources(cfg.Datasources); err != nil {
+		return nil, err
+	}
+
 	return cfg, nil
+}
+
+// DefaultDatasource returns the datasource marked as default.
+func (c *Config) DefaultDatasource() DatasourceConfig {
+	for _, ds := range c.Datasources {
+		if ds.Default {
+			return ds
+		}
+	}
+	return c.Datasources[0]
+}
+
+func validateDatasources(datasources []DatasourceConfig) error {
+	if len(datasources) == 0 {
+		return fmt.Errorf("at least one datasource must be configured")
+	}
+
+	seen := make(map[string]bool)
+	defaultCount := 0
+
+	for i, ds := range datasources {
+		if ds.Name == "" {
+			return fmt.Errorf("datasources[%d]: name is required", i)
+		}
+		if seen[ds.Name] {
+			return fmt.Errorf("datasources[%d]: duplicate name %q", i, ds.Name)
+		}
+		seen[ds.Name] = true
+
+		if ds.Type != "prometheus" {
+			return fmt.Errorf("datasources[%d]: unsupported type %q (only \"prometheus\" is supported)", i, ds.Type)
+		}
+		if ds.URL == "" {
+			return fmt.Errorf("datasources[%d]: url is required", i)
+		}
+		if ds.Default {
+			defaultCount++
+		}
+	}
+
+	// If only one datasource, auto-set as default
+	if defaultCount == 0 && len(datasources) == 1 {
+		datasources[0].Default = true
+		defaultCount = 1
+	}
+
+	if defaultCount == 0 {
+		return fmt.Errorf("exactly one datasource must be marked as default")
+	}
+	if defaultCount > 1 {
+		return fmt.Errorf("only one datasource can be marked as default, found %d", defaultCount)
+	}
+
+	return nil
 }
 
 func validateOAuthConfig(providers []OAuthProviderConfig) error {

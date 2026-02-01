@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tokuhirom/dashyard/internal/prometheus"
+	"github.com/tokuhirom/dashyard/internal/config"
+	"github.com/tokuhirom/dashyard/internal/datasource"
 )
 
 func TestLabelValuesHandler(t *testing.T) {
@@ -18,8 +19,10 @@ func TestLabelValuesHandler(t *testing.T) {
 	}))
 	defer promServer.Close()
 
-	client := prometheus.NewClient(promServer.URL, 5*time.Second)
-	handler := NewLabelValuesHandler(client)
+	registry := datasource.NewRegistry([]config.DatasourceConfig{
+		{Name: "default", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second, Default: true},
+	})
+	handler := NewLabelValuesHandler(registry)
 
 	router := gin.New()
 	router.GET("/api/label-values", handler.Handle)
@@ -39,8 +42,10 @@ func TestLabelValuesHandler(t *testing.T) {
 }
 
 func TestLabelValuesHandlerMissingLabel(t *testing.T) {
-	client := prometheus.NewClient("http://localhost:9090", 5*time.Second)
-	handler := NewLabelValuesHandler(client)
+	registry := datasource.NewRegistry([]config.DatasourceConfig{
+		{Name: "default", Type: "prometheus", URL: "http://localhost:9090", Timeout: 5 * time.Second, Default: true},
+	})
+	handler := NewLabelValuesHandler(registry)
 
 	router := gin.New()
 	router.GET("/api/label-values", handler.Handle)
@@ -61,8 +66,10 @@ func TestLabelValuesHandlerPrometheusError(t *testing.T) {
 	}))
 	defer promServer.Close()
 
-	client := prometheus.NewClient(promServer.URL, 5*time.Second)
-	handler := NewLabelValuesHandler(client)
+	registry := datasource.NewRegistry([]config.DatasourceConfig{
+		{Name: "default", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second, Default: true},
+	})
+	handler := NewLabelValuesHandler(registry)
 
 	router := gin.New()
 	router.GET("/api/label-values", handler.Handle)
@@ -73,5 +80,30 @@ func TestLabelValuesHandlerPrometheusError(t *testing.T) {
 
 	if resp.Code != http.StatusInternalServerError {
 		t.Errorf("expected 500, got %d", resp.Code)
+	}
+}
+
+func TestLabelValuesHandlerWithDatasourceParam(t *testing.T) {
+	promServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"status":"success","data":["val1"]}`))
+	}))
+	defer promServer.Close()
+
+	registry := datasource.NewRegistry([]config.DatasourceConfig{
+		{Name: "main", Type: "prometheus", URL: "http://localhost:1", Timeout: 5 * time.Second, Default: true},
+		{Name: "app", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second},
+	})
+	handler := NewLabelValuesHandler(registry)
+
+	router := gin.New()
+	router.GET("/api/label-values", handler.Handle)
+
+	req := httptest.NewRequest("GET", "/api/label-values?label=device&datasource=app", nil)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	if resp.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d: %s", resp.Code, resp.Body.String())
 	}
 }

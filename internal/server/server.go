@@ -11,9 +11,9 @@ import (
 	"github.com/tokuhirom/dashyard/internal/auth"
 	"github.com/tokuhirom/dashyard/internal/config"
 	"github.com/tokuhirom/dashyard/internal/dashboard"
+	"github.com/tokuhirom/dashyard/internal/datasource"
 	"github.com/tokuhirom/dashyard/internal/handler"
 	"github.com/tokuhirom/dashyard/internal/metrics"
-	"github.com/tokuhirom/dashyard/internal/prometheus"
 )
 
 // New creates and configures an http.Server with all routes and middleware.
@@ -43,15 +43,15 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 		gothic.Store = sm.Store()
 	}
 
-	// Prometheus client
-	promClient := prometheus.NewClient(cfg.Prometheus.URL, cfg.Prometheus.Timeout)
+	// Datasource registry
+	registry := datasource.NewRegistry(cfg.Datasources)
 
 	// Handlers
 	loginHandler := handler.NewLoginHandler(cfg.Users, sm)
 	dashboardsHandler := handler.NewDashboardsHandler(holder, cfg.SiteTitle, cfg.HeaderColor)
-	queryHandler := handler.NewQueryHandler(promClient)
-	labelValuesHandler := handler.NewLabelValuesHandler(promClient)
-	readyHandler := handler.NewReadyHandler(promClient)
+	queryHandler := handler.NewQueryHandler(registry)
+	labelValuesHandler := handler.NewLabelValuesHandler(registry)
+	readyHandler := handler.NewReadyHandler(registry)
 	staticHandler := handler.NewStaticHandler(frontendFS)
 	authInfoHandler := handler.NewAuthInfoHandler(cfg.Users, cfg.Auth.OAuth)
 

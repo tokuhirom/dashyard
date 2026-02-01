@@ -15,6 +15,7 @@ type Panel struct {
 	Type       string      `yaml:"type" json:"type"`       // "graph" or "markdown"
 	ChartType  string      `yaml:"chart_type,omitempty" json:"chart_type,omitempty"`
 	Query      string      `yaml:"query,omitempty" json:"query,omitempty"`
+	Datasource string      `yaml:"datasource,omitempty" json:"datasource,omitempty"`
 	Unit       string      `yaml:"unit,omitempty" json:"unit,omitempty"` // "bytes", "percent", "count", "seconds"
 	YMin       *float64    `yaml:"y_min,omitempty" json:"y_min,omitempty"`
 	YMax       *float64    `yaml:"y_max,omitempty" json:"y_max,omitempty"`
@@ -35,9 +36,10 @@ type Row struct {
 
 // Variable represents a dashboard-level template variable populated from Prometheus label values.
 type Variable struct {
-	Name  string `yaml:"name" json:"name"`
-	Label string `yaml:"label,omitempty" json:"label,omitempty"`
-	Query string `yaml:"query" json:"query"`
+	Name       string `yaml:"name" json:"name"`
+	Label      string `yaml:"label,omitempty" json:"label,omitempty"`
+	Query      string `yaml:"query" json:"query"`
+	Datasource string `yaml:"datasource,omitempty" json:"datasource,omitempty"`
 }
 
 // Dashboard represents a single dashboard definition loaded from YAML.
