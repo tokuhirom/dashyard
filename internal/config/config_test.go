@@ -101,6 +101,36 @@ func TestParseDefaults(t *testing.T) {
 	}
 }
 
+func TestParseCookieSecure(t *testing.T) {
+	input := []byte(`
+server:
+  session_secret: "test"
+  cookie_secure: true
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !cfg.Server.CookieSecure {
+		t.Error("expected cookie_secure to be true")
+	}
+}
+
+func TestParseCookieSecureDefault(t *testing.T) {
+	input := []byte(`{}`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if cfg.Server.CookieSecure {
+		t.Error("expected cookie_secure to default to false")
+	}
+}
+
 func TestParseTrustedProxies(t *testing.T) {
 	input := []byte(`
 server:
