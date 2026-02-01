@@ -16,5 +16,3 @@ services:
     build:
       context: ../..
       dockerfile: Dockerfile.dummyprom
-    ports:
-      - "9090:9090"

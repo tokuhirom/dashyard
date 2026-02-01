@@ -1,4 +1,4 @@
-.PHONY: all frontend backend build test test-frontend test-e2e lint clean dev-frontend dev-backend dev-dummyprom dev-dummygithub screenshots gen-prompt gen-prompt-up
+.PHONY: all frontend backend build test test-frontend test-e2e lint clean screenshots gen-prompt gen-prompt-up
 
 all: build
 
@@ -22,18 +22,6 @@ test-e2e:
 lint:
 	golangci-lint run ./...
 	cd frontend && npm run lint
-
-dev-frontend:
-	cd frontend && npm run dev
-
-dev-backend:
-	go run . serve --config examples/kitchensink/config.yaml --dashboards-dir examples/kitchensink/dashboards
-
-dev-dummyprom:
-	go run ./cmd/dummyprom
-
-dev-dummygithub:
-	go run ./cmd/dummygithub
 
 screenshots:
 	docker compose -f docker-compose.screenshots.yaml up --build --abort-on-container-exit screenshots
