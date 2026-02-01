@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.3.0](https://github.com/tokuhirom/dashyard/compare/v0.2.1...v0.3.0) - 2026-02-01
+- Reorganize examples directory and add CI validation by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/110
+
 ## [v0.2.1](https://github.com/tokuhirom/dashyard/compare/v0.2.0...v0.2.1) - 2026-02-01
 - Bump actions/setup-node from 4 to 6 by @dependabot[bot] in https://github.com/tokuhirom/dashyard/pull/99
 - Add OAuth/OIDC support with Goth and gorilla/sessions by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/106
