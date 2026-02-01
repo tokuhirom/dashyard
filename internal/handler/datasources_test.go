@@ -13,7 +13,7 @@ import (
 )
 
 func TestDatasourcesHandler(t *testing.T) {
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "prod", Type: "prometheus", URL: "http://prom-prod:9090", Timeout: 5 * time.Second, Default: true},
 		{Name: "staging", Type: "prometheus", URL: "http://prom-staging:9090", Timeout: 5 * time.Second},
 	})
@@ -51,7 +51,7 @@ func TestDatasourcesHandler(t *testing.T) {
 }
 
 func TestDatasourcesHandlerSingle(t *testing.T) {
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "default", Type: "prometheus", URL: "http://localhost:9090", Timeout: 5 * time.Second, Default: true},
 	})
 	handler := NewDatasourcesHandler(registry)

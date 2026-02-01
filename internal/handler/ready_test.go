@@ -21,7 +21,7 @@ func TestReadyHandler_OK(t *testing.T) {
 	}))
 	defer promServer.Close()
 
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "default", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second, Default: true},
 	})
 	h := NewReadyHandler(registry)
@@ -54,7 +54,7 @@ func TestReadyHandler_OK(t *testing.T) {
 }
 
 func TestReadyHandler_PrometheusUnreachable(t *testing.T) {
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "default", Type: "prometheus", URL: "http://localhost:1", Timeout: 1 * time.Second, Default: true},
 	})
 	h := NewReadyHandler(registry)
@@ -92,7 +92,7 @@ func TestReadyHandler_PrometheusNotReady(t *testing.T) {
 	}))
 	defer promServer.Close()
 
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "default", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second, Default: true},
 	})
 	h := NewReadyHandler(registry)
@@ -130,7 +130,7 @@ func TestReadyHandler_MultipleDatasources(t *testing.T) {
 	}))
 	defer goodServer.Close()
 
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "good", Type: "prometheus", URL: goodServer.URL, Timeout: 5 * time.Second, Default: true},
 		{Name: "bad", Type: "prometheus", URL: "http://localhost:1", Timeout: 1 * time.Second},
 	})

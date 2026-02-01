@@ -1,4 +1,4 @@
-import type { Dashboard, DashboardsResponse, DatasourcesResponse, LabelValuesResponse, PrometheusResponse } from '../types';
+import type { Dashboard, DashboardsResponse, DatasourcesResponse, LabelValuesResponse, QueryResponse } from '../types';
 
 export interface OAuthProviderInfo {
   name: string;
@@ -49,13 +49,13 @@ export async function fetchDashboard(path: string): Promise<Dashboard> {
   return request(`/api/dashboards/${path}`);
 }
 
-export async function queryPrometheus(
+export async function queryDatasource(
   query: string,
   start: number,
   end: number,
   step: string,
   datasource?: string,
-): Promise<PrometheusResponse> {
+): Promise<QueryResponse> {
   const params = new URLSearchParams({
     query,
     start: start.toString(),

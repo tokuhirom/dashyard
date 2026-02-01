@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
-import { queryPrometheus, ApiError } from '../api/client';
-import type { PrometheusResponse, TimeRange } from '../types';
+import { queryDatasource, ApiError } from '../api/client';
+import type { QueryResponse, TimeRange } from '../types';
 import { getTimeRangeParams } from '../utils/time';
 
 interface UseQueryResult {
-  data: PrometheusResponse | null;
+  data: QueryResponse | null;
   loading: boolean;
   error: string | null;
 }
 
 export function useQuery(query: string | undefined, timeRange: TimeRange, datasource?: string): UseQueryResult {
-  const [data, setData] = useState<PrometheusResponse | null>(null);
+  const [data, setData] = useState<QueryResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +23,7 @@ export function useQuery(query: string | undefined, timeRange: TimeRange, dataso
 
     const { start, end, step } = getTimeRangeParams(timeRange);
 
-    queryPrometheus(query, start, end, step, datasource)
+    queryDatasource(query, start, end, step, datasource)
       .then((result) => {
         if (!cancelled) {
           setData(result);

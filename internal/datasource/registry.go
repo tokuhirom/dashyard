@@ -8,19 +8,24 @@ import (
 	"github.com/tokuhirom/dashyard/internal/prometheus"
 )
 
-// Registry manages named Prometheus clients created from datasource configs.
+// Registry manages named datasource clients created from datasource configs.
 type Registry struct {
-	clients     map[string]*prometheus.Client
+	clients     map[string]Datasource
 	defaultName string
 }
 
 // NewRegistry creates a Registry from the given datasource configurations.
-func NewRegistry(datasources []config.DatasourceConfig) *Registry {
-	clients := make(map[string]*prometheus.Client, len(datasources))
+func NewRegistry(datasources []config.DatasourceConfig) (*Registry, error) {
+	clients := make(map[string]Datasource, len(datasources))
 	var defaultName string
 
 	for _, ds := range datasources {
-		clients[ds.Name] = prometheus.NewClient(ds.URL, ds.Timeout)
+		switch ds.Type {
+		case "prometheus":
+			clients[ds.Name] = prometheus.NewClient(ds.URL, ds.Timeout)
+		default:
+			return nil, fmt.Errorf("unsupported datasource type %q for %q", ds.Type, ds.Name)
+		}
 		if ds.Default {
 			defaultName = ds.Name
 		}
@@ -29,12 +34,12 @@ func NewRegistry(datasources []config.DatasourceConfig) *Registry {
 	return &Registry{
 		clients:     clients,
 		defaultName: defaultName,
-	}
+	}, nil
 }
 
-// Get returns the Prometheus client for the given datasource name.
+// Get returns the datasource for the given name.
 // If name is empty, the default datasource is returned.
-func (r *Registry) Get(name string) (*prometheus.Client, error) {
+func (r *Registry) Get(name string) (Datasource, error) {
 	if name == "" {
 		return r.Default(), nil
 	}
@@ -45,8 +50,8 @@ func (r *Registry) Get(name string) (*prometheus.Client, error) {
 	return client, nil
 }
 
-// Default returns the default Prometheus client.
-func (r *Registry) Default() *prometheus.Client {
+// Default returns the default datasource.
+func (r *Registry) Default() Datasource {
 	return r.clients[r.defaultName]
 }
 

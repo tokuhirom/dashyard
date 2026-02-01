@@ -19,7 +19,7 @@ func TestLabelValuesHandler(t *testing.T) {
 	}))
 	defer promServer.Close()
 
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "default", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second, Default: true},
 	})
 	handler := NewLabelValuesHandler(registry)
@@ -42,7 +42,7 @@ func TestLabelValuesHandler(t *testing.T) {
 }
 
 func TestLabelValuesHandlerMissingLabel(t *testing.T) {
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "default", Type: "prometheus", URL: "http://localhost:9090", Timeout: 5 * time.Second, Default: true},
 	})
 	handler := NewLabelValuesHandler(registry)
@@ -66,7 +66,7 @@ func TestLabelValuesHandlerPrometheusError(t *testing.T) {
 	}))
 	defer promServer.Close()
 
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "default", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second, Default: true},
 	})
 	handler := NewLabelValuesHandler(registry)
@@ -90,7 +90,7 @@ func TestLabelValuesHandlerWithDatasourceParam(t *testing.T) {
 	}))
 	defer promServer.Close()
 
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "main", Type: "prometheus", URL: "http://localhost:1", Timeout: 5 * time.Second, Default: true},
 		{Name: "app", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second},
 	})

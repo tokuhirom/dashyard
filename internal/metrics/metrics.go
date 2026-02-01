@@ -19,16 +19,16 @@ var (
 	}, []string{"method", "path"})
 )
 
-// Prometheus proxy metrics.
+// Datasource proxy metrics.
 var (
-	PrometheusQueryTotal = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "dashyard_prometheus_query_total",
-		Help: "Total number of upstream Prometheus queries.",
+	DatasourceQueryTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "dashyard_datasource_query_total",
+		Help: "Total number of upstream datasource queries.",
 	}, []string{"status"})
 
-	PrometheusQueryDuration = promauto.NewHistogram(prometheus.HistogramOpts{
-		Name:    "dashyard_prometheus_query_duration_seconds",
-		Help:    "Upstream Prometheus query latency in seconds.",
+	DatasourceQueryDuration = promauto.NewHistogram(prometheus.HistogramOpts{
+		Name:    "dashyard_datasource_query_duration_seconds",
+		Help:    "Upstream datasource query latency in seconds.",
 		Buckets: prometheus.DefBuckets,
 	})
 )

@@ -13,7 +13,10 @@ func TestNewRegistry(t *testing.T) {
 		{Name: "app", Type: "prometheus", URL: "http://app:9090", Timeout: 15 * time.Second},
 	}
 
-	reg := NewRegistry(datasources)
+	reg, err := NewRegistry(datasources)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	if reg.DefaultName() != "main" {
 		t.Errorf("expected default name 'main', got %q", reg.DefaultName())
@@ -29,7 +32,10 @@ func TestRegistryGet(t *testing.T) {
 		{Name: "app", Type: "prometheus", URL: "http://app:9090", Timeout: 15 * time.Second},
 	}
 
-	reg := NewRegistry(datasources)
+	reg, err := NewRegistry(datasources)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	client, err := reg.Get("main")
 	if err != nil {
@@ -69,7 +75,10 @@ func TestRegistryNames(t *testing.T) {
 		{Name: "alpha", Type: "prometheus", URL: "http://a:9090", Timeout: 30 * time.Second, Default: true},
 	}
 
-	reg := NewRegistry(datasources)
+	reg, err := NewRegistry(datasources)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	names := reg.Names()
 	if len(names) != 2 {
@@ -77,5 +86,16 @@ func TestRegistryNames(t *testing.T) {
 	}
 	if names[0] != "alpha" || names[1] != "beta" {
 		t.Errorf("expected sorted names [alpha, beta], got %v", names)
+	}
+}
+
+func TestNewRegistryUnsupportedType(t *testing.T) {
+	datasources := []config.DatasourceConfig{
+		{Name: "main", Type: "influxdb", URL: "http://main:8086", Timeout: 30 * time.Second, Default: true},
+	}
+
+	_, err := NewRegistry(datasources)
+	if err == nil {
+		t.Fatal("expected error for unsupported datasource type")
 	}
 }

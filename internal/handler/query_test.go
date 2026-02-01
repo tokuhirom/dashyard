@@ -20,7 +20,7 @@ func TestQueryHandler(t *testing.T) {
 	}))
 	defer promServer.Close()
 
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "default", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second, Default: true},
 	})
 	handler := NewQueryHandler(registry)
@@ -43,7 +43,7 @@ func TestQueryHandler(t *testing.T) {
 }
 
 func TestQueryHandlerMissingParams(t *testing.T) {
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "default", Type: "prometheus", URL: "http://localhost:9090", Timeout: 5 * time.Second, Default: true},
 	})
 	handler := NewQueryHandler(registry)
@@ -81,7 +81,7 @@ func TestQueryHandlerPrometheusError(t *testing.T) {
 	}))
 	defer promServer.Close()
 
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "default", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second, Default: true},
 	})
 	handler := NewQueryHandler(registry)
@@ -111,7 +111,7 @@ func TestQueryHandlerWithDatasourceParam(t *testing.T) {
 	}))
 	defer appServer.Close()
 
-	registry := datasource.NewRegistry([]config.DatasourceConfig{
+	registry, _ := datasource.NewRegistry([]config.DatasourceConfig{
 		{Name: "main", Type: "prometheus", URL: mainServer.URL, Timeout: 5 * time.Second, Default: true},
 		{Name: "app", Type: "prometheus", URL: appServer.URL, Timeout: 5 * time.Second},
 	})
