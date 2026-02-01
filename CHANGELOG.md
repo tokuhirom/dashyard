@@ -7,6 +7,16 @@
 - Standardize oauth.go logging to use log/slog by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/133
 - Add cookie_secure option to server config by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/134
 - Improve internal/auth test coverage from 63.8% to 94.7% by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/135
+- Buffer datasource response before writing HTTP headers by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/136
+- Add tests for internal/server package by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/138
+
+## [v0.4.2](https://github.com/tokuhirom/dashyard/compare/v0.4.1...v0.4.2) - 2026-02-01
+- Sync variable selections with URL query parameters by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/119
+- Add datasource variable type by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/121
+- Introduce Datasource interface to decouple handlers from Prometheus by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/122
+- Standardize oauth.go logging to use log/slog by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/133
+- Add cookie_secure option to server config by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/134
+- Improve internal/auth test coverage from 63.8% to 94.7% by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/135
 
 ## [v0.4.1](https://github.com/tokuhirom/dashyard/compare/v0.4.0...v0.4.1) - 2026-02-01
 - Add Docker-based E2E test runner by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/117
