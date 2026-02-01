@@ -13,8 +13,22 @@ func init() {
 	gin.SetMode(gin.TestMode)
 }
 
+func createTestSessionCookie(sm *SessionManager, userID string) *http.Cookie {
+	r := httptest.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+	if err := sm.CreateSession(r, w, userID); err != nil {
+		panic(err)
+	}
+	for _, c := range w.Result().Cookies() {
+		if c.Name == "dashyard_session" {
+			return c
+		}
+	}
+	panic("no session cookie found")
+}
+
 func TestAuthMiddlewareValid(t *testing.T) {
-	sm := NewSessionManager("test-secret", false)
+	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
 
 	router := gin.New()
 	router.Use(AuthMiddleware(sm))
@@ -23,14 +37,8 @@ func TestAuthMiddlewareValid(t *testing.T) {
 		c.JSON(http.StatusOK, gin.H{"user_id": userID})
 	})
 
-	// Create a session cookie
-	w := httptest.NewRecorder()
-	if err := sm.CreateSession(w, "admin"); err != nil {
-		t.Fatal(err)
-	}
-	cookie := w.Result().Cookies()[0]
+	cookie := createTestSessionCookie(sm, "admin")
 
-	// Make authenticated request
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.AddCookie(cookie)
 	resp := httptest.NewRecorder()
@@ -50,7 +58,7 @@ func TestAuthMiddlewareValid(t *testing.T) {
 }
 
 func TestAuthMiddlewareNoCookie(t *testing.T) {
-	sm := NewSessionManager("test-secret", false)
+	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
 
 	router := gin.New()
 	router.Use(AuthMiddleware(sm))
@@ -68,7 +76,7 @@ func TestAuthMiddlewareNoCookie(t *testing.T) {
 }
 
 func TestAuthMiddlewareInvalidCookie(t *testing.T) {
-	sm := NewSessionManager("test-secret", false)
+	sm := NewSessionManager("test-secret-that-is-32bytes!!", false)
 
 	router := gin.New()
 	router.Use(AuthMiddleware(sm))

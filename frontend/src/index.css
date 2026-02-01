@@ -503,6 +503,64 @@ body {
   cursor: not-allowed;
 }
 
+/* OAuth buttons */
+.oauth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.oauth-button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.oauth-button:hover {
+  background: var(--color-bg);
+}
+
+.oauth-button-github {
+  background: #24292e;
+  color: white;
+  border-color: #24292e;
+}
+
+.oauth-button-github:hover {
+  background: #2f363d;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.login-divider span {
+  padding: 0 12px;
+}
+
 /* Loading/Error states */
 .app-loading,
 .app-error,

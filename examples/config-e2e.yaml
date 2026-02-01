@@ -1,0 +1,25 @@
+site_title: "Dashyard E2E"
+
+server:
+  session_secret: "e2e-test-secret-change-in-production"
+
+prometheus:
+  url: "http://localhost:9090"
+  timeout: 30s
+
+dashboards:
+  dir: "examples/dashboards"
+
+# Password auth (used by most E2E tests)
+users:
+  - id: "admin"
+    password_hash: "$6$D/BkIQYiHD.cKL4A$pbAApV8cWXOv3hTyITrHNmlWe3FyfIJyM2CVFuJxbmXwDZPIVbcXKJbM2dxmJqG/ZJZBtrt8e9bVxt0d7rQKK."
+
+# OAuth auth via dummygithub (used by OAuth E2E test)
+auth:
+  oauth:
+    - provider: github
+      client_id: "dummy-client-id"
+      client_secret: "dummy-client-secret"
+      base_url: "http://localhost:5555"
+      redirect_url: "http://localhost:5173/auth/github/callback"

@@ -49,7 +49,7 @@ func (h *LoginHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	if err := h.session.CreateSession(c.Writer, user.ID); err != nil {
+	if err := h.session.CreateSession(c.Request, c.Writer, user.ID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "session creation failed"})
 		return
 	}

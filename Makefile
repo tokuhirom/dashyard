@@ -1,4 +1,4 @@
-.PHONY: all frontend backend build test test-frontend test-e2e lint clean dev-frontend dev-backend dev-dummyprom screenshots gen-prompt gen-prompt-up
+.PHONY: all frontend backend build test test-frontend test-e2e lint clean dev-frontend dev-backend dev-dummyprom dev-dummygithub screenshots gen-prompt gen-prompt-up
 
 all: build
 
@@ -31,6 +31,9 @@ dev-backend:
 
 dev-dummyprom:
 	go run ./cmd/dummyprom
+
+dev-dummygithub:
+	go run ./cmd/dummygithub
 
 screenshots:
 	docker compose -f docker-compose.screenshots.yaml up --build --abort-on-container-exit screenshots

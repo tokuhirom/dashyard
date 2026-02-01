@@ -1,5 +1,15 @@
 import type { Dashboard, DashboardsResponse, LabelValuesResponse, PrometheusResponse } from '../types';
 
+export interface OAuthProviderInfo {
+  name: string;
+  url: string;
+}
+
+export interface AuthInfo {
+  password_enabled: boolean;
+  oauth_providers: OAuthProviderInfo[];
+}
+
 class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
@@ -17,6 +27,10 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     throw new ApiError(resp.status, body);
   }
   return resp.json();
+}
+
+export async function fetchAuthInfo(): Promise<AuthInfo> {
+  return request('/api/auth-info');
 }
 
 export async function login(userId: string, password: string): Promise<{ user_id: string }> {

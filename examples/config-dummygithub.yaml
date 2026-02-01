@@ -1,0 +1,19 @@
+site_title: "Dashyard (dummygithub)"
+
+server:
+  session_secret: "dummy-session-secret-for-dev"
+
+prometheus:
+  url: "http://localhost:9090"
+  timeout: 30s
+
+dashboards:
+  dir: "examples/dashboards"
+
+auth:
+  oauth:
+    - provider: github
+      client_id: "dummy-client-id"
+      client_secret: "dummy-client-secret"
+      base_url: "http://localhost:5555"
+      redirect_url: "http://localhost:8080/auth/github/callback"

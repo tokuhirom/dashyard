@@ -16,6 +16,23 @@ type User struct {
 	PasswordHash string `yaml:"password_hash"`
 }
 
+// OAuthProviderConfig holds settings for a single OAuth/OIDC provider.
+type OAuthProviderConfig struct {
+	Provider     string   `yaml:"provider"`
+	ClientID     string   `yaml:"client_id"`
+	ClientSecret string   `yaml:"client_secret"`
+	RedirectURL  string   `yaml:"redirect_url"`
+	BaseURL      string   `yaml:"base_url,omitempty"`
+	Scopes       []string `yaml:"scopes,omitempty"`
+	AllowedUsers []string `yaml:"allowed_users,omitempty"`
+	AllowedOrgs  []string `yaml:"allowed_orgs,omitempty"`
+}
+
+// AuthConfig holds authentication settings.
+type AuthConfig struct {
+	OAuth []OAuthProviderConfig `yaml:"oauth,omitempty"`
+}
+
 // ServerConfig holds HTTP server settings.
 type ServerConfig struct {
 	SessionSecret  string   `yaml:"session_secret"`
@@ -37,10 +54,11 @@ type DashboardsConfig struct {
 type Config struct {
 	SiteTitle   string           `yaml:"site_title"`
 	HeaderColor string           `yaml:"header_color"`
-	Server     ServerConfig     `yaml:"server"`
-	Prometheus PrometheusConfig `yaml:"prometheus"`
-	Dashboards DashboardsConfig `yaml:"dashboards"`
-	Users      []User           `yaml:"users"`
+	Server      ServerConfig     `yaml:"server"`
+	Prometheus  PrometheusConfig `yaml:"prometheus"`
+	Dashboards  DashboardsConfig `yaml:"dashboards"`
+	Users       []User           `yaml:"users"`
+	Auth        AuthConfig       `yaml:"auth"`
 }
 
 // Load reads and parses a YAML config file, applying defaults for missing values.
@@ -77,5 +95,29 @@ func Parse(data []byte) (*Config, error) {
 		cfg.Server.SessionSecret = hex.EncodeToString(secret)
 	}
 
+	if err := validateOAuthConfig(cfg.Auth.OAuth); err != nil {
+		return nil, err
+	}
+
 	return cfg, nil
+}
+
+func validateOAuthConfig(providers []OAuthProviderConfig) error {
+	seen := make(map[string]bool)
+	for i, p := range providers {
+		if p.Provider == "" {
+			return fmt.Errorf("auth.oauth[%d]: provider is required", i)
+		}
+		if p.ClientID == "" {
+			return fmt.Errorf("auth.oauth[%d]: client_id is required", i)
+		}
+		if p.ClientSecret == "" {
+			return fmt.Errorf("auth.oauth[%d]: client_secret is required", i)
+		}
+		if seen[p.Provider] {
+			return fmt.Errorf("auth.oauth[%d]: duplicate provider %q", i, p.Provider)
+		}
+		seen[p.Provider] = true
+	}
+	return nil
 }
