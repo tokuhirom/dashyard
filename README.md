@@ -88,6 +88,16 @@ Session-based login with SHA-512 crypt password hashing.
 
 ![Login](docs/screenshot-login.png)
 
+### GitHub OAuth
+
+Sign in with GitHub or GitHub Enterprise. Configure one or more OAuth providers alongside password auth. Optionally restrict access by GitHub username or organization membership.
+
+![GitHub OAuth Login](docs/screenshot-login-oauth.png)
+
+When both password auth and OAuth are configured, users see both options on the login page.
+
+GitHub Enterprise is supported via the `base_url` option, which overrides the OAuth and API endpoints to point to your GHE instance.
+
 ### Readiness Probe
 
 `GET /ready` returns the server and Prometheus connectivity status. No authentication required.
@@ -177,6 +187,14 @@ make dev-backend     # Go server on :8080
 make dev-frontend    # Vite dev server on :5173
 ```
 
+To test GitHub OAuth locally, also start the fake GitHub server:
+
+```bash
+make dev-dummygithub # Fake GitHub OAuth on :5555
+```
+
+Then use `examples/config-dummygithub.yaml` as the config (it has GitHub OAuth pointing to the dummy server).
+
 ## Configuration
 
 Create a `config.yaml` file (see `examples/config.yaml`):
@@ -198,6 +216,17 @@ dashboards:
 users:
   - id: "admin"
     password_hash: "$6$..."
+
+# GitHub OAuth (optional, can coexist with password auth)
+auth:
+  oauth:
+    - provider: github
+      client_id: "your-github-client-id"
+      client_secret: "your-github-client-secret"
+      redirect_url: "http://localhost:8080/auth/github/callback"
+      # base_url: "https://ghe.example.com"  # for GitHub Enterprise
+      # allowed_users: ["user1", "user2"]
+      # allowed_orgs: ["my-org"]
 ```
 
 Host and port are set via CLI flags (defaults: `0.0.0.0:8080`):
@@ -328,6 +357,7 @@ JSON schema: [`schemas/dashboard.schema.json`](schemas/dashboard.schema.json)
 ```
 cmd/
   dummyprom/          Fake Prometheus server for demos
+  dummygithub/        Fake GitHub OAuth server for dev/testing
 internal/
   auth/               Session management & middleware
   config/             YAML config parsing

@@ -10,6 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 const BASE_URL = process.env.BASE_URL || "http://localhost:5173/";
+const OAUTH_BASE_URL = process.env.OAUTH_BASE_URL || "";
 const OUTPUT_DIR = process.env.OUTPUT_DIR || ROOT_DIR;
 
 // Fixed absolute time window for deterministic screenshots.
@@ -177,6 +178,22 @@ async function main() {
       });
       console.log("Saved: screenshot-sidebar-groups.png");
     }
+  }
+
+  // Screenshot: OAuth login page (from a separate dashyard instance with OAuth enabled)
+  if (OAUTH_BASE_URL) {
+    const oauthPage = await context.newPage();
+    await oauthPage.goto(OAUTH_BASE_URL, {
+      waitUntil: "networkidle",
+      timeout: 60000,
+    });
+    await oauthPage.waitForSelector(".login-form", { timeout: 30000 });
+    await oauthPage.screenshot({
+      path: path.join(OUTPUT_DIR, "docs", "screenshot-login-oauth.png"),
+      fullPage: false,
+    });
+    console.log("Saved: screenshot-login-oauth.png");
+    await oauthPage.close();
   }
 
   await browser.close();
