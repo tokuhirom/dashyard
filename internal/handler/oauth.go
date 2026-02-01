@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -47,7 +47,7 @@ func (h *OAuthHandler) Callback(c *gin.Context) {
 
 	gothUser, err := gothic.CompleteUserAuth(c.Writer, c.Request)
 	if err != nil {
-		log.Printf("OAuth callback error: %v", err)
+		slog.Error("OAuth callback failed", "error", err)
 		c.Redirect(http.StatusTemporaryRedirect, "/?error=oauth_failed")
 		return
 	}
@@ -61,7 +61,7 @@ func (h *OAuthHandler) Callback(c *gin.Context) {
 
 	allowed, err := auth.CheckUserAllowed(gothUser, *providerCfg)
 	if err != nil {
-		log.Printf("OAuth allowlist check error: %v", err)
+		slog.Error("OAuth allowlist check failed", "error", err)
 		c.Redirect(http.StatusTemporaryRedirect, "/?error=oauth_failed")
 		return
 	}
@@ -77,7 +77,7 @@ func (h *OAuthHandler) Callback(c *gin.Context) {
 	}
 
 	if err := h.session.CreateSession(c.Request, c.Writer, userID); err != nil {
-		log.Printf("OAuth session creation error: %v", err)
+		slog.Error("OAuth session creation failed", "error", err)
 		c.Redirect(http.StatusTemporaryRedirect, "/?error=session_failed")
 		return
 	}
@@ -88,7 +88,7 @@ func (h *OAuthHandler) Callback(c *gin.Context) {
 // Logout clears the session and redirects to the login page.
 func (h *OAuthHandler) Logout(c *gin.Context) {
 	if err := h.session.ClearSession(c.Request, c.Writer); err != nil {
-		log.Printf("Logout error: %v", err)
+		slog.Error("logout failed", "error", err)
 	}
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
