@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.4.1](https://github.com/tokuhirom/dashyard/compare/v0.4.0...v0.4.1) - 2026-02-01
+- Add Docker-based E2E test runner by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/117
+
 ## [v0.3.1](https://github.com/tokuhirom/dashyard/compare/v0.3.0...v0.3.1) - 2026-02-01
 - Add dummyapp and reorganize examples directory by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/112
 - Remove unnecessary host port mappings and local dev targets by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/114
