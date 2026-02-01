@@ -16,7 +16,8 @@ async function globalSetup(_config: FullConfig) {
   const context = await browser.newContext();
   const page = await context.newPage();
 
-  await page.goto("http://localhost:5173/");
+  const baseURL = process.env.BASE_URL || "http://localhost:5173";
+  await page.goto(`${baseURL}/`);
 
   // Wait for login form inputs to render (not just the container, which may
   // show a "Loading..." state while /api/auth-info is being fetched)

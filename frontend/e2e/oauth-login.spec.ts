@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
 
+const oauthBaseURL =
+  process.env.OAUTH_BASE_URL ||
+  process.env.BASE_URL ||
+  "http://localhost:5173";
+
 // OAuth tests don't use the global auth state
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -7,7 +12,7 @@ test.describe("OAuth Login", () => {
   test("login page shows OAuth button when provider is configured", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto(`${oauthBaseURL}/`);
 
     // Wait for login form to render
     await expect(page.locator(".login-form")).toBeVisible({ timeout: 10000 });
@@ -19,7 +24,7 @@ test.describe("OAuth Login", () => {
   });
 
   test("login page shows both OAuth and password form", async ({ page }) => {
-    await page.goto("/");
+    await page.goto(`${oauthBaseURL}/`);
 
     await expect(page.locator(".login-form")).toBeVisible({ timeout: 10000 });
 
@@ -35,7 +40,7 @@ test.describe("OAuth Login", () => {
   });
 
   test("OAuth flow through dummygithub completes login", async ({ page }) => {
-    await page.goto("/");
+    await page.goto(`${oauthBaseURL}/`);
 
     // Wait for login form
     await expect(page.locator(".login-form")).toBeVisible({ timeout: 10000 });
@@ -55,8 +60,8 @@ test.describe("OAuth Login", () => {
     // This navigates: dummygithub → callback → redirect to /
     await page.getByRole("link", { name: "Sign in as dummyuser" }).click();
 
-    // Wait until we're back on the app (URL contains localhost:5173)
-    await page.waitForURL("http://localhost:5173/**", { timeout: 15000 });
+    // Wait until we're back on the app
+    await page.waitForURL(`${oauthBaseURL}/**`, { timeout: 15000 });
 
     // The OAuth callback sets a session cookie and redirects to /.
     // Reload to ensure the app picks up the session.
