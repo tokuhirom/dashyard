@@ -48,22 +48,42 @@ function parseTimeRange(): TimeRange {
   return DEFAULT_TIME_RANGE;
 }
 
-function buildUrl(dashboardPath: string, timeRange: TimeRange): string {
+function parseVariableValues(): Record<string, string> {
+  const params = new URLSearchParams(window.location.search);
+  const values: Record<string, string> = {};
+  params.forEach((value, key) => {
+    if (key.startsWith('var-')) {
+      values[key.slice(4)] = value;
+    }
+  });
+  return values;
+}
+
+function buildUrl(dashboardPath: string, timeRange: TimeRange, varValues?: Record<string, string>): string {
   let url = `/d/${dashboardPath}`;
+  const params = new URLSearchParams();
   if (timeRange.type === 'absolute') {
     const fromISO = new Date(timeRange.start * 1000).toISOString();
     const toISO = new Date(timeRange.end * 1000).toISOString();
-    url += `?from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
+    params.set('from', fromISO);
+    params.set('to', toISO);
   } else if (timeRange.value !== DEFAULT_TIME_RANGE.value) {
-    url += `?t=${timeRange.value}`;
+    params.set('t', timeRange.value);
   }
-  return url;
+  if (varValues) {
+    for (const [name, value] of Object.entries(varValues)) {
+      params.set(`var-${name}`, value);
+    }
+  }
+  const qs = params.toString();
+  return qs ? `${url}?${qs}` : url;
 }
 
 function App() {
   const [authenticated, setAuthenticated] = useState(true); // Optimistic; API calls will detect 401
   const [currentPath, setCurrentPath] = useState<string | null>(parseDashboardPath);
   const [timeRange, setTimeRange] = useState<TimeRange>(parseTimeRange);
+  const [variableValues, setVariableValues] = useState<Record<string, string>>(parseVariableValues);
   const [columns, setColumns] = useState(2);
   const [refreshInterval, setRefreshInterval] = useState(0);
 
@@ -87,9 +107,24 @@ function App() {
 
   const onNavigate = useCallback((path: string) => {
     setCurrentPath(path);
+    setVariableValues({});
     setTimeRange((prev) => {
       const url = buildUrl(path, prev);
       window.history.pushState(null, '', url);
+      return prev;
+    });
+  }, []);
+
+  const onVariableValuesChange = useCallback((values: Record<string, string>) => {
+    setVariableValues(values);
+    setCurrentPath((prev) => {
+      if (prev) {
+        setTimeRange((tr) => {
+          const url = buildUrl(prev, tr, values);
+          window.history.replaceState(null, '', url);
+          return tr;
+        });
+      }
       return prev;
     });
   }, []);
@@ -98,8 +133,11 @@ function App() {
     setTimeRange(range);
     setCurrentPath((prev) => {
       if (prev) {
-        const url = buildUrl(prev, range);
-        window.history.replaceState(null, '', url);
+        setVariableValues((vars) => {
+          const url = buildUrl(prev, range, vars);
+          window.history.replaceState(null, '', url);
+          return vars;
+        });
       }
       return prev;
     });
@@ -109,6 +147,7 @@ function App() {
     const handlePopState = () => {
       setCurrentPath(parseDashboardPath());
       setTimeRange(parseTimeRange());
+      setVariableValues(parseVariableValues());
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -135,7 +174,7 @@ function App() {
 
   // Redirect root to first dashboard
   if (!currentPath && activePath && window.location.pathname === '/') {
-    window.history.replaceState(null, '', buildUrl(activePath, timeRange));
+    window.history.replaceState(null, '', buildUrl(activePath, timeRange, variableValues));
   }
 
   if (!activePath) {
@@ -161,6 +200,8 @@ function App() {
         timeRange={timeRange}
         onAuthError={handleAuthError}
         columns={columns}
+        variableValues={variableValues}
+        onVariableValuesChange={onVariableValuesChange}
       />
     </Layout>
   );

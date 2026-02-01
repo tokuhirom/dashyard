@@ -67,6 +67,16 @@ cd frontend && npm run build     # Frontend type-check + build
 
 If CI fails after pushing, fix issues and run all checks locally before pushing again.
 
+## E2E Tests
+
+When adding or modifying E2E tests (`frontend/e2e/**/*.spec.ts`), always run them locally before pushing:
+
+```bash
+make test-e2e                    # Run Playwright E2E tests in Docker
+```
+
+Do not push E2E test changes without verifying they pass locally first.
+
 ## Git Workflow
 
 - When starting a new task, always pull the latest main and create a new branch from it first (`git checkout main && git pull origin main && git checkout -b <branch>`)
