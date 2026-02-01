@@ -27,7 +27,7 @@ func newDummyGitHub() *httptest.Server {
 
 	mux.HandleFunc("POST /login/oauth/access_token", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{
+		_ = json.NewEncoder(w).Encode(map[string]string{
 			"access_token": "dummy-access-token",
 			"token_type":   "bearer",
 			"scope":        "user:email,read:org",
@@ -36,7 +36,7 @@ func newDummyGitHub() *httptest.Server {
 
 	mux.HandleFunc("GET /api/v3/user", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
 			"login":      "dummyuser",
 			"id":         12345,
 			"avatar_url": "https://avatars.githubusercontent.com/u/0?v=4",
@@ -47,7 +47,7 @@ func newDummyGitHub() *httptest.Server {
 
 	mux.HandleFunc("GET /api/v3/user/emails", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode([]map[string]interface{}{
+		_ = json.NewEncoder(w).Encode([]map[string]interface{}{
 			{
 				"email":      "dummy@example.com",
 				"primary":    true,
@@ -59,7 +59,7 @@ func newDummyGitHub() *httptest.Server {
 
 	mux.HandleFunc("GET /api/v3/user/orgs", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode([]map[string]interface{}{
+		_ = json.NewEncoder(w).Encode([]map[string]interface{}{
 			{
 				"login":       "dummy-org",
 				"id":          100,
