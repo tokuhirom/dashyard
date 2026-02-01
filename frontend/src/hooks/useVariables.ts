@@ -23,6 +23,7 @@ interface UseVariablesResult {
 export function useVariables(
   definitions: Variable[] | undefined,
   onAuthError: () => void,
+  initialValues?: Record<string, string>,
 ): UseVariablesResult {
   const [variables, setVariables] = useState<VariableState[]>([]);
 
@@ -58,12 +59,14 @@ export function useVariables(
       fetchLabelValues(parsed.label, parsed.metric, def.datasource)
         .then((resp) => {
           const values = resp.data || [];
+          const urlVal = initialValues?.[def.name];
+          const defaultVal = urlVal && values.includes(urlVal) ? urlVal : (values[0] || '');
           setVariables((prev) => {
             const next = [...prev];
             next[idx] = {
               ...next[idx],
               values,
-              selected: values[0] || '',
+              selected: defaultVal,
               loading: false,
             };
             return next;
