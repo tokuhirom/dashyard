@@ -4,6 +4,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -21,16 +22,71 @@ func main() {
 		port = p
 	}
 
-	http.HandleFunc("/api/v1/query_range", handleQueryRange)
-	http.HandleFunc("/api/v1/metadata", handleMetadata)
-	http.HandleFunc("/api/v1/labels", handleLabels)
-	http.HandleFunc("/api/v1/label/", handleLabelValues)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v1/query_range", handleQueryRange)
+	mux.HandleFunc("/api/v1/metadata", handleMetadata)
+	mux.HandleFunc("/api/v1/labels", handleLabels)
+	mux.HandleFunc("/api/v1/label/", handleLabelValues)
+	mux.HandleFunc("/-/ready", handleReady)
+
+	// Wrap with prefix-stripping middleware so that URLs like /prod/api/v1/...
+	// are routed to the same handlers. A seed offset is derived from the prefix
+	// so different paths return slightly different data.
+	handler := prefixMiddleware(mux)
 
 	slog.Info("dummy prometheus server starting", "port", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		slog.Error("server error", "error", err)
 		os.Exit(1)
 	}
+}
+
+func handleReady(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("OK"))
+}
+
+// prefixMiddleware strips a path prefix (e.g. /prod, /staging) before known
+// API paths and stores a seed offset in the request context so generated data
+// differs between prefixes.
+func prefixMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		// Known API path prefixes that the dummy server handles.
+		knownPrefixes := []string{"/api/v1/", "/-/"}
+		for _, kp := range knownPrefixes {
+			if idx := strings.Index(path, kp); idx > 0 {
+				prefix := path[:idx]
+				r.URL.Path = path[idx:]
+				// Store seed offset derived from the stripped prefix.
+				ctx := contextWithSeedOffset(r.Context(), hashPrefix(prefix))
+				r = r.WithContext(ctx)
+				break
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+type seedOffsetKey struct{}
+
+func contextWithSeedOffset(ctx context.Context, offset uint64) context.Context {
+	return context.WithValue(ctx, seedOffsetKey{}, offset)
+}
+
+func seedOffsetFromContext(ctx context.Context) uint64 {
+	if v, ok := ctx.Value(seedOffsetKey{}).(uint64); ok {
+		return v
+	}
+	return 0
+}
+
+func hashPrefix(prefix string) uint64 {
+	var h uint64
+	for _, c := range prefix {
+		h = h*31 + uint64(c)
+	}
+	return h
 }
 
 type promResponse struct {
@@ -63,7 +119,7 @@ func handleQueryRange(w http.ResponseWriter, r *http.Request) {
 		step = 15
 	}
 
-	results := generateData(query, start, end, step)
+	results := generateData(r.Context(), query, start, end, step)
 
 	resp := promResponse{
 		Status: "success",
@@ -93,7 +149,8 @@ func parseStep(s string) float64 {
 	return v
 }
 
-func generateData(query string, start, end, step float64) []promResult {
+func generateData(ctx context.Context, query string, start, end, step float64) []promResult {
+	_ = seedOffsetFromContext(ctx) // available for future per-prefix data variation
 	switch {
 	case strings.Contains(query, "cpu_utilization"):
 		return generateCPUUtilization(start, end, step)

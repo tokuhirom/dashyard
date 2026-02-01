@@ -1,0 +1,17 @@
+title: "Datasource Variable Demo"
+variables:
+  - name: env
+    type: datasource
+    label: "Environment"
+rows:
+  - title: "System Overview ($env)"
+    panels:
+      - title: "CPU Usage"
+        type: graph
+        query: "system_cpu_utilization_ratio"
+        datasource: "$env"
+      - title: "Memory Usage"
+        type: graph
+        query: "system_memory_usage_bytes"
+        datasource: "$env"
+        unit: bytes

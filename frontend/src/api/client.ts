@@ -1,4 +1,4 @@
-import type { Dashboard, DashboardsResponse, LabelValuesResponse, PrometheusResponse } from '../types';
+import type { Dashboard, DashboardsResponse, DatasourcesResponse, LabelValuesResponse, PrometheusResponse } from '../types';
 
 export interface OAuthProviderInfo {
   name: string;
@@ -77,6 +77,10 @@ export async function fetchLabelValues(label: string, match?: string, datasource
     params.set('datasource', datasource);
   }
   return request(`/api/label-values?${params}`);
+}
+
+export async function fetchDatasources(): Promise<DatasourcesResponse> {
+  return request('/api/datasources');
 }
 
 export async function fetchDashboardSource(path: string): Promise<string> {

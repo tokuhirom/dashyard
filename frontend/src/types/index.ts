@@ -29,9 +29,15 @@ export interface Row {
 
 export interface Variable {
   name: string;
+  type?: 'query' | 'datasource';
   label?: string;
-  query: string;
+  query?: string;
   datasource?: string;
+}
+
+export interface DatasourcesResponse {
+  datasources: string[];
+  default: string;
 }
 
 export interface Dashboard {

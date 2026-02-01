@@ -161,6 +161,16 @@ async function main() {
   );
   console.log("Saved: screenshot-y-axis-bounds.png");
 
+  // Navigate to datasource-variable dashboard
+  await captureDashboard(
+    page,
+    dashboardUrl("datasource-variable"),
+    ".graph-panel canvas",
+    path.join(OUTPUT_DIR, "docs", "screenshot-datasource-variable.png"),
+    { fullPage: true }
+  );
+  console.log("Saved: screenshot-datasource-variable.png");
+
   // Navigate to sidebar groups (infra/)
   const groupHeader = page.locator(".sidebar-group-header").first();
   if ((await groupHeader.count()) > 0) {

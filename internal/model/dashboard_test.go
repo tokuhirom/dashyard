@@ -657,6 +657,98 @@ func TestValidateVariableEmptyQuery(t *testing.T) {
 	}
 }
 
+func TestDatasourceVariableYAMLUnmarshal(t *testing.T) {
+	input := `
+title: "Datasource Variable Demo"
+variables:
+  - name: env
+    type: datasource
+    label: "Environment"
+rows:
+  - title: "CPU ($env)"
+    panels:
+      - title: "CPU Usage"
+        type: "graph"
+        query: "system_cpu_utilization_ratio"
+        datasource: "$env"
+`
+	var d Dashboard
+	if err := yaml.Unmarshal([]byte(input), &d); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(d.Variables) != 1 {
+		t.Fatalf("expected 1 variable, got %d", len(d.Variables))
+	}
+	v := d.Variables[0]
+	if v.Type != "datasource" {
+		t.Errorf("expected variable type 'datasource', got %q", v.Type)
+	}
+	if v.Name != "env" {
+		t.Errorf("expected variable name 'env', got %q", v.Name)
+	}
+	if v.Label != "Environment" {
+		t.Errorf("expected variable label 'Environment', got %q", v.Label)
+	}
+	if v.Query != "" {
+		t.Errorf("expected empty query for datasource variable, got %q", v.Query)
+	}
+}
+
+func TestValidateDatasourceVariable(t *testing.T) {
+	d := Dashboard{
+		Title:     "Test",
+		Variables: []Variable{{Name: "env", Type: "datasource"}},
+		Rows:      []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}}},
+	}
+	if err := d.Validate(); err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+}
+
+func TestValidateDatasourceVariableWithQuery(t *testing.T) {
+	d := Dashboard{
+		Title:     "Test",
+		Variables: []Variable{{Name: "env", Type: "datasource", Query: "label_values(m, x)"}},
+		Rows:      []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for datasource variable with query")
+	}
+}
+
+func TestValidateDatasourceVariableWithDatasource(t *testing.T) {
+	d := Dashboard{
+		Title:     "Test",
+		Variables: []Variable{{Name: "env", Type: "datasource", Datasource: "prod"}},
+		Rows:      []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for datasource variable with datasource field")
+	}
+}
+
+func TestValidateUnknownVariableType(t *testing.T) {
+	d := Dashboard{
+		Title:     "Test",
+		Variables: []Variable{{Name: "x", Type: "unknown"}},
+		Rows:      []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for unknown variable type")
+	}
+}
+
+func TestValidateQueryVariableWithExplicitType(t *testing.T) {
+	d := Dashboard{
+		Title:     "Test",
+		Variables: []Variable{{Name: "device", Type: "query", Query: "label_values(m, device)"}},
+		Rows:      []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up"}}}},
+	}
+	if err := d.Validate(); err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+}
+
 func TestValidateRepeatUndefinedVariable(t *testing.T) {
 	d := Dashboard{
 		Title: "Test",

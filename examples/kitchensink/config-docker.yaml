@@ -4,9 +4,14 @@ server:
   session_secret: "change-me-in-production"
 
 datasources:
-  - name: default
+  - name: prod
     type: prometheus
     url: "http://dummyprom:9090"
+    timeout: 30s
+    default: true
+  - name: staging
+    type: prometheus
+    url: "http://dummyprom:9090/staging"
     timeout: 30s
 
 # Default user: admin / admin

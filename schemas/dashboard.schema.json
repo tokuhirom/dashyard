@@ -29,11 +29,17 @@
   "$defs": {
     "variable": {
       "type": "object",
-      "description": "A template variable populated from Prometheus label values.",
+      "description": "A template variable. Type 'query' (default) populates from Prometheus label values; type 'datasource' populates from configured datasource names.",
       "properties": {
         "name": {
           "type": "string",
           "description": "Variable name used in PromQL templates as $name or ${name}."
+        },
+        "type": {
+          "type": "string",
+          "description": "Variable type: 'query' (default) for Prometheus label values, 'datasource' for switching between configured datasources.",
+          "enum": ["query", "datasource"],
+          "default": "query"
         },
         "label": {
           "type": "string",
@@ -41,14 +47,14 @@
         },
         "query": {
           "type": "string",
-          "description": "Query to populate values, e.g. label_values(metric, label)."
+          "description": "Query to populate values, e.g. label_values(metric, label). Required for type 'query', forbidden for type 'datasource'."
         },
         "datasource": {
           "type": "string",
-          "description": "Name of the datasource to query. Uses the default datasource when omitted."
+          "description": "Name of the datasource to query. Uses the default datasource when omitted. Forbidden for type 'datasource'."
         }
       },
-      "required": ["name", "query"],
+      "required": ["name"],
       "additionalProperties": false
     },
     "row": {

@@ -55,7 +55,7 @@ func (c *Client) QueryRange(ctx context.Context, query, start, end, step string)
 	if err != nil {
 		return nil, 0, fmt.Errorf("parsing base URL: %w", err)
 	}
-	u.Path = "/api/v1/query_range"
+	u = u.JoinPath("api/v1/query_range")
 
 	params := url.Values{}
 	params.Set("query", query)
@@ -94,7 +94,7 @@ func (c *Client) Ping(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("parsing base URL: %w", err)
 	}
-	u.Path = "/-/ready"
+	u = u.JoinPath("-/ready")
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 	if err != nil {
@@ -121,7 +121,7 @@ func (c *Client) LabelValues(ctx context.Context, label, match string) (io.ReadC
 	if err != nil {
 		return nil, 0, fmt.Errorf("parsing base URL: %w", err)
 	}
-	u.Path = fmt.Sprintf("/api/v1/label/%s/values", label)
+	u = u.JoinPath("api/v1/label", label, "values")
 
 	if match != "" {
 		params := url.Values{}
