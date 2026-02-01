@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.4.3](https://github.com/tokuhirom/dashyard/compare/v0.4.2...v0.4.3) - 2026-02-01
+- Add tests for static handler SPA fallback by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/139
+- Add React Error Boundary by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/141
+
 ## [v0.4.2](https://github.com/tokuhirom/dashyard/compare/v0.4.1...v0.4.2) - 2026-02-01
 - Sync variable selections with URL query parameters by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/119
 - Add datasource variable type by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/121
