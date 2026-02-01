@@ -16,12 +16,9 @@ make screenshots                 # Regenerate README screenshots (Docker)
 cd frontend && npm run build     # Frontend build (TypeScript check + Vite)
 ```
 
-Development (three terminals):
+Development (all services run in Docker):
 ```bash
-make dev-dummyprom               # Fake Prometheus on :9090
-make dev-backend                 # Go server on :8080 (uses examples/kitchensink/config.yaml)
-make dev-frontend                # Vite dev server on :5173
-make dev-dummygithub             # Fake GitHub OAuth server on :5555
+make gen-prompt-up               # Start full real-world stack (dashyard on :8080)
 ```
 
 ## Project Layout
