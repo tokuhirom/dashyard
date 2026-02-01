@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.3.1](https://github.com/tokuhirom/dashyard/compare/v0.3.0...v0.3.1) - 2026-02-01
+- Add dummyapp and reorganize examples directory by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/112
+- Remove unnecessary host port mappings and local dev targets by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/114
+- Add support for multiple named datasources by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/115
+
 ## [v0.3.0](https://github.com/tokuhirom/dashyard/compare/v0.2.1...v0.3.0) - 2026-02-01
 - Reorganize examples directory and add CI validation by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/110
 
