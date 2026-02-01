@@ -9,7 +9,7 @@ import (
 	"github.com/tokuhirom/dashyard/internal/datasource"
 )
 
-// QueryHandler handles GET /api/query - proxies requests to Prometheus.
+// QueryHandler handles GET /api/query - proxies requests to the datasource.
 type QueryHandler struct {
 	registry *datasource.Registry
 }
@@ -19,7 +19,7 @@ func NewQueryHandler(registry *datasource.Registry) *QueryHandler {
 	return &QueryHandler{registry: registry}
 }
 
-// Handle processes a Prometheus query_range proxy request.
+// Handle processes a datasource query_range proxy request.
 func (h *QueryHandler) Handle(c *gin.Context) {
 	query := c.Query("query")
 	start := c.Query("start")
@@ -39,8 +39,8 @@ func (h *QueryHandler) Handle(c *gin.Context) {
 
 	body, statusCode, err := client.QueryRange(c.Request.Context(), query, start, end, step)
 	if err != nil {
-		slog.Error("prometheus query failed", "error", err)
-		c.JSON(http.StatusBadGateway, gin.H{"error": "prometheus query failed"})
+		slog.Error("datasource query failed", "error", err)
+		c.JSON(http.StatusBadGateway, gin.H{"error": "datasource query failed"})
 		return
 	}
 	defer func() { _ = body.Close() }()
@@ -48,6 +48,6 @@ func (h *QueryHandler) Handle(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 	c.Status(statusCode)
 	if _, err := io.Copy(c.Writer, body); err != nil {
-		slog.Error("failed to stream prometheus response", "error", err)
+		slog.Error("failed to stream datasource response", "error", err)
 	}
 }

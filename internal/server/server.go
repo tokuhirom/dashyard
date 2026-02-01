@@ -44,7 +44,10 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 	}
 
 	// Datasource registry
-	registry := datasource.NewRegistry(cfg.Datasources)
+	registry, err := datasource.NewRegistry(cfg.Datasources)
+	if err != nil {
+		return nil, fmt.Errorf("creating datasource registry: %w", err)
+	}
 
 	// Handlers
 	loginHandler := handler.NewLoginHandler(cfg.Users, sm)

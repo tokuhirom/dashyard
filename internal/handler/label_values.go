@@ -9,7 +9,7 @@ import (
 	"github.com/tokuhirom/dashyard/internal/datasource"
 )
 
-// LabelValuesHandler handles GET /api/label-values - proxies label values requests to Prometheus.
+// LabelValuesHandler handles GET /api/label-values - proxies label values requests to the datasource.
 type LabelValuesHandler struct {
 	registry *datasource.Registry
 }
@@ -19,7 +19,7 @@ func NewLabelValuesHandler(registry *datasource.Registry) *LabelValuesHandler {
 	return &LabelValuesHandler{registry: registry}
 }
 
-// Handle processes a Prometheus label values proxy request.
+// Handle processes a datasource label values proxy request.
 func (h *LabelValuesHandler) Handle(c *gin.Context) {
 	label := c.Query("label")
 	if label == "" {
@@ -37,8 +37,8 @@ func (h *LabelValuesHandler) Handle(c *gin.Context) {
 
 	body, statusCode, err := client.LabelValues(c.Request.Context(), label, match)
 	if err != nil {
-		slog.Error("prometheus label values query failed", "error", err)
-		c.JSON(http.StatusBadGateway, gin.H{"error": "prometheus label values query failed"})
+		slog.Error("datasource label values query failed", "error", err)
+		c.JSON(http.StatusBadGateway, gin.H{"error": "datasource label values query failed"})
 		return
 	}
 	defer func() { _ = body.Close() }()
@@ -46,6 +46,6 @@ func (h *LabelValuesHandler) Handle(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 	c.Status(statusCode)
 	if _, err := io.Copy(c.Writer, body); err != nil {
-		slog.Error("failed to stream prometheus response", "error", err)
+		slog.Error("failed to stream datasource response", "error", err)
 	}
 }

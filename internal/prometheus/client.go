@@ -73,16 +73,16 @@ func (c *Client) QueryRange(ctx context.Context, query, start, end, step string)
 	reqStart := time.Now()
 	resp, err := c.httpClient.Do(req)
 	duration := time.Since(reqStart).Seconds()
-	metrics.PrometheusQueryDuration.Observe(duration)
+	metrics.DatasourceQueryDuration.Observe(duration)
 	if err != nil {
-		metrics.PrometheusQueryTotal.WithLabelValues("error").Inc()
+		metrics.DatasourceQueryTotal.WithLabelValues("error").Inc()
 		return nil, 0, fmt.Errorf("executing request: %w", err)
 	}
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		metrics.PrometheusQueryTotal.WithLabelValues("success").Inc()
+		metrics.DatasourceQueryTotal.WithLabelValues("success").Inc()
 	} else {
-		metrics.PrometheusQueryTotal.WithLabelValues("error").Inc()
+		metrics.DatasourceQueryTotal.WithLabelValues("error").Inc()
 	}
 
 	return resp.Body, resp.StatusCode, nil

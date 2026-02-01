@@ -70,16 +70,16 @@ export interface DashboardsResponse {
   header_color: string;
 }
 
-export interface PrometheusResult {
+export interface QueryResult {
   metric: Record<string, string>;
   values: [number, string][];
 }
 
-export interface PrometheusResponse {
+export interface QueryResponse {
   status: string;
   data: {
     resultType: string;
-    result: PrometheusResult[];
+    result: QueryResult[];
   };
 }
 

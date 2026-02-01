@@ -145,8 +145,9 @@ func validateDatasources(datasources []DatasourceConfig) error {
 		}
 		seen[ds.Name] = true
 
-		if ds.Type != "prometheus" {
-			return fmt.Errorf("datasources[%d]: unsupported type %q (only \"prometheus\" is supported)", i, ds.Type)
+		validTypes := map[string]bool{"prometheus": true}
+		if !validTypes[ds.Type] {
+			return fmt.Errorf("datasources[%d]: unsupported type %q", i, ds.Type)
 		}
 		if ds.URL == "" {
 			return fmt.Errorf("datasources[%d]: url is required", i)

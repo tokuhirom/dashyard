@@ -15,7 +15,7 @@ import {
 } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import 'chartjs-adapter-date-fns';
-import type { PrometheusResponse, Threshold } from '../types';
+import type { QueryResponse, Threshold } from '../types';
 import { getYAxisTickCallback } from '../utils/units';
 
 ChartJS.register(
@@ -35,7 +35,7 @@ ChartJS.register(
 
 interface GraphPanelProps {
   title: string;
-  data: PrometheusResponse | null;
+  data: QueryResponse | null;
   unit?: string;
   yMin?: number;
   yMax?: number;
