@@ -1,0 +1,67 @@
+services:
+  dummyprom:
+    build:
+      context: .
+      dockerfile: Dockerfile.dummyprom
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:9090/api/v1/label/cpu/values || exit 1"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  dummygithub:
+    build:
+      context: .
+      dockerfile: Dockerfile.dummygithub
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:5555/api/v3/user || exit 1"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  dashyard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./examples/kitchensink/config-docker.yaml:/etc/dashyard/config.yaml:ro
+      - ./examples/kitchensink/dashboards:/etc/dashyard/dashboards:ro
+    depends_on:
+      dummyprom:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/ || exit 1"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  dashyard-oauth:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./examples/kitchensink/config-docker-oauth.yaml:/etc/dashyard/config.yaml:ro
+      - ./examples/kitchensink/dashboards:/etc/dashyard/dashboards:ro
+    depends_on:
+      dummyprom:
+        condition: service_healthy
+      dummygithub:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/ || exit 1"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
+    environment:
+      BASE_URL: http://dashyard:8080
+      OAUTH_BASE_URL: http://dashyard-oauth:8080
+    depends_on:
+      dashyard:
+        condition: service_healthy
+      dashyard-oauth:
+        condition: service_healthy

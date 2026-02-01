@@ -17,7 +17,10 @@ test-frontend:
 	cd frontend && npm run test
 
 test-e2e:
-	cd frontend && npx playwright test
+	docker compose -f docker-compose.e2e.yaml up --build --exit-code-from e2e e2e; \
+	rc=$$?; \
+	docker compose -f docker-compose.e2e.yaml down; \
+	exit $$rc
 
 lint:
 	golangci-lint run ./...
