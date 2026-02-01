@@ -3,9 +3,11 @@ server:
   port: 8080
   session_secret: "change-me-in-production"
 
-prometheus:
-  url: "http://dummyprom:9090"
-  timeout: 30s
+datasources:
+  - name: default
+    type: prometheus
+    url: "http://dummyprom:9090"
+    timeout: 30s
 
 # Default user: admin / admin
 # Generate a new hash with: go run ./cmd/genhash <password>

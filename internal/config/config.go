@@ -39,12 +39,6 @@ type ServerConfig struct {
 	TrustedProxies []string `yaml:"trusted_proxies,omitempty"`
 }
 
-// PrometheusConfig holds Prometheus connection settings.
-type PrometheusConfig struct {
-	URL     string        `yaml:"url"`
-	Timeout time.Duration `yaml:"timeout"`
-}
-
 // DatasourceConfig holds settings for a single named datasource.
 type DatasourceConfig struct {
 	Name    string        `yaml:"name"`
@@ -64,7 +58,6 @@ type Config struct {
 	SiteTitle   string             `yaml:"site_title"`
 	HeaderColor string             `yaml:"header_color"`
 	Server      ServerConfig       `yaml:"server"`
-	Prometheus  PrometheusConfig   `yaml:"prometheus"`
 	Datasources []DatasourceConfig `yaml:"datasources"`
 	Dashboards  DashboardsConfig   `yaml:"dashboards"`
 	Users       []User             `yaml:"users"`
@@ -84,10 +77,6 @@ func Load(path string) (*Config, error) {
 func Parse(data []byte) (*Config, error) {
 	cfg := &Config{
 		SiteTitle: "Dashyard",
-		Prometheus: PrometheusConfig{
-			URL:     "http://localhost:9090",
-			Timeout: 30 * time.Second,
-		},
 		Dashboards: DashboardsConfig{
 			Dir: "dashboards",
 		},
@@ -109,14 +98,14 @@ func Parse(data []byte) (*Config, error) {
 		return nil, err
 	}
 
-	// Backward compatibility: migrate legacy prometheus section to datasources
+	// Provide a default datasource when none configured
 	if len(cfg.Datasources) == 0 {
 		cfg.Datasources = []DatasourceConfig{
 			{
 				Name:    "default",
 				Type:    "prometheus",
-				URL:     cfg.Prometheus.URL,
-				Timeout: cfg.Prometheus.Timeout,
+				URL:     "http://localhost:9090",
+				Timeout: 30 * time.Second,
 				Default: true,
 			},
 		}

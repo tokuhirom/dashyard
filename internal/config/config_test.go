@@ -13,9 +13,12 @@ header_color: "#dc2626"
 server:
   session_secret: "my-secret"
 
-prometheus:
-  url: "http://prom:9090"
-  timeout: 60s
+datasources:
+  - name: main
+    type: prometheus
+    url: "http://prom:9090"
+    timeout: 60s
+    default: true
 
 dashboards:
   dir: "/etc/dashboards"
@@ -41,11 +44,14 @@ users:
 	if cfg.Server.SessionSecret != "my-secret" {
 		t.Errorf("expected session_secret 'my-secret', got %q", cfg.Server.SessionSecret)
 	}
-	if cfg.Prometheus.URL != "http://prom:9090" {
-		t.Errorf("expected prometheus url 'http://prom:9090', got %q", cfg.Prometheus.URL)
+	if len(cfg.Datasources) != 1 {
+		t.Fatalf("expected 1 datasource, got %d", len(cfg.Datasources))
 	}
-	if cfg.Prometheus.Timeout != 60*time.Second {
-		t.Errorf("expected timeout 60s, got %v", cfg.Prometheus.Timeout)
+	if cfg.Datasources[0].URL != "http://prom:9090" {
+		t.Errorf("expected datasource url 'http://prom:9090', got %q", cfg.Datasources[0].URL)
+	}
+	if cfg.Datasources[0].Timeout != 60*time.Second {
+		t.Errorf("expected timeout 60s, got %v", cfg.Datasources[0].Timeout)
 	}
 	if cfg.Dashboards.Dir != "/etc/dashboards" {
 		t.Errorf("expected dashboards dir '/etc/dashboards', got %q", cfg.Dashboards.Dir)
@@ -72,12 +78,6 @@ func TestParseDefaults(t *testing.T) {
 	if cfg.HeaderColor != "" {
 		t.Errorf("expected default header_color '', got %q", cfg.HeaderColor)
 	}
-	if cfg.Prometheus.URL != "http://localhost:9090" {
-		t.Errorf("expected default prometheus url, got %q", cfg.Prometheus.URL)
-	}
-	if cfg.Prometheus.Timeout != 30*time.Second {
-		t.Errorf("expected default timeout 30s, got %v", cfg.Prometheus.Timeout)
-	}
 	if cfg.Dashboards.Dir != "dashboards" {
 		t.Errorf("expected default dashboards dir 'dashboards', got %q", cfg.Dashboards.Dir)
 	}
@@ -89,7 +89,7 @@ func TestParseDefaults(t *testing.T) {
 		t.Errorf("expected 64-char hex session secret, got %d chars", len(cfg.Server.SessionSecret))
 	}
 
-	// Default datasource should be auto-generated from legacy prometheus config
+	// Default datasource should be auto-generated when none configured
 	if len(cfg.Datasources) != 1 {
 		t.Fatalf("expected 1 default datasource, got %d", len(cfg.Datasources))
 	}
@@ -343,39 +343,6 @@ datasources:
 	}
 	if cfg.Datasources[1].Default {
 		t.Error("expected second datasource to not be default")
-	}
-}
-
-func TestParseLegacyPrometheusToDefaultDatasource(t *testing.T) {
-	input := []byte(`
-prometheus:
-  url: "http://legacy:9090"
-  timeout: 45s
-`)
-
-	cfg, err := Parse(input)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if len(cfg.Datasources) != 1 {
-		t.Fatalf("expected 1 datasource from legacy config, got %d", len(cfg.Datasources))
-	}
-	ds := cfg.Datasources[0]
-	if ds.Name != "default" {
-		t.Errorf("expected name 'default', got %q", ds.Name)
-	}
-	if ds.Type != "prometheus" {
-		t.Errorf("expected type 'prometheus', got %q", ds.Type)
-	}
-	if ds.URL != "http://legacy:9090" {
-		t.Errorf("expected url 'http://legacy:9090', got %q", ds.URL)
-	}
-	if ds.Timeout != 45*time.Second {
-		t.Errorf("expected timeout 45s, got %v", ds.Timeout)
-	}
-	if !ds.Default {
-		t.Error("expected legacy datasource to be default")
 	}
 }
 

@@ -98,7 +98,7 @@ func (cmd *ServeCmd) Run() error {
 	<-ctx.Done()
 	slog.Info("shutting down server")
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.Prometheus.Timeout)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.DefaultDatasource().Timeout)
 	defer cancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {

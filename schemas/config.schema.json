@@ -34,28 +34,9 @@
       },
       "additionalProperties": false
     },
-    "prometheus": {
-      "type": "object",
-      "description": "Legacy Prometheus connection settings. Prefer 'datasources' for new configurations. When 'datasources' is not defined, this section is automatically converted to a single default datasource.",
-      "properties": {
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "description": "Prometheus server URL.",
-          "default": "http://localhost:9090"
-        },
-        "timeout": {
-          "type": "string",
-          "description": "Query timeout as a Go duration string (e.g. \"30s\", \"1m\").",
-          "default": "30s",
-          "pattern": "^[0-9]+(ns|us|ms|s|m|h)+$"
-        }
-      },
-      "additionalProperties": false
-    },
     "datasources": {
       "type": "array",
-      "description": "Named datasource configurations. Each datasource defines a Prometheus backend that can be referenced by name from dashboard panels and variables. When omitted, the legacy 'prometheus' section is used as a single default datasource.",
+      "description": "Named datasource configurations. Each datasource defines a Prometheus backend that can be referenced by name from dashboard panels and variables. When omitted, a single default datasource pointing to http://localhost:9090 is created.",
       "items": {
         "type": "object",
         "description": "A named datasource.",
