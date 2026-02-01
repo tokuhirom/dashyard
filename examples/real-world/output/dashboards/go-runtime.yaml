@@ -34,6 +34,29 @@ rows:
           - value: 1000
             color: "#f59e0b"
             label: "Warning"
+      - title: "Max File Descriptors"
+        type: graph
+        query: 'process_max_fds'
+        unit: count
+        y_min: 0
+      - title: "Virtual Memory Limit"
+        type: graph
+        query: 'process_virtual_memory_max_bytes'
+        unit: bytes
+        y_min: 0
+
+  - title: "Process Network"
+    panels:
+      - title: "Network Receive Rate"
+        type: graph
+        query: 'rate(process_network_receive_bytes_total[5m])'
+        unit: bytes
+        y_min: 0
+      - title: "Network Transmit Rate"
+        type: graph
+        query: 'rate(process_network_transmit_bytes_total[5m])'
+        unit: bytes
+        y_min: 0
 
   - title: "Goroutines & Threads"
     panels:
@@ -46,6 +69,24 @@ rows:
         type: graph
         query: 'go_threads'
         unit: count
+        y_min: 0
+      - title: "GOMAXPROCS"
+        type: graph
+        query: 'go_sched_gomaxprocs_threads'
+        unit: count
+        y_min: 0
+
+  - title: "GC Config"
+    panels:
+      - title: "GOGC Percent"
+        type: graph
+        query: 'go_gc_gogc_percent'
+        unit: count
+        y_min: 0
+      - title: "Memory Limit (GOMEMLIMIT)"
+        type: graph
+        query: 'go_gc_gomemlimit_bytes'
+        unit: bytes
         y_min: 0
 
   - title: "GC"
@@ -190,6 +231,21 @@ rows:
         type: graph
         query: 'go_memstats_stack_sys_bytes'
         unit: bytes
+        y_min: 0
+
+  - title: "Prometheus Scrape Handler"
+    panels:
+      - title: "Scrape Handler Request Rate"
+        type: graph
+        query: 'sum by (code) (rate(promhttp_metric_handler_requests_total[5m]))'
+        unit: count
+        chart_type: bar
+        legend: "{code}"
+        y_min: 0
+      - title: "Scrape Handler In Flight"
+        type: graph
+        query: 'promhttp_metric_handler_requests_in_flight'
+        unit: count
         y_min: 0
 
   - title: "Scrape"

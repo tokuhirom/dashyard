@@ -41,6 +41,19 @@ services:
   whoami:
     image: traefik/whoami
 
+  # --- Dummy application with custom Prometheus metrics ---
+  dummyapp:
+    build:
+      context: ../..
+      dockerfile: Dockerfile.dummyapp
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/healthz || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   # --- Redis ---
   redis:
     image: redis:7-alpine
@@ -60,12 +73,17 @@ services:
           wget -q -O /dev/null http://traefik:80/ 2>/dev/null
           wget -q -O /dev/null http://traefik:80/api 2>/dev/null
           wget -q -O /dev/null http://traefik:80/health 2>/dev/null
+          wget -q -O /dev/null http://dummyapp:3000/ 2>/dev/null
+          wget -q -O /dev/null http://dummyapp:3000/api/users 2>/dev/null
+          wget -q -O /dev/null --post-data='' http://dummyapp:3000/api/orders 2>/dev/null
+          wget -q -O /dev/null http://dummyapp:3000/api/search 2>/dev/null
           redis-cli -h redis PING >/dev/null 2>&1 || true
           sleep 0.5
         done
     depends_on:
       - traefik
       - redis
+      - dummyapp
 
   # --- Dashyard dashboard viewer ---
   dashyard:

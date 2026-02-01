@@ -2,108 +2,199 @@
 
 ## go_gc
 
-- `go_gc_duration_seconds` (summary) — A summary of the pause duration of garbage collection cycles.
-  Labels: instance (1 values), job (1 values), quantile (5 values)
+- `go_gc_duration_seconds` (summary) — A summary of the wall-time pause (stop-the-world) duration in garbage collection cycles.
+  Labels: instance (2 values), job (2 values), quantile (5 values)
 - `go_gc_duration_seconds_count`
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 - `go_gc_duration_seconds_sum`
+  Labels: instance (2 values), job (2 values)
+- `go_gc_gogc_percent` (gauge) — Heap size target percentage configured by the user, otherwise 100. This value is set by the GOGC environment variable, and the runtime/debug.SetGCPercent function. Sourced from /gc/gogc:percent.
+  Labels: instance (1 values), job (1 values)
+- `go_gc_gomemlimit_bytes` (gauge) — Go runtime memory limit configured by the user, otherwise math.MaxInt64. This value is set by the GOMEMLIMIT environment variable, and the runtime/debug.SetMemoryLimit function. Sourced from /gc/gomemlimit:bytes.
   Labels: instance (1 values), job (1 values)
 
 ## go_goroutines
 
 - `go_goroutines` (gauge) — Number of goroutines that currently exist.
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 
 ## go_info
 
 - `go_info` (gauge) — Information about the Go environment.
-  Labels: instance (1 values), job (1 values), version (1 values)
+  Labels: instance (2 values), job (2 values), version (2 values)
 
 ## go_memstats
 
-- `go_memstats_alloc_bytes` (gauge) — Number of bytes allocated and still in use.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_alloc_bytes_total` (counter) — Total number of bytes allocated, even if freed.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_buck_hash_sys_bytes` (gauge) — Number of bytes used by the profiling bucket hash table.
-  Labels: instance (1 values), job (1 values)
+- `go_memstats_alloc_bytes` (gauge) — Number of bytes allocated in heap and currently in use. Equals to /memory/classes/heap/objects:bytes.
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_alloc_bytes_total` (counter) — Total number of bytes allocated in heap until now, even if released already. Equals to /gc/heap/allocs:bytes.
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_buck_hash_sys_bytes` (gauge) — Number of bytes used by the profiling bucket hash table. Equals to /memory/classes/profiling/buckets:bytes.
+  Labels: instance (2 values), job (2 values)
 - `go_memstats_frees_total` (counter) — Total number of frees.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_gc_sys_bytes` (gauge) — Number of bytes used for garbage collection system metadata.
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_gc_sys_bytes` (gauge) — Number of bytes used for garbage collection system metadata. Equals to /memory/classes/metadata/other:bytes.
+  Labels: instance (2 values), job (2 values)
 - `go_memstats_heap_alloc_bytes` (gauge) — Number of heap bytes allocated and still in use.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_heap_idle_bytes` (gauge) — Number of heap bytes waiting to be used.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_heap_inuse_bytes` (gauge) — Number of heap bytes that are in use.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_heap_objects` (gauge) — Number of allocated objects.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_heap_released_bytes` (gauge) — Number of heap bytes released to OS.
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_heap_idle_bytes` (gauge) — Number of heap bytes waiting to be used. Equals to /memory/classes/heap/released:bytes + /memory/classes/heap/free:bytes.
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_heap_inuse_bytes` (gauge) — Number of heap bytes that are in use. Equals to /memory/classes/heap/objects:bytes + /memory/classes/heap/unused:bytes
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_heap_objects` (gauge) — Number of currently allocated objects. Equals to /gc/heap/objects:objects.
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_heap_released_bytes` (gauge) — Number of heap bytes released to OS. Equals to /memory/classes/heap/released:bytes.
+  Labels: instance (2 values), job (2 values)
 - `go_memstats_heap_sys_bytes` (gauge) — Number of heap bytes obtained from system.
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 - `go_memstats_last_gc_time_seconds` (gauge) — Number of seconds since 1970 of last garbage collection.
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 - `go_memstats_lookups_total` (counter) — Total number of pointer lookups.
   Labels: instance (1 values), job (1 values)
-- `go_memstats_mallocs_total` (counter) — Total number of mallocs.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_mcache_inuse_bytes` (gauge) — Number of bytes in use by mcache structures.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_mcache_sys_bytes` (gauge) — Number of bytes used for mcache structures obtained from system.
-  Labels: instance (1 values), job (1 values)
+- `go_memstats_mallocs_total` (counter) — Total number of heap objects allocated, both live and gc-ed. Semantically a counter version for go_memstats_heap_objects gauge. Equals to /gc/heap/allocs:objects + /gc/heap/tiny/allocs:objects.
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_mcache_inuse_bytes` (gauge) — Number of bytes in use by mcache structures. Equals to /memory/classes/metadata/mcache/inuse:bytes.
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_mcache_sys_bytes` (gauge) — Number of bytes used for mcache structures obtained from system. Equals to /memory/classes/metadata/mcache/inuse:bytes + /memory/classes/metadata/mcache/free:bytes.
+  Labels: instance (2 values), job (2 values)
 - `go_memstats_mspan_inuse_bytes` (gauge) — Number of bytes in use by mspan structures.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_mspan_sys_bytes` (gauge) — Number of bytes used for mspan structures obtained from system.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_next_gc_bytes` (gauge) — Number of heap bytes when next garbage collection will take place.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_other_sys_bytes` (gauge) — Number of bytes used for other system allocations.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_stack_inuse_bytes` (gauge) — Number of bytes in use by the stack allocator.
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_mspan_sys_bytes` (gauge) — Number of bytes used for mspan structures obtained from system. Equals to /memory/classes/metadata/mspan/inuse:bytes + /memory/classes/metadata/mspan/free:bytes.
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_next_gc_bytes` (gauge) — Number of heap bytes when next garbage collection will take place. Equals to /gc/heap/goal:bytes.
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_other_sys_bytes` (gauge) — Number of bytes used for other system allocations. Equals to /memory/classes/other:bytes.
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_stack_inuse_bytes` (gauge) — Number of bytes obtained from system for stack allocator in non-CGO environments. Equals to /memory/classes/heap/stacks:bytes.
+  Labels: instance (2 values), job (2 values)
 - `go_memstats_stack_sys_bytes` (gauge) — Number of bytes obtained from system for stack allocator.
-  Labels: instance (1 values), job (1 values)
-- `go_memstats_sys_bytes` (gauge) — Number of bytes obtained from system.
+  Labels: instance (2 values), job (2 values)
+- `go_memstats_sys_bytes` (gauge) — Number of bytes obtained from system. Equals to /memory/classes/total:byte.
+  Labels: instance (2 values), job (2 values)
+
+## go_sched
+
+- `go_sched_gomaxprocs_threads` (gauge) — The current runtime.GOMAXPROCS setting, or the number of operating system threads that can execute user-level Go code simultaneously. Sourced from /sched/gomaxprocs:threads.
   Labels: instance (1 values), job (1 values)
 
 ## go_threads
 
 - `go_threads` (gauge) — Number of OS threads created.
+  Labels: instance (2 values), job (2 values)
+
+## myapp_cache
+
+- `myapp_cache_hits_total` (counter) — Total cache hits.
+  Labels: instance (1 values), job (1 values)
+- `myapp_cache_misses_total` (counter) — Total cache misses.
+  Labels: instance (1 values), job (1 values)
+
+## myapp_db
+
+- `myapp_db_connections_active` (gauge) — Number of active DB connections.
+  Labels: instance (1 values), job (1 values)
+- `myapp_db_connections_idle` (gauge) — Number of idle DB connections.
+  Labels: instance (1 values), job (1 values)
+- `myapp_db_query_duration_seconds_bucket`
+  Labels: instance (1 values), job (1 values), le (12 values), operation (2 values)
+- `myapp_db_query_duration_seconds_count`
+  Labels: instance (1 values), job (1 values), operation (2 values)
+- `myapp_db_query_duration_seconds_sum`
+  Labels: instance (1 values), job (1 values), operation (2 values)
+
+## myapp_errors
+
+- `myapp_errors_total` (counter) — Total errors by type.
+  Labels: instance (1 values), job (1 values), type (4 values)
+
+## myapp_http
+
+- `myapp_http_request_duration_seconds_bucket`
+  Labels: instance (1 values), job (1 values), le (12 values), method (2 values), path (4 values)
+- `myapp_http_request_duration_seconds_count`
+  Labels: instance (1 values), job (1 values), method (2 values), path (4 values)
+- `myapp_http_request_duration_seconds_sum`
+  Labels: instance (1 values), job (1 values), method (2 values), path (4 values)
+- `myapp_http_requests_in_flight` (gauge) — Number of HTTP requests currently in flight.
+  Labels: instance (1 values), job (1 values)
+- `myapp_http_requests_total` (counter) — Total HTTP requests.
+  Labels: instance (1 values), job (1 values), method (2 values), path (4 values), status (2 values)
+
+## myapp_jobs
+
+- `myapp_jobs_duration_seconds_bucket`
+  Labels: instance (1 values), job (1 values), le (12 values), queue (3 values)
+- `myapp_jobs_duration_seconds_count`
+  Labels: instance (1 values), job (1 values), queue (3 values)
+- `myapp_jobs_duration_seconds_sum`
+  Labels: instance (1 values), job (1 values), queue (3 values)
+- `myapp_jobs_processed_total` (counter) — Total background jobs processed.
+  Labels: instance (1 values), job (1 values), queue (3 values), status (2 values)
+- `myapp_jobs_queue_depth` (gauge) — Number of pending jobs in queue.
+  Labels: instance (1 values), job (1 values), queue (3 values)
+
+## myapp_orders
+
+- `myapp_orders_created_total` (counter) — Total orders created.
+  Labels: instance (1 values), job (1 values), status (3 values)
+
+## myapp_revenue
+
+- `myapp_revenue_total` (counter) — Total revenue.
+  Labels: currency (1 values), instance (1 values), job (1 values)
+
+## myapp_users
+
+- `myapp_users_active` (gauge) — Number of currently active users.
+  Labels: instance (1 values), job (1 values)
+- `myapp_users_registered_total` (counter) — Total user registrations.
   Labels: instance (1 values), job (1 values)
 
 ## process_cpu
 
 - `process_cpu_seconds_total` (counter) — Total user and system CPU time spent in seconds.
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 
 ## process_max
 
 - `process_max_fds` (gauge) — Maximum number of open file descriptors.
+  Labels: instance (2 values), job (2 values)
+
+## process_network
+
+- `process_network_receive_bytes_total` (counter) — Number of bytes received by the process over the network.
+  Labels: instance (1 values), job (1 values)
+- `process_network_transmit_bytes_total` (counter) — Number of bytes sent by the process over the network.
   Labels: instance (1 values), job (1 values)
 
 ## process_open
 
 - `process_open_fds` (gauge) — Number of open file descriptors.
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 
 ## process_resident
 
 - `process_resident_memory_bytes` (gauge) — Resident memory size in bytes.
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 
 ## process_start
 
 - `process_start_time_seconds` (gauge) — Start time of the process since unix epoch in seconds.
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 
 ## process_virtual
 
 - `process_virtual_memory_bytes` (gauge) — Virtual memory size in bytes.
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 - `process_virtual_memory_max_bytes` (gauge) — Maximum amount of virtual memory available in bytes.
+  Labels: instance (2 values), job (2 values)
+
+## promhttp_metric
+
+- `promhttp_metric_handler_requests_in_flight` (gauge) — Current number of scrapes being served.
   Labels: instance (1 values), job (1 values)
+- `promhttp_metric_handler_requests_total` (counter) — Total number of scrapes by HTTP status code.
+  Labels: code (3 values), instance (1 values), job (1 values)
 
 ## redis_clients
 
@@ -174,19 +265,19 @@
 ## scrape_duration
 
 - `scrape_duration_seconds`
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 
 ## scrape_samples
 
 - `scrape_samples_post_metric_relabeling`
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 - `scrape_samples_scraped`
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 
 ## scrape_series
 
 - `scrape_series_added`
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 
 ## system_cpu
 
@@ -288,7 +379,7 @@
 ## up
 
 - `up`
-  Labels: instance (1 values), job (1 values)
+  Labels: instance (2 values), job (2 values)
 
 # Label Values
 
@@ -296,90 +387,100 @@ Full label value listings for each metric.
 
 ## go_gc_duration_seconds
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 - **quantile**: 0.0, 0.25, 0.5, 0.75, 1.0
 
 ## go_gc_duration_seconds_count
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_gc_duration_seconds_sum
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
+
+## go_gc_gogc_percent
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+
+## go_gc_gomemlimit_bytes
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
 
 ## go_goroutines
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_info
 
-- **instance**: traefik:8080
-- **job**: traefik
-- **version**: go1.24.5
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
+- **version**: go1.24.5, go1.25.6
 
 ## go_memstats_alloc_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_alloc_bytes_total
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_buck_hash_sys_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_frees_total
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_gc_sys_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_heap_alloc_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_heap_idle_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_heap_inuse_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_heap_objects
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_heap_released_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_heap_sys_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_last_gc_time_seconds
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_lookups_total
 
@@ -388,93 +489,253 @@ Full label value listings for each metric.
 
 ## go_memstats_mallocs_total
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_mcache_inuse_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_mcache_sys_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_mspan_inuse_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_mspan_sys_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_next_gc_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_other_sys_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_stack_inuse_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_stack_sys_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## go_memstats_sys_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
+
+## go_sched_gomaxprocs_threads
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
 
 ## go_threads
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
+
+## myapp_cache_hits_total
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+
+## myapp_cache_misses_total
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+
+## myapp_db_connections_active
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+
+## myapp_db_connections_idle
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+
+## myapp_db_query_duration_seconds_bucket
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **le**: +Inf, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 10.0, 2.5, 5.0
+- **operation**: insert, select
+
+## myapp_db_query_duration_seconds_count
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **operation**: insert, select
+
+## myapp_db_query_duration_seconds_sum
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **operation**: insert, select
+
+## myapp_errors_total
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **type**: connection_refused, internal, timeout, validation
+
+## myapp_http_request_duration_seconds_bucket
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **le**: +Inf, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 10.0, 2.5, 5.0
+- **method**: GET, POST
+- **path**: /, /api/orders, /api/search, /api/users
+
+## myapp_http_request_duration_seconds_count
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **method**: GET, POST
+- **path**: /, /api/orders, /api/search, /api/users
+
+## myapp_http_request_duration_seconds_sum
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **method**: GET, POST
+- **path**: /, /api/orders, /api/search, /api/users
+
+## myapp_http_requests_in_flight
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+
+## myapp_http_requests_total
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **method**: GET, POST
+- **path**: /, /api/orders, /api/search, /api/users
+- **status**: 200, 500
+
+## myapp_jobs_duration_seconds_bucket
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **le**: +Inf, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 10.0, 2.5, 5.0
+- **queue**: cleanup, email, export
+
+## myapp_jobs_duration_seconds_count
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **queue**: cleanup, email, export
+
+## myapp_jobs_duration_seconds_sum
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **queue**: cleanup, email, export
+
+## myapp_jobs_processed_total
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **queue**: cleanup, email, export
+- **status**: failure, success
+
+## myapp_jobs_queue_depth
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **queue**: cleanup, email, export
+
+## myapp_orders_created_total
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+- **status**: cancelled, completed, failed
+
+## myapp_revenue_total
+
+- **currency**: USD
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+
+## myapp_users_active
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+
+## myapp_users_registered_total
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
 
 ## process_cpu_seconds_total
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## process_max_fds
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
+
+## process_network_receive_bytes_total
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+
+## process_network_transmit_bytes_total
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
 
 ## process_open_fds
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## process_resident_memory_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## process_start_time_seconds
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## process_virtual_memory_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## process_virtual_memory_max_bytes
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
+
+## promhttp_metric_handler_requests_in_flight
+
+- **instance**: dummyapp:3000
+- **job**: dummyapp
+
+## promhttp_metric_handler_requests_total
+
+- **code**: 200, 500, 503
+- **instance**: dummyapp:3000
+- **job**: dummyapp
 
 ## redis_cpu_time_seconds_total
 
@@ -482,23 +743,23 @@ Full label value listings for each metric.
 
 ## scrape_duration_seconds
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## scrape_samples_post_metric_relabeling
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## scrape_samples_scraped
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## scrape_series_added
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 
 ## system_cpu_time_seconds_total
 
@@ -756,6 +1017,6 @@ Full label value listings for each metric.
 
 ## up
 
-- **instance**: traefik:8080
-- **job**: traefik
+- **instance**: dummyapp:3000, traefik:8080
+- **job**: dummyapp, traefik
 

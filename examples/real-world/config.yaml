@@ -11,4 +11,4 @@ prometheus:
 
 users:
   - id: "admin"
-    password_hash: "$6$D/BkIQYiHD.cKL4A$pbAApV8cWXOv3hTyITrHNmlWe3FyfIJyM2CVFuJxbmXwDZPIVbcXKJbM2dxmJqG/ZJZBtrt8e9bVxt0d7rQKK."
+    password_hash: "$6$Je8bLj2qQZHNsrP3$HVmNqT10MBiEhQ0Naa9DuSbdA5qsUBYAGzW8njdAR2JIzgZ5SzSoSRYP58WG1rU55Kff7fnxs0yuoPn6izgtm."
