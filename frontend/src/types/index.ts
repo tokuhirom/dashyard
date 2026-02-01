@@ -9,6 +9,7 @@ export interface Panel {
   type: 'graph' | 'markdown';
   chart_type?: 'line' | 'bar' | 'area' | 'scatter';
   query?: string;
+  datasource?: string;
   unit?: 'bytes' | 'percent' | 'count' | 'seconds';
   y_min?: number;
   y_max?: number;
@@ -30,6 +31,7 @@ export interface Variable {
   name: string;
   label?: string;
   query: string;
+  datasource?: string;
 }
 
 export interface Dashboard {

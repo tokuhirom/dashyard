@@ -3,9 +3,11 @@ site_title: "Dashyard E2E"
 server:
   session_secret: "e2e-test-secret-change-in-production"
 
-prometheus:
-  url: "http://localhost:9090"
-  timeout: 30s
+datasources:
+  - name: default
+    type: prometheus
+    url: "http://localhost:9090"
+    timeout: 30s
 
 # Password auth (used by most E2E tests)
 users:

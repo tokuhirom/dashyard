@@ -3,9 +3,11 @@ server:
   port: 8080
   session_secret: "test-secret-key-for-testing-only"
 
-prometheus:
-  url: "http://localhost:9090"
-  timeout: 30s
+datasources:
+  - name: default
+    type: prometheus
+    url: "http://localhost:9090"
+    timeout: 30s
 
 dashboards:
   dir: "testdata/dashboards"

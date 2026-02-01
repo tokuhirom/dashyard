@@ -3,9 +3,11 @@ site_title: "Dashyard (dummygithub)"
 server:
   session_secret: "dummy-session-secret-for-dev"
 
-prometheus:
-  url: "http://localhost:9090"
-  timeout: 30s
+datasources:
+  - name: default
+    type: prometheus
+    url: "http://localhost:9090"
+    timeout: 30s
 
 auth:
   oauth:

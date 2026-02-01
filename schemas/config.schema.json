@@ -34,24 +34,42 @@
       },
       "additionalProperties": false
     },
-    "prometheus": {
-      "type": "object",
-      "description": "Prometheus connection settings.",
-      "properties": {
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "description": "Prometheus server URL.",
-          "default": "http://localhost:9090"
+    "datasources": {
+      "type": "array",
+      "description": "Named datasource configurations. Each datasource defines a Prometheus backend that can be referenced by name from dashboard panels and variables. When omitted, a single default datasource pointing to http://localhost:9090 is created.",
+      "items": {
+        "type": "object",
+        "description": "A named datasource.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique name for this datasource, referenced in dashboard panels and variables."
+          },
+          "type": {
+            "type": "string",
+            "description": "Datasource type. Currently only 'prometheus' is supported.",
+            "enum": ["prometheus"]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Datasource server URL."
+          },
+          "timeout": {
+            "type": "string",
+            "description": "Query timeout as a Go duration string (e.g. \"30s\", \"1m\").",
+            "default": "30s",
+            "pattern": "^[0-9]+(ns|us|ms|s|m|h)+$"
+          },
+          "default": {
+            "type": "boolean",
+            "description": "Mark this datasource as the default. Exactly one datasource must be default when multiple are defined. Auto-set when only one datasource exists.",
+            "default": false
+          }
         },
-        "timeout": {
-          "type": "string",
-          "description": "Query timeout as a Go duration string (e.g. \"30s\", \"1m\").",
-          "default": "30s",
-          "pattern": "^[0-9]+(ns|us|ms|s|m|h)+$"
-        }
-      },
-      "additionalProperties": false
+        "required": ["name", "type", "url"],
+        "additionalProperties": false
+      }
     },
     "dashboards": {
       "type": "object",

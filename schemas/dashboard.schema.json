@@ -42,6 +42,10 @@
         "query": {
           "type": "string",
           "description": "Query to populate values, e.g. label_values(metric, label)."
+        },
+        "datasource": {
+          "type": "string",
+          "description": "Name of the datasource to query. Uses the default datasource when omitted."
         }
       },
       "required": ["name", "query"],
@@ -92,6 +96,10 @@
         "query": {
           "type": "string",
           "description": "PromQL query expression."
+        },
+        "datasource": {
+          "type": "string",
+          "description": "Name of the datasource to query. Uses the default datasource when omitted."
         },
         "unit": {
           "type": "string",

@@ -6,9 +6,16 @@ server:
   # trusted_proxies:        # IPs/CIDRs trusted to set X-Forwarded-For
   #   - "10.0.0.1"
 
-prometheus:
-  url: "http://localhost:9090"
-  timeout: 30s
+datasources:
+  - name: default
+    type: prometheus
+    url: "http://localhost:9090"
+    timeout: 30s
+    default: true
+  # - name: app
+  #   type: prometheus
+  #   url: "http://app-prom:9090"
+  #   timeout: 15s
 
 # Default user: admin / admin
 # Generate a new hash with: go run ./cmd/genhash <password>

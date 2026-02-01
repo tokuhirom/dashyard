@@ -55,7 +55,7 @@ export function useVariables(
         return;
       }
 
-      fetchLabelValues(parsed.label, parsed.metric)
+      fetchLabelValues(parsed.label, parsed.metric, def.datasource)
         .then((resp) => {
           const values = resp.data || [];
           setVariables((prev) => {

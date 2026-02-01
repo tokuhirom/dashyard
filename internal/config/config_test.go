@@ -13,9 +13,12 @@ header_color: "#dc2626"
 server:
   session_secret: "my-secret"
 
-prometheus:
-  url: "http://prom:9090"
-  timeout: 60s
+datasources:
+  - name: main
+    type: prometheus
+    url: "http://prom:9090"
+    timeout: 60s
+    default: true
 
 dashboards:
   dir: "/etc/dashboards"
@@ -41,11 +44,14 @@ users:
 	if cfg.Server.SessionSecret != "my-secret" {
 		t.Errorf("expected session_secret 'my-secret', got %q", cfg.Server.SessionSecret)
 	}
-	if cfg.Prometheus.URL != "http://prom:9090" {
-		t.Errorf("expected prometheus url 'http://prom:9090', got %q", cfg.Prometheus.URL)
+	if len(cfg.Datasources) != 1 {
+		t.Fatalf("expected 1 datasource, got %d", len(cfg.Datasources))
 	}
-	if cfg.Prometheus.Timeout != 60*time.Second {
-		t.Errorf("expected timeout 60s, got %v", cfg.Prometheus.Timeout)
+	if cfg.Datasources[0].URL != "http://prom:9090" {
+		t.Errorf("expected datasource url 'http://prom:9090', got %q", cfg.Datasources[0].URL)
+	}
+	if cfg.Datasources[0].Timeout != 60*time.Second {
+		t.Errorf("expected timeout 60s, got %v", cfg.Datasources[0].Timeout)
 	}
 	if cfg.Dashboards.Dir != "/etc/dashboards" {
 		t.Errorf("expected dashboards dir '/etc/dashboards', got %q", cfg.Dashboards.Dir)
@@ -72,12 +78,6 @@ func TestParseDefaults(t *testing.T) {
 	if cfg.HeaderColor != "" {
 		t.Errorf("expected default header_color '', got %q", cfg.HeaderColor)
 	}
-	if cfg.Prometheus.URL != "http://localhost:9090" {
-		t.Errorf("expected default prometheus url, got %q", cfg.Prometheus.URL)
-	}
-	if cfg.Prometheus.Timeout != 30*time.Second {
-		t.Errorf("expected default timeout 30s, got %v", cfg.Prometheus.Timeout)
-	}
 	if cfg.Dashboards.Dir != "dashboards" {
 		t.Errorf("expected default dashboards dir 'dashboards', got %q", cfg.Dashboards.Dir)
 	}
@@ -87,6 +87,17 @@ func TestParseDefaults(t *testing.T) {
 	}
 	if len(cfg.Server.SessionSecret) != 64 { // 32 bytes hex-encoded
 		t.Errorf("expected 64-char hex session secret, got %d chars", len(cfg.Server.SessionSecret))
+	}
+
+	// Default datasource should be auto-generated when none configured
+	if len(cfg.Datasources) != 1 {
+		t.Fatalf("expected 1 default datasource, got %d", len(cfg.Datasources))
+	}
+	if cfg.Datasources[0].Name != "default" {
+		t.Errorf("expected datasource name 'default', got %q", cfg.Datasources[0].Name)
+	}
+	if cfg.Datasources[0].URL != "http://localhost:9090" {
+		t.Errorf("expected datasource url 'http://localhost:9090', got %q", cfg.Datasources[0].URL)
 	}
 }
 
@@ -290,5 +301,176 @@ func TestParseNoOAuthConfig(t *testing.T) {
 	}
 	if len(cfg.Auth.OAuth) != 0 {
 		t.Errorf("expected no oauth providers, got %d", len(cfg.Auth.OAuth))
+	}
+}
+
+func TestParseDatasources(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: main
+    type: prometheus
+    url: "http://prom1:9090"
+    timeout: 60s
+    default: true
+  - name: app
+    type: prometheus
+    url: "http://prom2:9090"
+    timeout: 15s
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(cfg.Datasources) != 2 {
+		t.Fatalf("expected 2 datasources, got %d", len(cfg.Datasources))
+	}
+	if cfg.Datasources[0].Name != "main" {
+		t.Errorf("expected name 'main', got %q", cfg.Datasources[0].Name)
+	}
+	if cfg.Datasources[0].URL != "http://prom1:9090" {
+		t.Errorf("expected url 'http://prom1:9090', got %q", cfg.Datasources[0].URL)
+	}
+	if cfg.Datasources[0].Timeout != 60*time.Second {
+		t.Errorf("expected timeout 60s, got %v", cfg.Datasources[0].Timeout)
+	}
+	if !cfg.Datasources[0].Default {
+		t.Error("expected first datasource to be default")
+	}
+	if cfg.Datasources[1].Name != "app" {
+		t.Errorf("expected name 'app', got %q", cfg.Datasources[1].Name)
+	}
+	if cfg.Datasources[1].Default {
+		t.Error("expected second datasource to not be default")
+	}
+}
+
+func TestParseSingleDatasourceAutoDefault(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: solo
+    type: prometheus
+    url: "http://solo:9090"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !cfg.Datasources[0].Default {
+		t.Error("expected single datasource to be auto-set as default")
+	}
+}
+
+func TestDefaultDatasource(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: first
+    type: prometheus
+    url: "http://first:9090"
+  - name: second
+    type: prometheus
+    url: "http://second:9090"
+    default: true
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	ds := cfg.DefaultDatasource()
+	if ds.Name != "second" {
+		t.Errorf("expected default datasource 'second', got %q", ds.Name)
+	}
+}
+
+func TestParseDatasourceValidationDuplicateName(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: dup
+    type: prometheus
+    url: "http://a:9090"
+    default: true
+  - name: dup
+    type: prometheus
+    url: "http://b:9090"
+`)
+	_, err := Parse(input)
+	if err == nil {
+		t.Error("expected error for duplicate datasource name")
+	}
+}
+
+func TestParseDatasourceValidationUnsupportedType(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: test
+    type: influxdb
+    url: "http://a:9090"
+`)
+	_, err := Parse(input)
+	if err == nil {
+		t.Error("expected error for unsupported datasource type")
+	}
+}
+
+func TestParseDatasourceValidationMissingURL(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: test
+    type: prometheus
+`)
+	_, err := Parse(input)
+	if err == nil {
+		t.Error("expected error for missing datasource url")
+	}
+}
+
+func TestParseDatasourceValidationMissingName(t *testing.T) {
+	input := []byte(`
+datasources:
+  - type: prometheus
+    url: "http://a:9090"
+`)
+	_, err := Parse(input)
+	if err == nil {
+		t.Error("expected error for missing datasource name")
+	}
+}
+
+func TestParseDatasourceValidationMultipleDefaults(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: a
+    type: prometheus
+    url: "http://a:9090"
+    default: true
+  - name: b
+    type: prometheus
+    url: "http://b:9090"
+    default: true
+`)
+	_, err := Parse(input)
+	if err == nil {
+		t.Error("expected error for multiple default datasources")
+	}
+}
+
+func TestParseDatasourceValidationNoDefaultMultiple(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: a
+    type: prometheus
+    url: "http://a:9090"
+  - name: b
+    type: prometheus
+    url: "http://b:9090"
+`)
+	_, err := Parse(input)
+	if err == nil {
+		t.Error("expected error when no default is set with multiple datasources")
 	}
 }

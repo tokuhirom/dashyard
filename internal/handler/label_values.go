@@ -6,17 +6,17 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tokuhirom/dashyard/internal/prometheus"
+	"github.com/tokuhirom/dashyard/internal/datasource"
 )
 
 // LabelValuesHandler handles GET /api/label-values - proxies label values requests to Prometheus.
 type LabelValuesHandler struct {
-	client *prometheus.Client
+	registry *datasource.Registry
 }
 
 // NewLabelValuesHandler creates a new LabelValuesHandler.
-func NewLabelValuesHandler(client *prometheus.Client) *LabelValuesHandler {
-	return &LabelValuesHandler{client: client}
+func NewLabelValuesHandler(registry *datasource.Registry) *LabelValuesHandler {
+	return &LabelValuesHandler{registry: registry}
 }
 
 // Handle processes a Prometheus label values proxy request.
@@ -27,9 +27,15 @@ func (h *LabelValuesHandler) Handle(c *gin.Context) {
 		return
 	}
 
+	client, err := h.registry.Get(c.Query("datasource"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	match := c.Query("match")
 
-	body, statusCode, err := h.client.LabelValues(c.Request.Context(), label, match)
+	body, statusCode, err := client.LabelValues(c.Request.Context(), label, match)
 	if err != nil {
 		slog.Error("prometheus label values query failed", "error", err)
 		c.JSON(http.StatusBadGateway, gin.H{"error": "prometheus label values query failed"})

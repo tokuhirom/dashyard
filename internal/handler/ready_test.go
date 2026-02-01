@@ -8,7 +8,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tokuhirom/dashyard/internal/prometheus"
+	"github.com/tokuhirom/dashyard/internal/config"
+	"github.com/tokuhirom/dashyard/internal/datasource"
 )
 
 func TestReadyHandler_OK(t *testing.T) {
@@ -20,8 +21,10 @@ func TestReadyHandler_OK(t *testing.T) {
 	}))
 	defer promServer.Close()
 
-	client := prometheus.NewClient(promServer.URL, 5*time.Second)
-	h := NewReadyHandler(client)
+	registry := datasource.NewRegistry([]config.DatasourceConfig{
+		{Name: "default", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second, Default: true},
+	})
+	h := NewReadyHandler(registry)
 
 	router := gin.New()
 	router.GET("/ready", h.Handle)
@@ -34,21 +37,27 @@ func TestReadyHandler_OK(t *testing.T) {
 		t.Errorf("expected 200, got %d", resp.Code)
 	}
 
-	var body map[string]string
+	var body map[string]interface{}
 	if err := json.Unmarshal(resp.Body.Bytes(), &body); err != nil {
 		t.Fatalf("failed to parse response: %v", err)
 	}
 	if body["status"] != "ok" {
 		t.Errorf("expected status 'ok', got %q", body["status"])
 	}
-	if body["prometheus"] != "reachable" {
-		t.Errorf("expected prometheus 'reachable', got %q", body["prometheus"])
+	ds, ok := body["datasources"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected datasources map, got %T", body["datasources"])
+	}
+	if ds["default"] != "reachable" {
+		t.Errorf("expected datasource 'default' to be 'reachable', got %q", ds["default"])
 	}
 }
 
 func TestReadyHandler_PrometheusUnreachable(t *testing.T) {
-	client := prometheus.NewClient("http://localhost:1", 1*time.Second)
-	h := NewReadyHandler(client)
+	registry := datasource.NewRegistry([]config.DatasourceConfig{
+		{Name: "default", Type: "prometheus", URL: "http://localhost:1", Timeout: 1 * time.Second, Default: true},
+	})
+	h := NewReadyHandler(registry)
 
 	router := gin.New()
 	router.GET("/ready", h.Handle)
@@ -61,15 +70,19 @@ func TestReadyHandler_PrometheusUnreachable(t *testing.T) {
 		t.Errorf("expected 503, got %d", resp.Code)
 	}
 
-	var body map[string]string
+	var body map[string]interface{}
 	if err := json.Unmarshal(resp.Body.Bytes(), &body); err != nil {
 		t.Fatalf("failed to parse response: %v", err)
 	}
 	if body["status"] != "degraded" {
 		t.Errorf("expected status 'degraded', got %q", body["status"])
 	}
-	if body["prometheus"] != "unreachable" {
-		t.Errorf("expected prometheus 'unreachable', got %q", body["prometheus"])
+	ds, ok := body["datasources"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected datasources map, got %T", body["datasources"])
+	}
+	if ds["default"] != "unreachable" {
+		t.Errorf("expected datasource 'default' to be 'unreachable', got %q", ds["default"])
 	}
 }
 
@@ -79,8 +92,10 @@ func TestReadyHandler_PrometheusNotReady(t *testing.T) {
 	}))
 	defer promServer.Close()
 
-	client := prometheus.NewClient(promServer.URL, 5*time.Second)
-	h := NewReadyHandler(client)
+	registry := datasource.NewRegistry([]config.DatasourceConfig{
+		{Name: "default", Type: "prometheus", URL: promServer.URL, Timeout: 5 * time.Second, Default: true},
+	})
+	h := NewReadyHandler(registry)
 
 	router := gin.New()
 	router.GET("/ready", h.Handle)
@@ -93,14 +108,58 @@ func TestReadyHandler_PrometheusNotReady(t *testing.T) {
 		t.Errorf("expected 503, got %d", resp.Code)
 	}
 
-	var body map[string]string
+	var body map[string]interface{}
 	if err := json.Unmarshal(resp.Body.Bytes(), &body); err != nil {
 		t.Fatalf("failed to parse response: %v", err)
 	}
 	if body["status"] != "degraded" {
 		t.Errorf("expected status 'degraded', got %q", body["status"])
 	}
-	if body["prometheus"] != "unreachable" {
-		t.Errorf("expected prometheus 'unreachable', got %q", body["prometheus"])
+	ds, ok := body["datasources"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected datasources map, got %T", body["datasources"])
+	}
+	if ds["default"] != "unreachable" {
+		t.Errorf("expected datasource 'default' to be 'unreachable', got %q", ds["default"])
+	}
+}
+
+func TestReadyHandler_MultipleDatasources(t *testing.T) {
+	goodServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer goodServer.Close()
+
+	registry := datasource.NewRegistry([]config.DatasourceConfig{
+		{Name: "good", Type: "prometheus", URL: goodServer.URL, Timeout: 5 * time.Second, Default: true},
+		{Name: "bad", Type: "prometheus", URL: "http://localhost:1", Timeout: 1 * time.Second},
+	})
+	h := NewReadyHandler(registry)
+
+	router := gin.New()
+	router.GET("/ready", h.Handle)
+
+	req := httptest.NewRequest("GET", "/ready", nil)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	// Should be degraded because one datasource is unreachable
+	if resp.Code != http.StatusServiceUnavailable {
+		t.Errorf("expected 503, got %d", resp.Code)
+	}
+
+	var body map[string]interface{}
+	if err := json.Unmarshal(resp.Body.Bytes(), &body); err != nil {
+		t.Fatalf("failed to parse response: %v", err)
+	}
+	ds, ok := body["datasources"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected datasources map, got %T", body["datasources"])
+	}
+	if ds["good"] != "reachable" {
+		t.Errorf("expected 'good' to be reachable, got %q", ds["good"])
+	}
+	if ds["bad"] != "unreachable" {
+		t.Errorf("expected 'bad' to be unreachable, got %q", ds["bad"])
 	}
 }
