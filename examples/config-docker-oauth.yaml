@@ -7,9 +7,6 @@ prometheus:
   url: "http://dummyprom:9090"
   timeout: 30s
 
-dashboards:
-  dir: "/etc/dashyard/dashboards"
-
 # Password auth (admin / admin)
 users:
   - id: "admin"

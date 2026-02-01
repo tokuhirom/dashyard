@@ -27,7 +27,7 @@ dev-frontend:
 	cd frontend && npm run dev
 
 dev-backend:
-	go run . serve --config examples/config.yaml
+	go run . serve --config examples/config.yaml --dashboards-dir examples/dashboards
 
 dev-dummyprom:
 	go run ./cmd/dummyprom

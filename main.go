@@ -25,16 +25,17 @@ var frontendFiles embed.FS
 
 var cli struct {
 	Serve      ServeCmd      `cmd:"" help:"Start the dashboard server."`
-	Validate   ValidateCmd   `cmd:"" help:"Validate config and dashboard files."`
+	Validate   ValidateCmd   `cmd:"" help:"Validate config or dashboard files."`
 	Mkpasswd   MkpasswdCmd   `cmd:"" help:"Generate a SHA-512 crypt password hash."`
 	GenPrompt GenPromptCmd `cmd:"gen-prompt" help:"Generate an LLM prompt for dashboard YAML generation from Prometheus metrics."`
 }
 
 type ServeCmd struct {
-	Config  string `help:"Path to config file." default:"config.yaml"`
-	Host    string `help:"Host to listen on." default:"0.0.0.0"`
-	Port    int    `help:"Port to listen on." default:"8080"`
-	Metrics bool   `help:"Enable /metrics endpoint exposing Prometheus metrics." default:"false"`
+	Config        string `help:"Path to config file." default:"config.yaml"`
+	Host          string `help:"Host to listen on." default:"0.0.0.0"`
+	Port          int    `help:"Port to listen on." default:"8080"`
+	Metrics       bool   `help:"Enable /metrics endpoint exposing Prometheus metrics." default:"false"`
+	DashboardsDir string `name:"dashboards-dir" help:"Path to dashboards directory. Overrides config file value." default:""`
 }
 
 func (cmd *ServeCmd) Run() error {
@@ -43,6 +44,10 @@ func (cmd *ServeCmd) Run() error {
 	if err != nil {
 		slog.Error("failed to load config", "error", err)
 		os.Exit(1)
+	}
+
+	if cmd.DashboardsDir != "" {
+		cfg.Dashboards.Dir = cmd.DashboardsDir
 	}
 
 	// Load dashboards
@@ -104,22 +109,33 @@ func (cmd *ServeCmd) Run() error {
 }
 
 type ValidateCmd struct {
-	Config string `help:"Path to config file." default:"config.yaml"`
+	Config     ValidateConfigCmd     `cmd:"" help:"Validate a config file."`
+	Dashboards ValidateDashboardsCmd `cmd:"" help:"Validate dashboard files in a directory."`
 }
 
-func (cmd *ValidateCmd) Run() error {
-	cfg, err := config.Load(cmd.Config)
-	if err != nil {
-		return fmt.Errorf("config %s: %w", cmd.Config, err)
-	}
-	fmt.Printf("Config OK: %s\n", cmd.Config)
+type ValidateConfigCmd struct {
+	Path string `arg:"" help:"Path to config file." default:"config.yaml"`
+}
 
-	store, err := dashboard.LoadDir(cfg.Dashboards.Dir)
+func (cmd *ValidateConfigCmd) Run() error {
+	_, err := config.Load(cmd.Path)
 	if err != nil {
-		return fmt.Errorf("dashboards: %w", err)
+		return fmt.Errorf("config %s: %w", cmd.Path, err)
 	}
-	fmt.Printf("Dashboards OK: loaded %d dashboards from %q\n", len(store.List()), cfg.Dashboards.Dir)
+	fmt.Printf("Config OK: %s\n", cmd.Path)
+	return nil
+}
 
+type ValidateDashboardsCmd struct {
+	Dir string `arg:"" help:"Path to dashboards directory." default:"dashboards"`
+}
+
+func (cmd *ValidateDashboardsCmd) Run() error {
+	store, err := dashboard.LoadDir(cmd.Dir)
+	if err != nil {
+		return fmt.Errorf("dashboards %s: %w", cmd.Dir, err)
+	}
+	fmt.Printf("Dashboards OK: loaded %d dashboards from %q\n", len(store.List()), cmd.Dir)
 	return nil
 }
 

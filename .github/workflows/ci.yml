@@ -87,7 +87,7 @@ jobs:
       - name: Start dummygithub
         run: go run ./cmd/dummygithub &
       - name: Start backend
-        run: go run . serve --config examples/config-e2e.yaml &
+        run: go run . serve --config examples/config-e2e.yaml --dashboards-dir examples/dashboards &
       - name: Start Vite dev server
         run: cd frontend && npm run dev &
       - name: Wait for services
