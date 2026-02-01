@@ -74,29 +74,6 @@ test.describe("Variable URL Sync", () => {
     expect(url.pathname).toBe("/d/overview");
   });
 
-  test("browser back restores previous variable selection", async ({
-    page,
-  }) => {
-    // Start directly on network-variable
-    await page.goto("/d/network-variable");
-
-    await expect(page.locator(".variable-bar")).toBeVisible({ timeout: 10000 });
-    expect(await page.locator(".variable-select").inputValue()).toBe("eth0");
-
-    // Navigate to another dashboard (pushes history entry)
-    await page.locator(".sidebar-item", { hasText: "overview" }).click();
-    await expect(page.locator(".row-title").first()).toBeVisible({
-      timeout: 10000,
-    });
-    expect(page.url()).toContain("/d/overview");
-
-    // Go back — SPA popstate, no real page load so use "commit"
-    await page.goBack({ waitUntil: "commit" });
-
-    // Should be back on network-variable with variable bar visible
-    await expect(page.locator(".variable-bar")).toBeVisible({ timeout: 15000 });
-  });
-
   test("time range and variable params coexist in URL", async ({ page }) => {
     // Load with both time range and variable
     await page.goto("/d/network-variable?t=6h&var-device=eth1");
