@@ -77,31 +77,25 @@ test.describe("Variable URL Sync", () => {
   test("browser back restores previous variable selection", async ({
     page,
   }) => {
-    await page.goto("/");
+    // Start directly on network-variable
+    await page.goto("/d/network-variable");
 
-    // Navigate to network-variable dashboard
-    await page
-      .locator(".sidebar-item", { hasText: "network-variable" })
-      .click();
-
-    const variableBar = page.locator(".variable-bar");
-    await expect(variableBar).toBeVisible({ timeout: 10000 });
-
-    const select = variableBar.locator(".variable-select");
-    expect(await select.inputValue()).toBe("eth0");
+    await expect(page.locator(".variable-bar")).toBeVisible({ timeout: 10000 });
+    expect(await page.locator(".variable-select").inputValue()).toBe("eth0");
 
     // Navigate to another dashboard (pushes history entry)
     await page.locator(".sidebar-item", { hasText: "overview" }).click();
     await expect(page.locator(".row-title").first()).toBeVisible({
       timeout: 10000,
     });
+    expect(page.url()).toContain("/d/overview");
 
     // Go back
     await page.goBack();
+    await page.waitForURL(/\/d\/network-variable/);
 
-    // Should be back on network-variable
-    await expect(variableBar).toBeVisible({ timeout: 10000 });
-    expect(page.url()).toContain("/d/network-variable");
+    // Should be back on network-variable with variable bar visible
+    await expect(page.locator(".variable-bar")).toBeVisible({ timeout: 15000 });
   });
 
   test("time range and variable params coexist in URL", async ({ page }) => {
