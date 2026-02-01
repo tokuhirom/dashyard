@@ -19,7 +19,7 @@ cd frontend && npm run build     # Frontend build (TypeScript check + Vite)
 Development (three terminals):
 ```bash
 make dev-dummyprom               # Fake Prometheus on :9090
-make dev-backend                 # Go server on :8080 (uses examples/config.yaml)
+make dev-backend                 # Go server on :8080 (uses examples/kitchensink/config.yaml)
 make dev-frontend                # Vite dev server on :5173
 make dev-dummygithub             # Fake GitHub OAuth server on :5555
 ```
@@ -36,7 +36,8 @@ make dev-dummygithub             # Fake GitHub OAuth server on :5555
 - `internal/server/` -- Gin router and middleware wiring
 - `frontend/` -- React 19 + TypeScript + Vite + Chart.js
 - `schemas/` -- JSON schemas for config.yaml and dashboard YAML
-- `examples/` -- Example config and dashboard files
+- `examples/kitchensink/` -- Kitchen-sink demo configs and dashboards
+- `examples/real-world/` -- Real monitoring stack with gen-prompt workflow
 - `cmd/dummyprom/` -- Fake Prometheus that generates synthetic metrics
 - `cmd/dummygithub/` -- Fake GitHub OAuth server for local development
 

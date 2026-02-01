@@ -27,7 +27,7 @@ dev-frontend:
 	cd frontend && npm run dev
 
 dev-backend:
-	go run . serve --config examples/config.yaml --dashboards-dir examples/dashboards
+	go run . serve --config examples/kitchensink/config.yaml --dashboards-dir examples/kitchensink/dashboards
 
 dev-dummyprom:
 	go run ./cmd/dummyprom
@@ -40,15 +40,15 @@ screenshots:
 	docker compose -f docker-compose.screenshots.yaml down
 
 gen-prompt:
-	docker compose -f docs/gen-prompt/docker-compose.yaml up -d prometheus otelcol traefik redis whoami traffic-gen
+	docker compose -f examples/real-world/docker-compose.yaml up -d prometheus otelcol traefik redis whoami traffic-gen
 	@echo "Waiting 60s for metrics to accumulate..."
 	@sleep 60
-	docker compose -f docs/gen-prompt/docker-compose.yaml build gen-prompt
-	docker compose -f docs/gen-prompt/docker-compose.yaml run --rm gen-prompt
-	docker compose -f docs/gen-prompt/docker-compose.yaml down
+	docker compose -f examples/real-world/docker-compose.yaml build gen-prompt
+	docker compose -f examples/real-world/docker-compose.yaml run --rm gen-prompt
+	docker compose -f examples/real-world/docker-compose.yaml down
 
 gen-prompt-up:
-	docker compose -f docs/gen-prompt/docker-compose.yaml up --build
+	docker compose -f examples/real-world/docker-compose.yaml up --build
 
 clean:
 	rm -f dashyard dummyprom

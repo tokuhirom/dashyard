@@ -62,9 +62,9 @@ jobs:
       - name: Build binary
         run: go build -o dashyard .
       - name: Validate config
-        run: ./dashyard validate config examples/config.yaml
+        run: ./dashyard validate config examples/kitchensink/config.yaml
       - name: Validate dashboards
-        run: ./dashyard validate dashboards examples/dashboards
+        run: ./dashyard validate dashboards examples/kitchensink/dashboards
 
   e2e:
     name: E2E Tests
@@ -91,7 +91,7 @@ jobs:
       - name: Start dummygithub
         run: go run ./cmd/dummygithub &
       - name: Start backend
-        run: go run . serve --config examples/config-e2e.yaml --dashboards-dir examples/dashboards &
+        run: go run . serve --config examples/kitchensink/config-e2e.yaml --dashboards-dir examples/kitchensink/dashboards &
       - name: Start Vite dev server
         run: cd frontend && npm run dev &
       - name: Wait for services
