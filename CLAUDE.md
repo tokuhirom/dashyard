@@ -56,6 +56,18 @@ go test ./internal/config/...    # Specific package
 cd frontend && npm run build     # Type-checks and builds frontend
 ```
 
+## Pre-commit Checklist
+
+Before every commit, always run these checks locally and fix any issues:
+
+```bash
+golangci-lint run ./...          # Lint (errcheck, staticcheck, etc.)
+go test ./...                    # All Go tests
+cd frontend && npm run build     # Frontend type-check + build
+```
+
+If CI fails after pushing, fix issues and run all checks locally before pushing again.
+
 ## Git Workflow
 
 - When starting a new task, always pull the latest main and create a new branch from it first (`git checkout main && git pull origin main && git checkout -b <branch>`)
