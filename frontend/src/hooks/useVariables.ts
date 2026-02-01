@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Variable } from '../types';
-import { fetchLabelValues, ApiError } from '../api/client';
+import { fetchLabelValues, fetchDatasources, ApiError } from '../api/client';
 import { parseLabelValuesQuery } from '../utils/variables';
 
 export interface VariableState {
@@ -46,7 +46,39 @@ export function useVariables(
 
     // Fetch all variable values in parallel
     definitions.forEach((def, idx) => {
-      const parsed = parseLabelValuesQuery(def.query);
+      const varType = def.type || 'query';
+
+      if (varType === 'datasource') {
+        fetchDatasources()
+          .then((resp) => {
+            const values = resp.datasources || [];
+            const urlVal = initialValues?.[def.name];
+            const defaultVal = urlVal && values.includes(urlVal) ? urlVal : (resp.default || values[0] || '');
+            setVariables((prev) => {
+              const next = [...prev];
+              next[idx] = {
+                ...next[idx],
+                values,
+                selected: defaultVal,
+                loading: false,
+              };
+              return next;
+            });
+          })
+          .catch((err) => {
+            if (err instanceof ApiError && err.status === 401) {
+              onAuthError();
+            }
+            setVariables((prev) => {
+              const next = [...prev];
+              next[idx] = { ...next[idx], loading: false, error: err.message };
+              return next;
+            });
+          });
+        return;
+      }
+
+      const parsed = parseLabelValuesQuery(def.query || '');
       if (!parsed) {
         setVariables((prev) => {
           const next = [...prev];

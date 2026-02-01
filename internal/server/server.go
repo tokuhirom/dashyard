@@ -51,6 +51,7 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 	dashboardsHandler := handler.NewDashboardsHandler(holder, cfg.SiteTitle, cfg.HeaderColor)
 	queryHandler := handler.NewQueryHandler(registry)
 	labelValuesHandler := handler.NewLabelValuesHandler(registry)
+	datasourcesHandler := handler.NewDatasourcesHandler(registry)
 	readyHandler := handler.NewReadyHandler(registry)
 	staticHandler := handler.NewStaticHandler(frontendFS)
 	authInfoHandler := handler.NewAuthInfoHandler(cfg.Users, cfg.Auth.OAuth)
@@ -80,6 +81,7 @@ func New(cfg *config.Config, holder *dashboard.StoreHolder, frontendFS fs.FS, ho
 		api.GET("/dashboard-source/*path", dashboardsHandler.GetSource)
 		api.GET("/query", queryHandler.Handle)
 		api.GET("/label-values", labelValuesHandler.Handle)
+		api.GET("/datasources", datasourcesHandler.Handle)
 	}
 
 	// Frontend static files (SPA fallback)

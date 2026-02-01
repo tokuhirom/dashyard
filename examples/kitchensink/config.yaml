@@ -7,15 +7,15 @@ server:
   #   - "10.0.0.1"
 
 datasources:
-  - name: default
+  - name: prod
     type: prometheus
     url: "http://localhost:9090"
     timeout: 30s
     default: true
-  # - name: app
-  #   type: prometheus
-  #   url: "http://app-prom:9090"
-  #   timeout: 15s
+  - name: staging
+    type: prometheus
+    url: "http://localhost:9090/staging"
+    timeout: 30s
 
 # Default user: admin / admin
 # Generate a new hash with: go run ./cmd/genhash <password>

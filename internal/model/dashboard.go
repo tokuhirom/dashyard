@@ -34,11 +34,13 @@ type Row struct {
 	Panels []Panel `yaml:"panels" json:"panels"`
 }
 
-// Variable represents a dashboard-level template variable populated from Prometheus label values.
+// Variable represents a dashboard-level template variable populated from Prometheus label values
+// or from the configured datasource list.
 type Variable struct {
 	Name       string `yaml:"name" json:"name"`
+	Type       string `yaml:"type,omitempty" json:"type,omitempty"` // "query" (default) or "datasource"
 	Label      string `yaml:"label,omitempty" json:"label,omitempty"`
-	Query      string `yaml:"query" json:"query"`
+	Query      string `yaml:"query,omitempty" json:"query,omitempty"`
 	Datasource string `yaml:"datasource,omitempty" json:"datasource,omitempty"`
 }
 
@@ -78,8 +80,20 @@ func (d *Dashboard) Validate() error {
 		if v.Name == "" {
 			return fmt.Errorf("variable[%d] name must not be empty in dashboard %q", i, d.Title)
 		}
-		if v.Query == "" {
-			return fmt.Errorf("variable %q query must not be empty in dashboard %q", v.Name, d.Title)
+		switch v.Type {
+		case "", "query":
+			if v.Query == "" {
+				return fmt.Errorf("variable %q query must not be empty in dashboard %q", v.Name, d.Title)
+			}
+		case "datasource":
+			if v.Query != "" {
+				return fmt.Errorf("datasource variable %q must not have a query in dashboard %q", v.Name, d.Title)
+			}
+			if v.Datasource != "" {
+				return fmt.Errorf("datasource variable %q must not have a datasource field in dashboard %q", v.Name, d.Title)
+			}
+		default:
+			return fmt.Errorf("variable %q has unknown type %q in dashboard %q", v.Name, v.Type, d.Title)
 		}
 		varNames[v.Name] = true
 	}

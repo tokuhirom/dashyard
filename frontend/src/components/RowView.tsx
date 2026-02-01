@@ -52,11 +52,15 @@ function PanelRenderer({ panel, panelId, timeRange, variableValues }: PanelRende
     () => panel.content ? substituteVariables(panel.content, variableValues) : undefined,
     [panel.content, variableValues],
   );
+  const substitutedDatasource = useMemo(
+    () => panel.datasource ? substituteVariables(panel.datasource, variableValues) : undefined,
+    [panel.datasource, variableValues],
+  );
 
   const { data, loading, error } = useQuery(
     panel.type === 'graph' ? substitutedQuery : undefined,
     timeRange,
-    panel.datasource,
+    substitutedDatasource,
   );
 
   if (panel.type === 'markdown') {
