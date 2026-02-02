@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"log/slog"
 	"os"
@@ -13,6 +15,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/GehirnInc/crypt"
+	_ "github.com/GehirnInc/crypt/sha512_crypt"
 	"github.com/tokuhirom/dashyard/internal/prometheus"
 	"github.com/tokuhirom/dashyard/internal/prompt"
 )
@@ -191,17 +195,48 @@ func generateREADME() string {
 	return prompt.ReadmeTemplate
 }
 
-// generateConfig generates config.yaml content with the Prometheus URL embedded.
+// generateConfig generates config.yaml content with the Prometheus URL and a random admin password.
 func generateConfig(prometheusURL string) (string, error) {
+	password, err := randomPassword(16)
+	if err != nil {
+		return "", fmt.Errorf("generating random password: %w", err)
+	}
+
+	c := crypt.SHA512.New()
+	hash, err := c.Generate([]byte(password), nil)
+	if err != nil {
+		return "", fmt.Errorf("hashing password: %w", err)
+	}
+
 	tmpl, err := template.New("config").Parse(prompt.ConfigTemplate)
 	if err != nil {
 		return "", fmt.Errorf("parsing config template: %w", err)
 	}
+
+	data := struct {
+		PrometheusURL string
+		Password      string
+		PasswordHash  string
+	}{
+		PrometheusURL: prometheusURL,
+		Password:      password,
+		PasswordHash:  hash,
+	}
+
 	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, struct{ PrometheusURL string }{PrometheusURL: prometheusURL}); err != nil {
+	if err := tmpl.Execute(&buf, data); err != nil {
 		return "", fmt.Errorf("executing config template: %w", err)
 	}
 	return buf.String(), nil
+}
+
+// randomPassword generates a random hex-encoded password of the given byte length.
+func randomPassword(n int) (string, error) {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
 }
 
 // generatePromptDoc generates the static prompt template (guidelines + format reference).

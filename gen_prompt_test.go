@@ -211,6 +211,21 @@ func TestGenerateConfig(t *testing.T) {
 	if !strings.Contains(config, "default: true") {
 		t.Error("config should mark datasource as default")
 	}
+
+	// Check users section with password hash
+	if !strings.Contains(config, "users:") {
+		t.Error("config should contain users section")
+	}
+	if !strings.Contains(config, `id: "admin"`) {
+		t.Error("config should contain admin user")
+	}
+	if !strings.Contains(config, "$6$") {
+		t.Error("config should contain SHA-512 crypt password hash")
+	}
+	// Check that plain password is shown in comment
+	if !strings.Contains(config, "# Default user: admin /") {
+		t.Error("config should contain plain password in comment")
+	}
 }
 
 func TestGenerateConfigDifferentURL(t *testing.T) {
@@ -222,6 +237,21 @@ func TestGenerateConfigDifferentURL(t *testing.T) {
 
 	if !strings.Contains(config, url) {
 		t.Errorf("config should contain URL %q", url)
+	}
+}
+
+func TestGenerateConfigRandomPassword(t *testing.T) {
+	config1, err := generateConfig("http://localhost:9090")
+	if err != nil {
+		t.Fatalf("generateConfig returned error: %v", err)
+	}
+	config2, err := generateConfig("http://localhost:9090")
+	if err != nil {
+		t.Fatalf("generateConfig returned error: %v", err)
+	}
+
+	if config1 == config2 {
+		t.Error("each call should generate a different random password")
 	}
 }
 

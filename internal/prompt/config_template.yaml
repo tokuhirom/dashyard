@@ -1,3 +1,9 @@
+# Default user: admin / {{.Password}}
+# Generate a new hash with: dashyard hash-password <password>
+users:
+  - id: "admin"
+    password_hash: "{{.PasswordHash}}"
+
 datasources:
   - name: default
     type: prometheus
