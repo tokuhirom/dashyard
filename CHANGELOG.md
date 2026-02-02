@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.18.1](https://github.com/tokuhirom/dashyard/compare/v0.18.0...v0.18.1) - 2026-02-02
+- Warn when session_secret is not configured by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/182
+- Migrate from devbox + direnv to mise by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/184
+
 ## [v0.17.1](https://github.com/tokuhirom/dashyard/compare/v0.17.0...v0.17.1) - 2026-02-02
 - Detect data gaps in Prometheus graphs and break lines by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/179
 
