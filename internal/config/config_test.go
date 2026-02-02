@@ -1,6 +1,7 @@
 package config
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
@@ -591,14 +592,12 @@ datasources:
         value: "Bearer ${DASHYARD_UNSET_VAR_12345}"
 `)
 
-	cfg, err := Parse(input)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	_, err := Parse(input)
+	if err == nil {
+		t.Fatal("expected error for unset environment variable")
 	}
-
-	got := cfg.Datasources[0].Headers[0].Value
-	if got != "Bearer " {
-		t.Errorf("expected 'Bearer ' (empty expansion), got %q", got)
+	if !strings.Contains(err.Error(), "DASHYARD_UNSET_VAR_12345") {
+		t.Errorf("expected error to mention variable name, got %q", err)
 	}
 }
 
@@ -714,6 +713,70 @@ server:
 
 	if cfg.Server.SessionSecret != "my-env-session-secret" {
 		t.Errorf("expected 'my-env-session-secret', got %q", cfg.Server.SessionSecret)
+	}
+}
+
+func TestParseEnvExpansionDefault(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: prod
+    type: prometheus
+    url: "${DASHYARD_UNSET_99999:-http://fallback:9090}"
+    default: true
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	got := cfg.Datasources[0].URL
+	if got != "http://fallback:9090" {
+		t.Errorf("expected 'http://fallback:9090', got %q", got)
+	}
+}
+
+func TestParseEnvExpansionDefaultOverriddenByEnv(t *testing.T) {
+	t.Setenv("DASHYARD_TEST_WITH_DEFAULT", "from-env")
+	input := []byte(`
+datasources:
+  - name: prod
+    type: prometheus
+    url: "${DASHYARD_TEST_WITH_DEFAULT:-fallback}"
+    default: true
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	got := cfg.Datasources[0].URL
+	if got != "from-env" {
+		t.Errorf("expected 'from-env', got %q", got)
+	}
+}
+
+func TestParsePasswordHashLiteralNotExpanded(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: default
+    type: prometheus
+    url: "http://localhost:9090"
+users:
+  - id: admin
+    password_hash: "$6$D/BkIQYiHD.cKL4A$pbAApV8cWXOv3hTyITrHNmlWe3FyfIJyM2CVFuJxbmXwDZPIVbcXKJbM2dxmJqG/ZJZBtrt8e9bVxt0d7rQKK."
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := "$6$D/BkIQYiHD.cKL4A$pbAApV8cWXOv3hTyITrHNmlWe3FyfIJyM2CVFuJxbmXwDZPIVbcXKJbM2dxmJqG/ZJZBtrt8e9bVxt0d7rQKK."
+	got := cfg.Users[0].PasswordHash
+	if got != expected {
+		t.Errorf("literal password hash was modified:\nexpected: %s\ngot:      %s", expected, got)
 	}
 }
 
