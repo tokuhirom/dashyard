@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.8.1](https://github.com/tokuhirom/dashyard/compare/v0.8.0...v0.8.1) - 2026-02-02
+- Classify metric labels into fixed/variable/legend in prompt output by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/154
+
 ## [v0.8.0](https://github.com/tokuhirom/dashyard/compare/v0.7.0...v0.8.0) - 2026-02-02
 - Add README.md and config.yaml generation to gen-prompt by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/149
 - Limit chart legend maxHeight to prevent graph area shrinking by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/151
