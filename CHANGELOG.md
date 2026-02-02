@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.10.0](https://github.com/tokuhirom/dashyard/compare/v0.9.0...v0.10.0) - 2026-02-02
+- Dynamically adjust chart height for many series by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/156
+- Replace --bearer-token with --header in gen-prompt by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/158
+
 ## [v0.8.1](https://github.com/tokuhirom/dashyard/compare/v0.8.0...v0.8.1) - 2026-02-02
 - Classify metric labels into fixed/variable/legend in prompt output by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/154
 
