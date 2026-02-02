@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"log/slog"
 	"os"
 	"regexp"
 	"strings"
@@ -126,6 +127,7 @@ func Parse(data []byte) (*Config, error) {
 	}
 
 	if cfg.Server.SessionSecret == "" {
+		slog.Warn("server.session_secret is not set; generating a random secret. Sessions will not persist across server restarts.")
 		secret := make([]byte, 32)
 		if _, err := rand.Read(secret); err != nil {
 			return nil, fmt.Errorf("generating session secret: %w", err)
