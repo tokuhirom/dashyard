@@ -50,6 +50,17 @@ docker_manifests:
       - "ghcr.io/tokuhirom/dashyard:{{ .Version }}-amd64"
       - "ghcr.io/tokuhirom/dashyard:{{ .Version }}-arm64"
 
+nix:
+  - name: dashyard
+    repository:
+      owner: tokuhirom
+      name: nur-packages
+      token: "{{ .Env.NUR_GITHUB_TOKEN }}"
+    homepage: "https://github.com/tokuhirom/dashyard"
+    description: "Lightweight Prometheus metrics dashboard"
+    license: "mit"
+    path: pkgs/dashyard/default.nix
+
 changelog:
   sort: asc
   filters:
