@@ -249,6 +249,38 @@ func generatePromptDoc() string {
 	return sb.String()
 }
 
+// variableThreshold is the minimum number of label values to suggest using a variable.
+const variableThreshold = 5
+
+// classifyLabels classifies a metric's labels into three categories:
+//   - fixed: labels with only 1 value (constant across all series, not useful in legend)
+//   - variable: labels with many values (>= variableThreshold, should use dashboard variables)
+//   - legend: labels with 2+ values but below variableThreshold (useful for legend display)
+//
+// Legend labels are sorted by value count ascending (fewer values = more important/distinctive).
+func classifyLabels(m prometheus.MetricInfo) (fixed, variable, legend []string) {
+	for _, l := range m.Labels {
+		vals, ok := m.LabelValues[l]
+		if !ok || len(vals) <= 1 {
+			fixed = append(fixed, l)
+		} else if len(vals) >= variableThreshold {
+			variable = append(variable, l)
+		} else {
+			legend = append(legend, l)
+		}
+	}
+	// Sort legend labels by value count ascending (fewer values first = more distinctive)
+	sort.Slice(legend, func(i, j int) bool {
+		ci := len(m.LabelValues[legend[i]])
+		cj := len(m.LabelValues[legend[j]])
+		if ci != cj {
+			return ci < cj
+		}
+		return legend[i] < legend[j]
+	})
+	return
+}
+
 // generateMetricsDoc generates the metrics file (metric listing + label values).
 func generateMetricsDoc(metrics []prometheus.MetricInfo) string {
 	var sb strings.Builder
@@ -294,6 +326,26 @@ func generateMetricsDoc(metrics []prometheus.MetricInfo) string {
 					}
 				}
 				sb.WriteString(fmt.Sprintf("  Labels: %s\n", strings.Join(labelParts, ", ")))
+			}
+
+			// Show label classification
+			fixed, variable, legend := classifyLabels(m)
+			if len(fixed) > 0 {
+				var parts []string
+				for _, l := range fixed {
+					if vals, ok := m.LabelValues[l]; ok && len(vals) == 1 {
+						parts = append(parts, fmt.Sprintf("%s=%q", l, vals[0]))
+					} else {
+						parts = append(parts, l)
+					}
+				}
+				sb.WriteString(fmt.Sprintf("  Fixed: %s\n", strings.Join(parts, ", ")))
+			}
+			if len(variable) > 0 {
+				sb.WriteString(fmt.Sprintf("  Variable candidates: %s\n", strings.Join(variable, ", ")))
+			}
+			if len(legend) > 0 {
+				sb.WriteString(fmt.Sprintf("  Legend candidates: %s\n", strings.Join(legend, ", ")))
 			}
 		}
 		sb.WriteString("\n")

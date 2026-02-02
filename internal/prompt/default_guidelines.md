@@ -67,6 +67,16 @@ For each service endpoint, organize panels by:
 - **Timing metrics** — prefer max, p99, or p75 percentiles. Avoid mean/median which hide tail latency.
 - **Add a markdown panel** at the top of each dashboard explaining what the dashboard monitors and where the metrics come from.
 
+# Label Classification in prompt-metrics.md
+
+Each metric in `prompt-metrics.md` includes label classifications to guide dashboard design:
+
+- **Fixed** — labels with only 1 value (constant across all series). Omit these from `legend` templates since they add no information. You can filter on them in queries if needed, but they don't differentiate series.
+- **Variable candidates** — labels with many values (5+). Use `label_values()` to create dashboard variables, filter with `$variable` in queries, and use `repeat` on rows.
+- **Legend candidates** — labels with 2–4 values. These are the most useful for `legend` templates (e.g. `legend: "{state}"`). They are listed in priority order (fewer values = more distinctive = listed first). Combine multiple legend candidates like `legend: "{method} {status}"` when needed.
+
+When building the `legend` field, only use labels from "Legend candidates". Do not include Fixed labels or Variable candidate labels in the legend.
+
 # Best Practices
 
 - Group related panels into rows with descriptive titles
