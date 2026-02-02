@@ -44,6 +44,52 @@ rows:
 - **gauge**: use directly, or apply `avg()`, `sum()`, `min()`, `max()`
 - **summary** (`_sum`/`_count`): `rate(sum[5m]) / rate(count[5m])` for average
 
+## rate vs irate
+
+- `rate(metric[5m])` — average per-second rate over the range window. Smooth, stable line. **Use this by default.**
+- `irate(metric[5m])` — instantaneous rate using the last two data points in the window. Shows spikes and dips more sharply. Use when you need to see short-lived bursts (e.g. traffic spikes, error bursts).
+- `increase(metric[5m])` — total increase over the range window (= `rate() * window_seconds`). Useful when you want "count per interval" instead of "per-second rate".
+
+Choose `rate` for dashboards (stable trends). Use `irate` only when short-lived spikes matter (e.g. alerting on sudden error bursts). Never use `irate` with long range windows — it ignores all data points except the last two.
+
+## Aggregation Functions
+
+Common aggregation functions for combining multiple time series:
+
+```
+sum(metric)                    # total across all series
+sum by (label)(metric)         # total grouped by label
+avg(metric)                    # average across all series
+avg by (label)(metric)         # average grouped by label
+min(metric) / max(metric)      # minimum / maximum across series
+count(metric)                  # number of series
+topk(5, metric)                # top 5 series by value
+bottomk(5, metric)             # bottom 5 series by value
+```
+
+### Aggregation with rate
+
+When combining `rate()` with aggregation, always apply `rate()` first, then aggregate:
+
+```
+# Correct: rate per series, then sum
+sum by (method)(rate(http_requests_total[5m]))
+
+# Wrong: sum raw counters, then rate — produces incorrect results when counters reset
+rate(sum(http_requests_total)[5m])
+```
+
+### without vs by
+
+- `by (label1, label2)` — keep only the listed labels, aggregate away everything else
+- `without (label1, label2)` — keep all labels except the listed ones
+
+Use `by` when you know exactly which labels matter. Use `without` when you want to drop a specific label (e.g. `instance`) while keeping everything else:
+
+```
+sum without (instance)(rate(http_requests_total[5m]))
+```
+
 ## Ratio and Percent Metrics
 
 - Metrics named `_ratio` are typically 0–1 scale. Multiply by 100 in the PromQL expression when using `unit: percent` (e.g. `system_cpu_utilization_ratio * 100`), or use as-is with a suitable `y_max`.
