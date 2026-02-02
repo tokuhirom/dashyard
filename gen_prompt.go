@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"log/slog"
 	"os"
@@ -9,8 +12,11 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"text/template"
 	"time"
 
+	"github.com/GehirnInc/crypt"
+	_ "github.com/GehirnInc/crypt/sha512_crypt"
 	"github.com/tokuhirom/dashyard/internal/prometheus"
 	"github.com/tokuhirom/dashyard/internal/prompt"
 )
@@ -21,7 +27,7 @@ type GenPromptCmd struct {
 	Match     string        `help:"Regex to filter metric names." default:""`
 	Timeout   time.Duration `help:"HTTP timeout." default:"30s"`
 	OutputDir  string        `help:"Output directory for prompt.md and prompt-metrics.md (default: stdout)." short:"o" default:""`
-	ForcePrompt bool        `help:"Overwrite prompt.md even if it already exists." default:"false"`
+	Overwrite bool          `help:"Overwrite all write-once files (prompt.md, README.md, config.yaml)." default:"false"`
 }
 
 func (cmd *GenPromptCmd) Run() error {
@@ -107,13 +113,15 @@ func (cmd *GenPromptCmd) Run() error {
 	if cmd.OutputDir != "" {
 		promptFile := filepath.Join(cmd.OutputDir, "prompt.md")
 		metricsFile := filepath.Join(cmd.OutputDir, "prompt-metrics.md")
+		readmeFile := filepath.Join(cmd.OutputDir, "README.md")
+		configFile := filepath.Join(cmd.OutputDir, "config.yaml")
 
 		if err := os.MkdirAll(cmd.OutputDir, 0755); err != nil {
 			return fmt.Errorf("creating output directory: %w", err)
 		}
 
 		// Write prompt.md only if it doesn't exist (user-editable template), unless --force-prompt
-		if cmd.ForcePrompt {
+		if cmd.Overwrite {
 			promptDoc := generatePromptDoc()
 			if err := os.WriteFile(promptFile, []byte(promptDoc), 0644); err != nil {
 				return fmt.Errorf("writing prompt file: %w", err)
@@ -129,6 +137,16 @@ func (cmd *GenPromptCmd) Run() error {
 			slog.Info("prompt file already exists, skipping", "file", promptFile)
 		}
 
+		// Write README.md (write-once, unless --force-prompt)
+		writeOnceFile(readmeFile, generateREADME(), "README", cmd.Overwrite)
+
+		// Write config.yaml (write-once, unless --force-prompt)
+		configContent, err := generateConfig(cmd.URL)
+		if err != nil {
+			return fmt.Errorf("generating config: %w", err)
+		}
+		writeOnceFile(configFile, configContent, "config", cmd.Overwrite)
+
 		// Always overwrite prompt-metrics.md
 		metricsDoc := generateMetricsDoc(metrics)
 		if err := os.WriteFile(metricsFile, []byte(metricsDoc), 0644); err != nil {
@@ -137,12 +155,88 @@ func (cmd *GenPromptCmd) Run() error {
 		slog.Info("wrote metrics file", "file", metricsFile)
 	} else {
 		// stdout: output everything in one stream
+		fmt.Print(generateREADME())
+		fmt.Print("\n---\n\n")
+		configContent, err := generateConfig(cmd.URL)
+		if err != nil {
+			return fmt.Errorf("generating config: %w", err)
+		}
+		fmt.Print(configContent)
+		fmt.Print("\n---\n\n")
 		fmt.Print(generatePromptDoc())
 		fmt.Print("\n---\n\n")
 		fmt.Print(generateMetricsDoc(metrics))
 	}
 
 	return nil
+}
+
+// writeOnceFile writes content to a file only if it doesn't exist, unless force is true.
+func writeOnceFile(path, content, label string, force bool) {
+	if force {
+		if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+			slog.Error("writing file", "file", path, "error", err)
+			return
+		}
+		slog.Info("wrote file (forced)", "type", label, "file", path)
+	} else if _, err := os.Stat(path); os.IsNotExist(err) {
+		if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+			slog.Error("writing file", "file", path, "error", err)
+			return
+		}
+		slog.Info("wrote file", "type", label, "file", path)
+	} else {
+		slog.Info("file already exists, skipping", "type", label, "file", path)
+	}
+}
+
+// generateREADME returns the README.md content.
+func generateREADME() string {
+	return prompt.ReadmeTemplate
+}
+
+// generateConfig generates config.yaml content with the Prometheus URL and a random admin password.
+func generateConfig(prometheusURL string) (string, error) {
+	password, err := randomPassword(16)
+	if err != nil {
+		return "", fmt.Errorf("generating random password: %w", err)
+	}
+
+	c := crypt.SHA512.New()
+	hash, err := c.Generate([]byte(password), nil)
+	if err != nil {
+		return "", fmt.Errorf("hashing password: %w", err)
+	}
+
+	tmpl, err := template.New("config").Parse(prompt.ConfigTemplate)
+	if err != nil {
+		return "", fmt.Errorf("parsing config template: %w", err)
+	}
+
+	data := struct {
+		PrometheusURL string
+		Password      string
+		PasswordHash  string
+	}{
+		PrometheusURL: prometheusURL,
+		Password:      password,
+		PasswordHash:  hash,
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, data); err != nil {
+		return "", fmt.Errorf("executing config template: %w", err)
+	}
+	return buf.String(), nil
+}
+
+// randomPassword generates a random hex-encoded password of the given byte length.
+func randomPassword(n int) (string, error) {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
 }
 
 // generatePromptDoc generates the static prompt template (guidelines + format reference).
