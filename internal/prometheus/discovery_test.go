@@ -95,26 +95,6 @@ func TestMetricLabels(t *testing.T) {
 	}
 }
 
-func TestBearerTokenSent(t *testing.T) {
-	var receivedAuth string
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		receivedAuth = r.Header.Get("Authorization")
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"status":"success","data":["up"]}`))
-	}))
-	defer server.Close()
-
-	client := NewClient(server.URL, 5*time.Second, WithBearerToken("test-token-123"))
-	_, err := client.MetricNames(context.Background())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	expected := "Bearer test-token-123"
-	if receivedAuth != expected {
-		t.Errorf("expected Authorization %q, got %q", expected, receivedAuth)
-	}
-}
-
 func TestWithHeadersSent(t *testing.T) {
 	var receivedHeaders http.Header
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -141,7 +121,7 @@ func TestWithHeadersSent(t *testing.T) {
 	}
 }
 
-func TestBearerTokenNotSentWhenEmpty(t *testing.T) {
+func TestNoHeadersSentByDefault(t *testing.T) {
 	var receivedAuth string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		receivedAuth = r.Header.Get("Authorization")

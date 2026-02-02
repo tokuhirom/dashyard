@@ -20,14 +20,6 @@ type Header struct {
 	Value string
 }
 
-// WithBearerToken sets a bearer token for authentication.
-// This is a convenience wrapper that adds an Authorization header.
-func WithBearerToken(token string) ClientOption {
-	return func(c *Client) {
-		c.headers = append(c.headers, Header{Name: "Authorization", Value: "Bearer " + token})
-	}
-}
-
 // WithHeaders sets custom HTTP headers to include in every request.
 func WithHeaders(headers []Header) ClientOption {
 	return func(c *Client) {

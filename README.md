@@ -24,7 +24,7 @@ The `gen-prompt` command reads metrics from your Prometheus server and produces 
 
 ```bash
 ./dashyard gen-prompt http://localhost:9090 -o .
-./dashyard gen-prompt https://prom.example.com --bearer-token "eyJ..."
+./dashyard gen-prompt https://prom.example.com -H "Authorization: Bearer eyJ..."
 ./dashyard gen-prompt http://localhost:9090 --match "node_.*" -o .
 ```
 
