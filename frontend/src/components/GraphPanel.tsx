@@ -1,3 +1,5 @@
+import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Line, Bar, Scatter } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -96,10 +98,26 @@ function buildLabel(metric: Record<string, string>, legend?: string): string {
 }
 
 export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, chartType, stacked, yScale, loading, error, id }: GraphPanelProps) {
+  const [expanded, setExpanded] = useState(false);
+
+  const close = useCallback(() => setExpanded(false), []);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [expanded, close]);
+
   const titleContent = (
     <h3 className="panel-title">
       {title}
       {id && <a href={`#${id}`} className="panel-anchor">#</a>}
+      {!loading && !error && data?.data?.result?.length && (
+        <button className="panel-expand-btn" onClick={() => setExpanded(true)} title="Expand">&#x2922;</button>
+      )}
     </h3>
   );
 
@@ -151,10 +169,10 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
   const tickCallback = getYAxisTickCallback(unit);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const options: any = {
+  const buildOptions = (isExpanded: boolean): any => ({
     responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: 2.5,
+    maintainAspectRatio: !isExpanded,
+    ...(isExpanded ? {} : { aspectRatio: 2.5 }),
     interaction: {
       mode: 'index' as const,
       intersect: false,
@@ -162,7 +180,7 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
     plugins: {
       legend: {
         position: 'bottom' as const,
-        maxHeight: 60,
+        ...(isExpanded ? {} : { maxHeight: 60 }),
         labels: {
           boxWidth: 12,
           usePointStyle: true,
@@ -178,7 +196,7 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
           tooltipFormat: 'HH:mm:ss',
         },
         ticks: {
-          maxTicksLimit: 8,
+          maxTicksLimit: isExpanded ? 16 : 8,
         },
       },
       y: {
@@ -192,23 +210,41 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
         },
       },
     },
+  });
+
+  const renderChart = (isExpanded: boolean) => {
+    const opts = buildOptions(isExpanded);
+    if (effectiveType === 'bar') {
+      return <Bar data={{ datasets }} options={opts} />;
+    } else if (effectiveType === 'scatter') {
+      return <Scatter data={{ datasets }} options={opts} />;
+    } else {
+      return <Line data={{ datasets }} options={opts} />;
+    }
   };
 
-  let chart;
-  if (effectiveType === 'bar') {
-    chart = <Bar data={{ datasets }} options={options} />;
-  } else if (effectiveType === 'scatter') {
-    chart = <Scatter data={{ datasets }} options={options} />;
-  } else {
-    chart = <Line data={{ datasets }} options={options} />;
-  }
-
   return (
-    <div className="panel graph-panel" id={id}>
-      {titleContent}
-      <div className="panel-chart">
-        {chart}
+    <>
+      <div className="panel graph-panel" id={id}>
+        {titleContent}
+        <div className="panel-chart">
+          {renderChart(false)}
+        </div>
       </div>
-    </div>
+      {expanded && createPortal(
+        <div className="modal-backdrop" onClick={close}>
+          <div className="panel-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="panel-modal-header">
+              <h3>{title}</h3>
+              <button className="panel-modal-close" onClick={close}>&times;</button>
+            </div>
+            <div className="panel-chart" style={{ flex: 1 }}>
+              {renderChart(true)}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
