@@ -24,8 +24,11 @@ import (
 //go:embed frontend/dist/*
 var frontendFiles embed.FS
 
+var version = "dev"
+
 var cli struct {
-	LogLevel string `help:"Log level (debug, info, warn, error)." default:"info" enum:"debug,info,warn,error"`
+	LogLevel string           `help:"Log level (debug, info, warn, error)." default:"info" enum:"debug,info,warn,error"`
+	Version  kong.VersionFlag `name:"version" help:"Show version."`
 
 	Serve      ServeCmd      `cmd:"" help:"Start the dashboard server."`
 	Validate   ValidateCmd   `cmd:"" help:"Validate config or dashboard files."`
@@ -165,6 +168,7 @@ func main() {
 	kctx := kong.Parse(&cli,
 		kong.Name("dashyard"),
 		kong.Description("Lightweight Prometheus metrics dashboard."),
+		kong.Vars{"version": version},
 	)
 
 	var level slog.Level
