@@ -24,14 +24,20 @@ export function DashboardView({ path, timeRange, onAuthError, columns, variableV
     setVariableValue(name, value);
     onVariableValuesChange({ ...variableValues, [name]: value });
   }, [setVariableValue, onVariableValuesChange, variableValues]);
-  // Hide variables that are only used for row repeat (selecting them has no effect)
   const repeatVarNames = useMemo(() => {
     if (!dashboard) return new Set<string>();
     return new Set(dashboard.rows.map((r) => r.repeat).filter(Boolean) as string[]);
   }, [dashboard]);
+
+  // Only hide variables with explicit hide: true
+  const hiddenVarNames = useMemo(() => {
+    if (!dashboard?.variables) return new Set<string>();
+    return new Set(dashboard.variables.filter((v) => v.hide).map((v) => v.name));
+  }, [dashboard]);
+
   const visibleVariables = useMemo(
-    () => variables.filter((v) => !repeatVarNames.has(v.name)),
-    [variables, repeatVarNames],
+    () => variables.filter((v) => !hiddenVarNames.has(v.name)),
+    [variables, hiddenVarNames],
   );
   const [showSource, setShowSource] = useState(false);
   const [source, setSource] = useState<string | null>(null);
@@ -88,7 +94,7 @@ export function DashboardView({ path, timeRange, onAuthError, columns, variableV
       ) : (
         <>
           {visibleVariables.length > 0 && (
-            <VariableBar variables={visibleVariables} onValueChange={handleVariableChange} />
+            <VariableBar variables={visibleVariables} repeatVarNames={repeatVarNames} onValueChange={handleVariableChange} />
           )}
           {varsLoading ? (
             <div className="dashboard-loading">Loading variables...</div>

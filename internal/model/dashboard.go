@@ -42,6 +42,7 @@ type Variable struct {
 	Label      string `yaml:"label,omitempty" json:"label,omitempty"`
 	Query      string `yaml:"query,omitempty" json:"query,omitempty"`
 	Datasource string `yaml:"datasource,omitempty" json:"datasource,omitempty"`
+	Hide       bool   `yaml:"hide,omitempty" json:"hide,omitempty"`
 }
 
 // Dashboard represents a single dashboard definition loaded from YAML.

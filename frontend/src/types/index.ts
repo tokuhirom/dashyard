@@ -33,6 +33,7 @@ export interface Variable {
   label?: string;
   query?: string;
   datasource?: string;
+  hide?: boolean;
 }
 
 export interface DatasourcesResponse {

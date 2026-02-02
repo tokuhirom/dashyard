@@ -52,6 +52,11 @@
         "datasource": {
           "type": "string",
           "description": "Name of the datasource to query. Uses the default datasource when omitted. Forbidden for type 'datasource'."
+        },
+        "hide": {
+          "type": "boolean",
+          "description": "When true, hide this variable from the selector bar. The variable still works in queries and repeat rows.",
+          "default": false
         }
       },
       "required": ["name"],
