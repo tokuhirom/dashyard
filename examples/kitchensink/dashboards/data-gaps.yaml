@@ -1,0 +1,23 @@
+title: "Data Gaps"
+rows:
+  - title: "Container Deployment"
+    panels:
+      - title: "Container Request Rate by Version"
+        type: "graph"
+        query: 'container_requests_total'
+        unit: "count"
+        legend: "{version}"
+        span: 12
+      - title: "About"
+        type: "markdown"
+        span: 12
+        content: |
+          ## Data Gaps Demo
+          This graph demonstrates two common deployment scenarios:
+
+          1. **Rolling update (v1.0.0 → v1.1.0):** The new version starts while the old one is still
+             running, creating an overlap period where both send metrics. Then the old version is terminated.
+          2. **Outage recovery (v1.1.0 → v1.2.0):** v1.1.0 crashes, leaving a period where no version
+             is running. After the outage, v1.2.0 is deployed.
+
+          Dashyard detects data gaps and breaks graph lines instead of drawing misleading interpolation.

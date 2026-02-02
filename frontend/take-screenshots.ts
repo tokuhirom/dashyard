@@ -161,6 +161,16 @@ async function main() {
   );
   console.log("Saved: screenshot-y-axis-bounds.png");
 
+  // Navigate to data-gaps dashboard (container deployment with version gaps)
+  await captureDashboard(
+    page,
+    dashboardUrl("data-gaps"),
+    ".graph-panel canvas",
+    path.join(OUTPUT_DIR, "docs", "screenshot-data-gaps.png"),
+    { fullPage: true }
+  );
+  console.log("Saved: screenshot-data-gaps.png");
+
   // Navigate to datasource-variable dashboard
   await captureDashboard(
     page,

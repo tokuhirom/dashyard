@@ -78,6 +78,12 @@ Draw horizontal reference lines on graph panels to mark warning levels, SLA targ
 
 ![Thresholds](docs/screenshot-thresholds.png)
 
+### Data Gap Detection
+
+When Prometheus data has gaps (e.g. container redeployment where the old version stops sending metrics before the new version starts), Dashyard breaks the graph line instead of interpolating across the missing interval. This matches the behavior of Grafana and other monitoring tools.
+
+![Data Gaps](docs/screenshot-data-gaps.png)
+
 ### Panel Layout with Span
 
 Control panel widths using `span` in a 12-column grid. Use `span: 12` for full-width, `span: 6` for half-width, etc. When `span` is omitted, columns are auto-distributed equally.
