@@ -39,6 +39,19 @@ make gen-prompt-up               # Start full real-world stack (dashyard on :808
 - `cmd/dummyapp/` -- Fake web app exposing custom Prometheus metrics (HTTP RED, business KPIs)
 - `cmd/dummygithub/` -- Fake GitHub OAuth server for local development
 
+## CLI Subcommands
+
+```bash
+dashyard serve                   # Start the dashboard server (default: config.yaml, 0.0.0.0:8080)
+dashyard serve --config path.yaml --dashboards-dir dir --port 3000
+dashyard validate config config.yaml       # Validate a config file
+dashyard validate dashboards dashboards/   # Validate dashboard YAML files
+dashyard mkpasswd <password>               # Generate a SHA-512 crypt password hash
+dashyard gen-prompt <prometheus-url>       # Generate LLM prompt to stdout
+dashyard gen-prompt <prometheus-url> -o dir # Write prompt files to a directory
+dashyard gen-prompt <prometheus-url> -o dir --overwrite  # Overwrite write-once files
+```
+
 ## Key Patterns
 
 - Config fields flow from `config.yaml` -> `Config` struct -> handler -> API JSON response -> React props (e.g. `site_title`, `header_color`)
