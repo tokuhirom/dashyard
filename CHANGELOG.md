@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.16.2](https://github.com/tokuhirom/dashyard/compare/v0.16.1...v0.16.2) - 2026-02-02
+- Add --version flag to CLI by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/178
+
 ## [v0.16.1](https://github.com/tokuhirom/dashyard/compare/v0.16.0...v0.16.1) - 2026-02-02
 - Cap default panel span to 6 for panels without explicit span by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/176
 
