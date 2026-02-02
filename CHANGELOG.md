@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.8.0](https://github.com/tokuhirom/dashyard/compare/v0.7.0...v0.8.0) - 2026-02-02
+- Add README.md and config.yaml generation to gen-prompt by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/149
+- Limit chart legend maxHeight to prevent graph area shrinking by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/151
+- Add expand modal for graph panels by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/152
+- Clear invalid session cookie on auth failure by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/153
+
 ## [v0.7.0](https://github.com/tokuhirom/dashyard/compare/v0.6.1...v0.7.0) - 2026-02-02
 - Add custom HTTP headers support to datasource configuration by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/146
 
