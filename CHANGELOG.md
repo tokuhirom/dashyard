@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.12.1](https://github.com/tokuhirom/dashyard/compare/v0.12.0...v0.12.1) - 2026-02-02
+- Add PromQL reference for aggregation and rate vs irate by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/163
+
 ## [v0.11.1](https://github.com/tokuhirom/dashyard/compare/v0.11.0...v0.11.1) - 2026-02-02
 - Add pipe functions to legend templates by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/162
 
