@@ -373,6 +373,83 @@ body {
   scroll-margin-top: calc(var(--header-height) + 20px);
 }
 
+.panel-expand-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.panel:hover .panel-expand-btn {
+  opacity: 0.5;
+}
+
+.panel-expand-btn:hover {
+  opacity: 1 !important;
+  color: var(--color-primary);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel-modal {
+  position: relative;
+  z-index: 201;
+  width: 90vw;
+  height: 85vh;
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.panel-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.panel-modal-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.panel-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.panel-modal-close:hover {
+  color: var(--color-text);
+}
+
+.panel-modal .panel-chart {
+  flex: 1;
+  min-height: 0;
+}
+
 .panel-chart {
   position: relative;
   overflow: hidden;
