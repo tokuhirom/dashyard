@@ -251,6 +251,23 @@ datasources:
 
 Header values support environment variable expansion using `${VAR}` or `$VAR` syntax, so credentials can be kept out of config files.
 
+### Environment Variable Expansion
+
+Several config fields support `${VAR}` (or `$VAR`) environment variable expansion, allowing secrets and environment-specific values to be injected at startup:
+
+| Field | Example |
+|-------|---------|
+| `datasources[].url` | `url: "${PROMETHEUS_URL}"` |
+| `datasources[].headers[].value` | `value: "Bearer ${TOKEN}"` |
+| `users[].password_hash` | `password_hash: "${ADMIN_PASSWORD_HASH}"` |
+| `auth.oauth[].client_id` | `client_id: "${GITHUB_CLIENT_ID}"` |
+| `auth.oauth[].client_secret` | `client_secret: "${GITHUB_CLIENT_SECRET}"` |
+| `auth.oauth[].redirect_url` | `redirect_url: "${OAUTH_REDIRECT_URL}"` |
+| `auth.oauth[].base_url` | `base_url: "${GHE_BASE_URL}"` |
+| `server.session_secret` | `session_secret: "${SESSION_SECRET}"` |
+
+If an environment variable is unset, it expands to an empty string. Required fields (e.g. `url`, `client_id`) will then fail validation.
+
 The dashboards directory is specified via the `--dashboards-dir` CLI flag:
 
 ```bash

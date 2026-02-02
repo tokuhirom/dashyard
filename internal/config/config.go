@@ -102,6 +102,24 @@ func Parse(data []byte) (*Config, error) {
 		cfg.Server.SessionSecret = hex.EncodeToString(secret)
 	}
 
+	// Expand environment variables in config values
+	for i, ds := range cfg.Datasources {
+		cfg.Datasources[i].URL = os.ExpandEnv(ds.URL)
+		for j, h := range ds.Headers {
+			cfg.Datasources[i].Headers[j].Value = os.ExpandEnv(h.Value)
+		}
+	}
+	for i, u := range cfg.Users {
+		cfg.Users[i].PasswordHash = os.ExpandEnv(u.PasswordHash)
+	}
+	for i, p := range cfg.Auth.OAuth {
+		cfg.Auth.OAuth[i].ClientID = os.ExpandEnv(p.ClientID)
+		cfg.Auth.OAuth[i].ClientSecret = os.ExpandEnv(p.ClientSecret)
+		cfg.Auth.OAuth[i].RedirectURL = os.ExpandEnv(p.RedirectURL)
+		cfg.Auth.OAuth[i].BaseURL = os.ExpandEnv(p.BaseURL)
+	}
+	cfg.Server.SessionSecret = os.ExpandEnv(cfg.Server.SessionSecret)
+
 	if err := validateOAuthConfig(cfg.Auth.OAuth); err != nil {
 		return nil, err
 	}
@@ -121,13 +139,6 @@ func Parse(data []byte) (*Config, error) {
 
 	if err := validateDatasources(cfg.Datasources); err != nil {
 		return nil, err
-	}
-
-	// Expand environment variables in datasource header values
-	for i, ds := range cfg.Datasources {
-		for j, h := range ds.Headers {
-			cfg.Datasources[i].Headers[j].Value = os.ExpandEnv(h.Value)
-		}
 	}
 
 	return cfg, nil
