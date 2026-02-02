@@ -17,11 +17,11 @@ export function RowView({ row, rowIndex, timeRange, variableValues }: RowViewPro
   const title = substituteVariables(row.title, vars);
 
   // Calculate default span for panels without explicit span.
-  // Uses remaining grid space after explicit spans, with minimum 3 (max 4 panels per row).
+  // Uses remaining grid space after explicit spans, clamped to 3–6.
   const explicitTotal = row.panels.reduce((sum, p) => sum + (p.span || 0), 0);
   const nonExplicitCount = row.panels.filter(p => !p.span).length;
   const defaultSpan = nonExplicitCount > 0
-    ? Math.max(3, Math.floor((12 - explicitTotal) / nonExplicitCount))
+    ? Math.min(6, Math.max(3, Math.floor((12 - explicitTotal) / nonExplicitCount)))
     : 0;
 
   return (
