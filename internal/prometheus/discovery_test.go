@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -130,6 +131,47 @@ func TestBearerTokenNotSentWhenEmpty(t *testing.T) {
 	}
 	if receivedAuth != "" {
 		t.Errorf("expected no Authorization header, got %q", receivedAuth)
+	}
+}
+
+func TestBaseURLWithPathPrefix(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/prometheus/api/v1/label/__name__/values" {
+			t.Errorf("expected path '/prometheus/api/v1/label/__name__/values', got %q", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"status":"success","data":["up"]}`))
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL+"/prometheus/", 5*time.Second)
+	names, err := client.MetricNames(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(names) != 1 || names[0] != "up" {
+		t.Errorf("expected [up], got %v", names)
+	}
+}
+
+func TestDoGetErrorIncludesURL(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`page not found`))
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, 5*time.Second)
+	_, err := client.MetricNames(context.Background())
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	errMsg := err.Error()
+	if !strings.Contains(errMsg, server.URL) {
+		t.Errorf("expected error to contain URL %q, got %q", server.URL, errMsg)
+	}
+	if !strings.Contains(errMsg, "404") {
+		t.Errorf("expected error to contain status code 404, got %q", errMsg)
 	}
 }
 
