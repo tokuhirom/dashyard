@@ -120,7 +120,7 @@ func (cmd *GenPromptCmd) Run() error {
 			return fmt.Errorf("creating output directory: %w", err)
 		}
 
-		// Write prompt.md only if it doesn't exist (user-editable template), unless --force-prompt
+		// Write prompt.md only if it doesn't exist (user-editable template), unless --overwrite
 		if cmd.Overwrite {
 			promptDoc := generatePromptDoc()
 			if err := os.WriteFile(promptFile, []byte(promptDoc), 0644); err != nil {
@@ -137,10 +137,10 @@ func (cmd *GenPromptCmd) Run() error {
 			slog.Info("prompt file already exists, skipping", "file", promptFile)
 		}
 
-		// Write README.md (write-once, unless --force-prompt)
+		// Write README.md (write-once, unless --overwrite)
 		writeOnceFile(readmeFile, generateREADME(), "README", cmd.Overwrite)
 
-		// Write config.yaml (write-once, unless --force-prompt)
+		// Write config.yaml (write-once, unless --overwrite)
 		configContent, err := generateConfig(cmd.URL)
 		if err != nil {
 			return fmt.Errorf("generating config: %w", err)
