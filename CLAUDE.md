@@ -49,7 +49,6 @@ dashyard validate dashboards dashboards/   # Validate dashboard YAML files
 dashyard mkpasswd <password>               # Generate a SHA-512 crypt password hash
 dashyard gen-prompt <prometheus-url>       # Generate LLM prompt to stdout
 dashyard gen-prompt <prometheus-url> -o dir # Write prompt files to a directory
-dashyard gen-prompt <prometheus-url> -o dir --overwrite  # Overwrite write-once files
 ```
 
 ## Key Patterns

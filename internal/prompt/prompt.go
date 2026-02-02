@@ -13,3 +13,6 @@ var ReadmeTemplate string
 
 //go:embed config_template.yaml
 var ConfigTemplate string
+
+//go:embed prompt_user_template.md
+var PromptUserTemplate string

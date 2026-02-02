@@ -26,8 +26,7 @@ type GenPromptCmd struct {
 	Header    []string      `help:"HTTP header in 'Name: Value' format. Can be specified multiple times." short:"H"`
 	Match     string        `help:"Regex to filter metric names." default:""`
 	Timeout   time.Duration `help:"HTTP timeout." default:"30s"`
-	OutputDir  string        `help:"Output directory for prompt.md and prompt-metrics.md (default: stdout)." short:"o" default:""`
-	Overwrite bool          `help:"Overwrite all write-once files (prompt.md, README.md, config.yaml)." default:"false"`
+	OutputDir string        `help:"Output directory for prompt-system.md, prompt-user.md, prompt-metrics.md, DASHYARD-USAGE.md, and config.yaml (default: stdout)." short:"o" default:""`
 }
 
 func (cmd *GenPromptCmd) Run() error {
@@ -119,48 +118,43 @@ func (cmd *GenPromptCmd) Run() error {
 
 	// Generate output
 	if cmd.OutputDir != "" {
-		promptFile := filepath.Join(cmd.OutputDir, "prompt.md")
+		systemFile := filepath.Join(cmd.OutputDir, "prompt-system.md")
 		metricsFile := filepath.Join(cmd.OutputDir, "prompt-metrics.md")
-		readmeFile := filepath.Join(cmd.OutputDir, "README.md")
+		usageFile := filepath.Join(cmd.OutputDir, "DASHYARD-USAGE.md")
+		userFile := filepath.Join(cmd.OutputDir, "prompt-user.md")
 		configFile := filepath.Join(cmd.OutputDir, "config.yaml")
 
 		if err := os.MkdirAll(cmd.OutputDir, 0755); err != nil {
 			return fmt.Errorf("creating output directory: %w", err)
 		}
 
-		// Write prompt.md only if it doesn't exist (user-editable template), unless --overwrite
-		if cmd.Overwrite {
-			promptDoc := generatePromptDoc()
-			if err := os.WriteFile(promptFile, []byte(promptDoc), 0644); err != nil {
-				return fmt.Errorf("writing prompt file: %w", err)
-			}
-			slog.Info("wrote prompt file (forced)", "file", promptFile)
-		} else if _, err := os.Stat(promptFile); os.IsNotExist(err) {
-			promptDoc := generatePromptDoc()
-			if err := os.WriteFile(promptFile, []byte(promptDoc), 0644); err != nil {
-				return fmt.Errorf("writing prompt file: %w", err)
-			}
-			slog.Info("wrote prompt file", "file", promptFile)
-		} else {
-			slog.Info("prompt file already exists, skipping", "file", promptFile)
+		// System files: always overwrite
+		promptDoc := generatePromptDoc()
+		if err := os.WriteFile(systemFile, []byte(promptDoc), 0644); err != nil {
+			return fmt.Errorf("writing prompt-system file: %w", err)
 		}
+		slog.Info("wrote system prompt file", "file", systemFile)
 
-		// Write README.md (write-once, unless --overwrite)
-		writeOnceFile(readmeFile, generateREADME(), "README", cmd.Overwrite)
-
-		// Write config.yaml (write-once, unless --overwrite)
-		configContent, err := generateConfig(cmd.URL)
-		if err != nil {
-			return fmt.Errorf("generating config: %w", err)
+		usageDoc := generateREADME()
+		if err := os.WriteFile(usageFile, []byte(usageDoc), 0644); err != nil {
+			return fmt.Errorf("writing DASHYARD-USAGE file: %w", err)
 		}
-		writeOnceFile(configFile, configContent, "config", cmd.Overwrite)
+		slog.Info("wrote usage file", "file", usageFile)
 
-		// Always overwrite prompt-metrics.md
 		metricsDoc := generateMetricsDoc(metrics)
 		if err := os.WriteFile(metricsFile, []byte(metricsDoc), 0644); err != nil {
 			return fmt.Errorf("writing metrics file: %w", err)
 		}
 		slog.Info("wrote metrics file", "file", metricsFile)
+
+		// User files: write-once (never overwrite)
+		writeOnceFile(userFile, prompt.PromptUserTemplate, "prompt-user")
+
+		configContent, err := generateConfig(cmd.URL)
+		if err != nil {
+			return fmt.Errorf("generating config: %w", err)
+		}
+		writeOnceFile(configFile, configContent, "config")
 	} else {
 		// stdout: output everything in one stream
 		fmt.Print(generateREADME())
@@ -173,21 +167,17 @@ func (cmd *GenPromptCmd) Run() error {
 		fmt.Print("\n---\n\n")
 		fmt.Print(generatePromptDoc())
 		fmt.Print("\n---\n\n")
+		fmt.Print(prompt.PromptUserTemplate)
+		fmt.Print("\n---\n\n")
 		fmt.Print(generateMetricsDoc(metrics))
 	}
 
 	return nil
 }
 
-// writeOnceFile writes content to a file only if it doesn't exist, unless force is true.
-func writeOnceFile(path, content, label string, force bool) {
-	if force {
-		if err := os.WriteFile(path, []byte(content), 0644); err != nil {
-			slog.Error("writing file", "file", path, "error", err)
-			return
-		}
-		slog.Info("wrote file (forced)", "type", label, "file", path)
-	} else if _, err := os.Stat(path); os.IsNotExist(err) {
+// writeOnceFile writes content to a file only if it doesn't already exist.
+func writeOnceFile(path, content, label string) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
 		if err := os.WriteFile(path, []byte(content), 0644); err != nil {
 			slog.Error("writing file", "file", path, "error", err)
 			return
