@@ -6,6 +6,7 @@ variables:                          # optional
   - name: device                    # variable name used as $device in queries
     label: "Network Device"         # display label
     query: "label_values(metric_name, label_name)"
+    hide: false                     # when true, hide from selector bar
 rows:
   - title: "Row Title"
     repeat: device                  # optional: repeat row for each variable value
