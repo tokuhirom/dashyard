@@ -73,6 +73,28 @@ rate(hits_total[5m]) / (rate(hits_total[5m]) + rate(misses_total[5m]) > 0) * 100
 
 The `> 0` filter drops zero-denominator samples so the panel shows no data instead of `NaN`.
 
+## Legend Template Functions
+
+Legend templates support pipe-style functions for transforming label values:
+
+```yaml
+legend: "{instance_id | trunc(8)}"          # first 8 chars + "..."
+legend: "{request_id | suffix(8)}"          # "..." + last 8 chars
+legend: "{method | upper}"                  # uppercase
+legend: "{path | lower}"                    # lowercase
+legend: "{fqdn | replace(\".example.com\",\"\")}"  # remove substring
+legend: "{id | trunc(8) | upper}"           # chain multiple functions
+```
+
+Available functions:
+- `trunc(n)` — keep first N characters, append "..." if truncated
+- `suffix(n)` — keep last N characters, prepend "..." if truncated
+- `upper` — convert to uppercase
+- `lower` — convert to lowercase
+- `replace("old","new")` — replace all occurrences of a substring
+
+Use `trunc` for UUIDv4 labels (prefix is distinctive) and `suffix` for UUIDv7 labels (timestamp suffix is distinctive).
+
 ## Stacked Charts
 
 Use `stacked: true` when series represent parts of a whole that sum to a meaningful total (e.g. memory by state: used + cached + free + buffers = total). Do not stack independent series that overlap (e.g. CPU utilization per core).
