@@ -84,6 +84,7 @@ Do not push E2E test changes without verifying they pass locally first.
 - Create a separate branch and pull request for each feature or change
 - Do not mix unrelated changes in a single branch/PR
 - Include a link to the related issue in PR descriptions (e.g. `Fixes #123`)
+- PR titles, descriptions, and commit messages must be written in English
 
 ## Go Module
 
