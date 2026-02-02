@@ -10,12 +10,11 @@ interface DashboardViewProps {
   path: string;
   timeRange: TimeRange;
   onAuthError: () => void;
-  columns: number;
   variableValues: Record<string, string>;
   onVariableValuesChange: (values: Record<string, string>) => void;
 }
 
-export function DashboardView({ path, timeRange, onAuthError, columns, variableValues, onVariableValuesChange }: DashboardViewProps) {
+export function DashboardView({ path, timeRange, onAuthError, variableValues, onVariableValuesChange }: DashboardViewProps) {
   const { dashboard, loading, error } = useDashboardDetail(path, onAuthError);
   const { variables, selectedValues, allValues, setVariableValue, loading: varsLoading } =
     useVariables(dashboard?.variables, onAuthError, variableValues);
@@ -110,7 +109,6 @@ export function DashboardView({ path, timeRange, onAuthError, columns, variableV
                       row={row}
                       rowIndex={idx * 100 + repeatIdx}
                       timeRange={timeRange}
-                      columns={columns}
                       variableValues={repeatValues}
                     />
                   );
@@ -122,7 +120,6 @@ export function DashboardView({ path, timeRange, onAuthError, columns, variableV
                   row={row}
                   rowIndex={idx}
                   timeRange={timeRange}
-                  columns={columns}
                   variableValues={selectedValues}
                 />
               );

@@ -6,10 +6,12 @@ rows:
         type: "graph"
         query: 'system_cpu_utilization_ratio'
         unit: "percent"
+        span: 8
       - title: "CPU Load Average (1m)"
         type: "graph"
         query: "system_cpu_load_average_1m_ratio"
         unit: "count"
+        span: 4
   - title: "Memory"
     panels:
       - title: "Memory Usage"
@@ -18,7 +20,7 @@ rows:
         unit: "bytes"
       - title: "About"
         type: "markdown"
-        full_width: true
+        span: 12
         content: |
           ## System Overview
           This dashboard displays key system metrics collected via **OpenTelemetry Host Metrics**.

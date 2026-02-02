@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.14.1](https://github.com/tokuhirom/dashyard/compare/v0.14.0...v0.14.1) - 2026-02-02
+- Replace column selector with Grafana-style 12-column grid span layout by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/171
+
+## [v0.14.0](https://github.com/tokuhirom/dashyard/compare/v0.13.0...v0.14.0) - 2026-02-02
+- Add --log-level CLI option and Prometheus request debug logging by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/169
+
+## [v0.12.2](https://github.com/tokuhirom/dashyard/compare/v0.12.1...v0.12.2) - 2026-02-02
+- Add per-panel legend configuration options by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/166
+
 ## [v0.12.1](https://github.com/tokuhirom/dashyard/compare/v0.12.0...v0.12.1) - 2026-02-02
 - Add PromQL reference for aggregation and rate vs irate by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/163
 

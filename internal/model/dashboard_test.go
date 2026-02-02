@@ -901,6 +901,116 @@ func TestPanelLegendOptionsJSON(t *testing.T) {
 	}
 }
 
+func TestPanelSpanYAMLUnmarshal(t *testing.T) {
+	input := `
+title: "CPU Usage"
+type: "graph"
+query: "rate(cpu[5m])"
+span: 2
+`
+	var p Panel
+	if err := yaml.Unmarshal([]byte(input), &p); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if p.Span != 2 {
+		t.Errorf("expected span 2, got %d", p.Span)
+	}
+}
+
+func TestPanelSpanOmittedYAML(t *testing.T) {
+	input := `
+title: "CPU Usage"
+type: "graph"
+query: "rate(cpu[5m])"
+`
+	var p Panel
+	if err := yaml.Unmarshal([]byte(input), &p); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if p.Span != 0 {
+		t.Errorf("expected span 0 when omitted, got %d", p.Span)
+	}
+}
+
+func TestPanelSpanJSON(t *testing.T) {
+	p := Panel{Title: "Test", Type: "graph", Query: "up", Span: 3}
+	data, err := json.Marshal(p)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded map[string]interface{}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if decoded["span"] != float64(3) {
+		t.Errorf("expected span 3, got %v", decoded["span"])
+	}
+
+	// Verify span is omitted from JSON when zero
+	p2 := Panel{Title: "Test", Type: "graph", Query: "up"}
+	data2, err := json.Marshal(p2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded2 map[string]interface{}
+	if err := json.Unmarshal(data2, &decoded2); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, ok := decoded2["span"]; ok {
+		t.Errorf("expected span to be omitted from JSON when zero")
+	}
+}
+
+func TestValidateNegativeSpan(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", Span: -1}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for negative span")
+	}
+}
+
+func TestValidateZeroSpan(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", Span: 0}}}},
+	}
+	if err := d.Validate(); err != nil {
+		t.Errorf("expected no error for zero span (default), got %v", err)
+	}
+}
+
+func TestValidatePositiveSpan(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", Span: 3}}}},
+	}
+	if err := d.Validate(); err != nil {
+		t.Errorf("expected no error for positive span, got %v", err)
+	}
+}
+
+func TestValidateSpanExceedsMax(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", Span: 13}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for span > 12")
+	}
+}
+
+func TestValidateSpanAtMax(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", Span: 12}}}},
+	}
+	if err := d.Validate(); err != nil {
+		t.Errorf("expected no error for span 12, got %v", err)
+	}
+}
+
 func TestDashboardTreeNodeJSON(t *testing.T) {
 	node := DashboardTreeNode{
 		Name: "infra",

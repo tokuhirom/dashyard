@@ -30,11 +30,12 @@ rows:
           - value: 80
             color: orange
             label: "Warning"
+        span: 8                     # occupy 8 of 12 grid columns
       - title: "Notes"
         type: markdown
         content: |
           Markdown content here.
-        full_width: true            # span entire row width (markdown only)
+        span: 12                    # full-width (12 of 12 columns)
 ```
 
 # Rules
@@ -165,3 +166,40 @@ Control how the chart legend is displayed:
 - Use `legend_display: false` to hide the legend when series labels are not meaningful or when maximizing chart area.
 - Use `legend_position: right` with `legend_max_width` for panels with many series to avoid vertical compression.
 - The default `legend_align: start` (left-aligned) is recommended for most cases. Use `center` or `end` sparingly.
+
+## Panel Layout
+
+Rows use a **12-column grid** (like Grafana). Each panel's `span` sets how many of those 12 columns it occupies. When `span` is omitted, columns are distributed equally among panels (e.g. 2 panels = 6 each, 3 panels = 4 each).
+
+| Span | Width | Use case |
+|------|-------|----------|
+| `12` | 100% | Full-width panel |
+| `6` | 50% | Two equal panels per row |
+| `4` | 33% | Three equal panels per row |
+| `3` | 25% | Four equal panels per row |
+| `8` + `4` | 67% + 33% | Main + sidebar layout |
+
+```yaml
+rows:
+  - title: "Overview"
+    panels:
+      - title: "Main Graph"
+        type: graph
+        query: "..."
+        span: 8          # 8/12 = 2/3 width
+      - title: "Side Graph"
+        type: graph
+        query: "..."
+        span: 4          # 4/12 = 1/3 width
+  - title: "Equal"
+    panels:               # no span set → auto 6 each (12/2)
+      - title: "CPU"
+        type: graph
+        query: "..."
+      - title: "Memory"
+        type: graph
+        query: "..."
+```
+
+- If the sum of spans exceeds 12, panels wrap to the next line.
+- Use `span: 12` for full-width panels (replaces `full_width: true`).
