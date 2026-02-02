@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.6.1](https://github.com/tokuhirom/dashyard/compare/v0.6.0...v0.6.1) - 2026-02-02
+- Fix discovery API URL construction and improve error logging by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/144
+
 ## [v0.6.0](https://github.com/tokuhirom/dashyard/compare/v0.5.0...v0.6.0) - 2026-02-02
 - Add nur-packages support via GoReleaser by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/142
 
