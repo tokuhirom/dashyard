@@ -770,6 +770,137 @@ func TestValidateRepeatDefinedVariable(t *testing.T) {
 	}
 }
 
+func TestValidateGraphPanelInvalidLegendAlign(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", LegendAlign: "invalid"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for invalid legend_align")
+	}
+}
+
+func TestValidateGraphPanelValidLegendAligns(t *testing.T) {
+	for _, a := range []string{"start", "center", "end"} {
+		d := Dashboard{
+			Title: "Test",
+			Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", LegendAlign: a}}}},
+		}
+		if err := d.Validate(); err != nil {
+			t.Errorf("expected no error for legend_align %q, got %v", a, err)
+		}
+	}
+}
+
+func TestValidateGraphPanelInvalidLegendPosition(t *testing.T) {
+	d := Dashboard{
+		Title: "Test",
+		Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", LegendPosition: "invalid"}}}},
+	}
+	if err := d.Validate(); err == nil {
+		t.Error("expected error for invalid legend_position")
+	}
+}
+
+func TestValidateGraphPanelValidLegendPositions(t *testing.T) {
+	for _, p := range []string{"top", "bottom", "left", "right"} {
+		d := Dashboard{
+			Title: "Test",
+			Rows:  []Row{{Title: "Row1", Panels: []Panel{{Title: "P1", Type: "graph", Query: "up", LegendPosition: p}}}},
+		}
+		if err := d.Validate(); err != nil {
+			t.Errorf("expected no error for legend_position %q, got %v", p, err)
+		}
+	}
+}
+
+func TestPanelLegendOptionsYAMLUnmarshal(t *testing.T) {
+	input := `
+title: "Test"
+type: "graph"
+query: "up"
+legend_display: false
+legend_position: "right"
+legend_align: "center"
+legend_max_height: 100
+legend_max_width: 150
+`
+	var p Panel
+	if err := yaml.Unmarshal([]byte(input), &p); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if p.LegendDisplay == nil || *p.LegendDisplay != false {
+		t.Errorf("expected legend_display false")
+	}
+	if p.LegendPosition != "right" {
+		t.Errorf("expected legend_position 'right', got %q", p.LegendPosition)
+	}
+	if p.LegendAlign != "center" {
+		t.Errorf("expected legend_align 'center', got %q", p.LegendAlign)
+	}
+	if p.LegendMaxHeight == nil || *p.LegendMaxHeight != 100 {
+		t.Errorf("expected legend_max_height 100")
+	}
+	if p.LegendMaxWidth == nil || *p.LegendMaxWidth != 150 {
+		t.Errorf("expected legend_max_width 150")
+	}
+}
+
+func TestPanelLegendOptionsJSON(t *testing.T) {
+	display := false
+	maxH := 100
+	maxW := 150
+	p := Panel{
+		Title:           "Test",
+		Type:            "graph",
+		Query:           "up",
+		LegendDisplay:   &display,
+		LegendPosition:  "right",
+		LegendAlign:     "center",
+		LegendMaxHeight: &maxH,
+		LegendMaxWidth:  &maxW,
+	}
+	data, err := json.Marshal(p)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded map[string]interface{}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if decoded["legend_display"] != false {
+		t.Errorf("expected legend_display false, got %v", decoded["legend_display"])
+	}
+	if decoded["legend_position"] != "right" {
+		t.Errorf("expected legend_position 'right', got %v", decoded["legend_position"])
+	}
+	if decoded["legend_align"] != "center" {
+		t.Errorf("expected legend_align 'center', got %v", decoded["legend_align"])
+	}
+	if decoded["legend_max_height"] != float64(100) {
+		t.Errorf("expected legend_max_height 100, got %v", decoded["legend_max_height"])
+	}
+	if decoded["legend_max_width"] != float64(150) {
+		t.Errorf("expected legend_max_width 150, got %v", decoded["legend_max_width"])
+	}
+
+	// Verify legend options are omitted from JSON when nil/empty
+	p2 := Panel{Title: "Test", Type: "graph", Query: "up"}
+	data2, err := json.Marshal(p2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var decoded2 map[string]interface{}
+	if err := json.Unmarshal(data2, &decoded2); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	for _, key := range []string{"legend_display", "legend_position", "legend_align", "legend_max_height", "legend_max_width"} {
+		if _, ok := decoded2[key]; ok {
+			t.Errorf("expected %s to be omitted from JSON when not set", key)
+		}
+	}
+}
+
 func TestDashboardTreeNodeJSON(t *testing.T) {
 	node := DashboardTreeNode{
 		Name: "infra",

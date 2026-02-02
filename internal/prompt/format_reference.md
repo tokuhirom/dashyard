@@ -17,6 +17,11 @@ rows:
         unit: bytes                 # bytes, percent, count, seconds
         chart_type: line            # line, bar, area, scatter
         legend: "{label_name}"      # legend template
+        legend_display: true        # show/hide legend (default: true)
+        legend_position: bottom     # top, bottom, left, right (default: bottom)
+        legend_align: start         # start, center, end (default: start)
+        legend_max_height: 100      # max legend height in pixels
+        legend_max_width: 150       # max legend width in pixels
         y_min: 0                    # optional y-axis bounds
         y_max: 100
         stacked: false              # stack series
@@ -144,3 +149,19 @@ Use `trunc` for UUIDv4 labels (prefix is distinctive) and `suffix` for UUIDv7 la
 ## Stacked Charts
 
 Use `stacked: true` when series represent parts of a whole that sum to a meaningful total (e.g. memory by state: used + cached + free + buffers = total). Do not stack independent series that overlap (e.g. CPU utilization per core).
+
+## Legend Options
+
+Control how the chart legend is displayed:
+
+| Option | Values | Default | Description |
+|--------|--------|---------|-------------|
+| `legend_display` | `true`, `false` | `true` | Show or hide the legend entirely |
+| `legend_position` | `top`, `bottom`, `left`, `right` | `bottom` | Position of the legend relative to the chart |
+| `legend_align` | `start`, `center`, `end` | `start` | Alignment of legend items within the legend box |
+| `legend_max_height` | integer (pixels) | auto | Maximum height of the legend area |
+| `legend_max_width` | integer (pixels) | auto | Maximum width of the legend area |
+
+- Use `legend_display: false` to hide the legend when series labels are not meaningful or when maximizing chart area.
+- Use `legend_position: right` with `legend_max_width` for panels with many series to avoid vertical compression.
+- The default `legend_align: start` (left-aligned) is recommended for most cases. Use `center` or `end` sparingly.
