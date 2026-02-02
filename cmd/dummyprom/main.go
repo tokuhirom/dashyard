@@ -168,6 +168,8 @@ func generateData(ctx context.Context, query string, start, end, step float64) [
 		return generateDiskIO(start, end, step, "write")
 	case strings.Contains(query, "demo_requests_per_second"):
 		return generateDemoRequestsPerSecond(start, end, step)
+	case strings.Contains(query, "container_requests_total"):
+		return generateContainerRequests(start, end, step)
 	default:
 		return generateGeneric(query, start, end, step)
 	}
@@ -332,6 +334,41 @@ func generateDemoRequestsPerSecond(start, end, step float64) []promResult {
 	return results
 }
 
+// generateContainerRequests simulates a rolling container deployment where
+// version v1.0.0 stops sending metrics and v1.1.0 starts shortly after,
+// creating a visible data gap between the two versions.
+func generateContainerRequests(start, end, step float64) []promResult {
+	duration := end - start
+	// v1.0.0 runs for the first ~33% of the time range
+	v1End := start + duration*0.33
+	// v1.1.0 starts at ~42%, leaving a ~9% gap (no data from either version)
+	v2Start := start + duration*0.42
+
+	v1Values := generateTimeSeries(start, v1End, step, func(t float64) float64 {
+		return math.Max(0, 100+20*math.Sin(t/300)+noise(t, 700)*10)
+	})
+	v2Values := generateTimeSeries(v2Start, end, step, func(t float64) float64 {
+		return math.Max(0, 120+25*math.Sin(t/300)+noise(t, 701)*10)
+	})
+
+	return []promResult{
+		{
+			Metric: map[string]string{
+				"__name__": "container_requests_total",
+				"version":  "v1.0.0",
+			},
+			Values: v1Values,
+		},
+		{
+			Metric: map[string]string{
+				"__name__": "container_requests_total",
+				"version":  "v1.1.0",
+			},
+			Values: v2Values,
+		},
+	}
+}
+
 func generateGeneric(query string, start, end, step float64) []promResult {
 	values := generateTimeSeries(start, end, step, func(t float64) float64 {
 		return math.Max(0, 50+30*math.Sin(t/600)+noise(t, 500)*10)
@@ -367,6 +404,7 @@ var labelRegistry = map[string]map[string][]string{
 	"system_network_io_bytes_total":     {"device": {"eth0", "eth1"}, "direction": {"receive", "transmit"}},
 	"system_disk_io_bytes_total":        {"device": {"sda"}, "direction": {"read", "write"}},
 	"demo_requests_per_second":          {"endpoint": {"/health", "/api/users", "/api/search", "/api/reports", "/admin"}},
+	"container_requests_total":           {"version": {"v1.0.0", "v1.1.0"}},
 }
 
 type labelValuesResponse struct {
@@ -450,6 +488,7 @@ var metadataRegistry = map[string]struct {
 	"system_network_io_bytes_total":   {"counter", "Total network I/O bytes by device and direction."},
 	"system_disk_io_bytes_total":      {"counter", "Total disk I/O bytes by device and direction."},
 	"demo_requests_per_second":        {"gauge", "Request rate per endpoint (spans multiple orders of magnitude)."},
+	"container_requests_total":        {"counter", "Total container requests by version (simulates rolling deployments with data gaps)."},
 }
 
 func handleMetadata(w http.ResponseWriter, r *http.Request) {

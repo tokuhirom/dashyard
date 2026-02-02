@@ -52,9 +52,34 @@ interface GraphPanelProps {
   chartType?: 'line' | 'bar' | 'area' | 'scatter';
   stacked?: boolean;
   yScale?: 'linear' | 'log';
+  stepSeconds?: number;
   loading: boolean;
   error: string | null;
   id?: string;
+}
+
+/**
+ * Insert null data points where consecutive timestamps are too far apart,
+ * so Chart.js breaks the line instead of interpolating across data gaps.
+ */
+function insertGapNulls(
+  values: [number, string][],
+  stepSeconds: number,
+): { x: number; y: number | null }[] {
+  const result: { x: number; y: number | null }[] = [];
+  const gapThreshold = stepSeconds * 1.5;
+
+  for (let i = 0; i < values.length; i++) {
+    const [ts, val] = values[i];
+    if (i > 0) {
+      const prevTs = values[i - 1][0];
+      if (ts - prevTs > gapThreshold) {
+        result.push({ x: (prevTs + stepSeconds) * 1000, y: null });
+      }
+    }
+    result.push({ x: ts * 1000, y: parseFloat(val) });
+  }
+  return result;
 }
 
 function buildAnnotations(thresholds?: Threshold[]) {
@@ -93,7 +118,7 @@ const COLORS = [
 ];
 
 
-export function GraphPanel({ title, data, unit, yMin, yMax, legend, legendDisplay, legendPosition, legendAlign, legendMaxHeight, legendMaxWidth, thresholds, chartType, stacked, yScale, loading, error, id }: GraphPanelProps) {
+export function GraphPanel({ title, data, unit, yMin, yMax, legend, legendDisplay, legendPosition, legendAlign, legendMaxHeight, legendMaxWidth, thresholds, chartType, stacked, yScale, stepSeconds, loading, error, id }: GraphPanelProps) {
   const [expanded, setExpanded] = useState(false);
   const [chartHeight, setChartHeight] = useState<number | null>(null);
   const panelChartRef = useRef<HTMLDivElement>(null);
@@ -173,16 +198,19 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, legendDispla
 
   const datasets = data.data.result.map((result, idx) => ({
     label: buildLabel(result.metric, legend),
-    data: result.values.map(([ts, val]) => ({
-      x: ts * 1000,
-      y: parseFloat(val),
-    })),
+    data: stepSeconds
+      ? insertGapNulls(result.values, stepSeconds)
+      : result.values.map(([ts, val]) => ({
+          x: ts * 1000,
+          y: parseFloat(val),
+        })),
     borderColor: COLORS[idx % COLORS.length],
     backgroundColor: shouldStack ? COLORS[idx % COLORS.length] + '80' : COLORS[idx % COLORS.length] + '20',
     borderWidth: 1.5,
     pointRadius: effectiveType === 'scatter' ? 3 : 0,
     tension: 0.1,
     fill: effectiveType === 'area' || (shouldStack && effectiveType === 'line') ? 'origin' : false,
+    spanGaps: false,
   }));
 
   const tickCallback = getYAxisTickCallback(unit);

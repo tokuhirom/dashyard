@@ -4,6 +4,7 @@ import { GraphPanel } from './GraphPanel';
 import { MarkdownPanel } from './MarkdownPanel';
 import { useQuery } from '../hooks/useQuery';
 import { substituteVariables } from '../utils/variables';
+import { getTimeRangeParams } from '../utils/time';
 
 interface RowViewProps {
   row: Row;
@@ -70,6 +71,11 @@ function PanelRenderer({ panel, panelId, timeRange, variableValues }: PanelRende
     substitutedDatasource,
   );
 
+  const stepSeconds = useMemo(() => {
+    const { step } = getTimeRangeParams(timeRange);
+    return parseInt(step.replace('s', ''), 10);
+  }, [timeRange]);
+
   if (panel.type === 'markdown') {
     return <MarkdownPanel title={substitutedTitle} content={substitutedContent || ''} id={panelId} />;
   }
@@ -91,6 +97,7 @@ function PanelRenderer({ panel, panelId, timeRange, variableValues }: PanelRende
       chartType={panel.chart_type}
       stacked={panel.stacked}
       yScale={panel.y_scale}
+      stepSeconds={stepSeconds}
       loading={loading}
       error={error}
       id={panelId}

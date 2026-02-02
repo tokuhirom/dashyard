@@ -1,0 +1,21 @@
+title: "Data Gaps"
+rows:
+  - title: "Container Deployment"
+    panels:
+      - title: "Container Request Rate by Version"
+        type: "graph"
+        query: 'container_requests_total'
+        unit: "count"
+        legend: "{version}"
+        span: 12
+      - title: "About"
+        type: "markdown"
+        span: 12
+        content: |
+          ## Data Gaps Demo
+          When a container is redeployed with a new version, the old version stops sending metrics
+          and the new version starts shortly after. This creates a gap in the time series where
+          no data exists for either version.
+
+          Dashyard detects these gaps and breaks the graph line instead of drawing a misleading
+          straight line between the last point of the old version and the first point of the new one.
