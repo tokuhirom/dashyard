@@ -39,7 +39,7 @@ When your Prometheus metrics change, re-run `gen-prompt` to update the metrics l
 dashyard gen-prompt <prometheus-url> -o .
 ```
 
-Only `prompt-metrics.md` will be regenerated. Your `prompt.md`, `config.yaml`, and `dashboards/` are preserved. Use `--force-prompt` to overwrite `prompt.md`, `config.yaml`, and `README.md` as well.
+Only `prompt-metrics.md` will be regenerated. Your `prompt.md`, `config.yaml`, and `dashboards/` are preserved. Use `--overwrite` to overwrite `prompt.md`, `config.yaml`, and `README.md` as well.
 
 ## Customizing the Prompt
 

@@ -23,7 +23,7 @@ type GenPromptCmd struct {
 	Match     string        `help:"Regex to filter metric names." default:""`
 	Timeout   time.Duration `help:"HTTP timeout." default:"30s"`
 	OutputDir  string        `help:"Output directory for prompt.md and prompt-metrics.md (default: stdout)." short:"o" default:""`
-	ForcePrompt bool        `help:"Overwrite prompt.md even if it already exists." default:"false"`
+	Overwrite bool          `help:"Overwrite all write-once files (prompt.md, README.md, config.yaml)." default:"false"`
 }
 
 func (cmd *GenPromptCmd) Run() error {
@@ -117,7 +117,7 @@ func (cmd *GenPromptCmd) Run() error {
 		}
 
 		// Write prompt.md only if it doesn't exist (user-editable template), unless --force-prompt
-		if cmd.ForcePrompt {
+		if cmd.Overwrite {
 			promptDoc := generatePromptDoc()
 			if err := os.WriteFile(promptFile, []byte(promptDoc), 0644); err != nil {
 				return fmt.Errorf("writing prompt file: %w", err)
@@ -134,14 +134,14 @@ func (cmd *GenPromptCmd) Run() error {
 		}
 
 		// Write README.md (write-once, unless --force-prompt)
-		writeOnceFile(readmeFile, generateREADME(), "README", cmd.ForcePrompt)
+		writeOnceFile(readmeFile, generateREADME(), "README", cmd.Overwrite)
 
 		// Write config.yaml (write-once, unless --force-prompt)
 		configContent, err := generateConfig(cmd.URL)
 		if err != nil {
 			return fmt.Errorf("generating config: %w", err)
 		}
-		writeOnceFile(configFile, configContent, "config", cmd.ForcePrompt)
+		writeOnceFile(configFile, configContent, "config", cmd.Overwrite)
 
 		// Always overwrite prompt-metrics.md
 		metricsDoc := generateMetricsDoc(metrics)
