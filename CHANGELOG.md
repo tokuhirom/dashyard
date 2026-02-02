@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.11.0](https://github.com/tokuhirom/dashyard/compare/v0.10.0...v0.11.0) - 2026-02-02
+- Detect port-already-in-use before entering serve loop by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/159
+- Show repeat variables as disabled in selector, add hide option by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/161
+
 ## [v0.10.0](https://github.com/tokuhirom/dashyard/compare/v0.9.0...v0.10.0) - 2026-02-02
 - Dynamically adjust chart height for many series by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/156
 - Replace --bearer-token with --header in gen-prompt by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/158
