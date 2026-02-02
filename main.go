@@ -25,6 +25,8 @@ import (
 var frontendFiles embed.FS
 
 var cli struct {
+	LogLevel string `help:"Log level (debug, info, warn, error)." default:"info" enum:"debug,info,warn,error"`
+
 	Serve      ServeCmd      `cmd:"" help:"Start the dashboard server."`
 	Validate   ValidateCmd   `cmd:"" help:"Validate config or dashboard files."`
 	Mkpasswd   MkpasswdCmd   `cmd:"" help:"Generate a SHA-512 crypt password hash."`
@@ -160,11 +162,25 @@ func (cmd *MkpasswdCmd) Run() error {
 }
 
 func main() {
-	ctx := kong.Parse(&cli,
+	kctx := kong.Parse(&cli,
 		kong.Name("dashyard"),
 		kong.Description("Lightweight Prometheus metrics dashboard."),
 	)
-	if err := ctx.Run(); err != nil {
+
+	var level slog.Level
+	switch cli.LogLevel {
+	case "debug":
+		level = slog.LevelDebug
+	case "warn":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	default:
+		level = slog.LevelInfo
+	}
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level})))
+
+	if err := kctx.Run(); err != nil {
 		slog.Error("error", "error", err)
 		os.Exit(1)
 	}

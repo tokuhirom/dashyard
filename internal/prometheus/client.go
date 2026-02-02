@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
@@ -70,6 +71,8 @@ func (c *Client) QueryRange(ctx context.Context, query, start, end, step string)
 	params.Set("step", step)
 	u.RawQuery = params.Encode()
 
+	slog.Debug("prometheus query_range request", "url", u.String())
+
 	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 	if err != nil {
 		return nil, 0, fmt.Errorf("creating request: %w", err)
@@ -101,6 +104,8 @@ func (c *Client) Ping(ctx context.Context) error {
 		return fmt.Errorf("parsing base URL: %w", err)
 	}
 	u = u.JoinPath("-/ready")
+
+	slog.Debug("prometheus ping request", "url", u.String())
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 	if err != nil {
@@ -134,6 +139,8 @@ func (c *Client) LabelValues(ctx context.Context, label, match string) (io.ReadC
 		params.Set("match[]", match)
 		u.RawQuery = params.Encode()
 	}
+
+	slog.Debug("prometheus label values request", "url", u.String())
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 	if err != nil {
