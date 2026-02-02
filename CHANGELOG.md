@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.7.0](https://github.com/tokuhirom/dashyard/compare/v0.6.1...v0.7.0) - 2026-02-02
+- Add custom HTTP headers support to datasource configuration by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/146
+
 ## [v0.6.1](https://github.com/tokuhirom/dashyard/compare/v0.6.0...v0.6.1) - 2026-02-02
 - Fix discovery API URL construction and improve error logging by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/144
 
