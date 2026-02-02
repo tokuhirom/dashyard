@@ -489,6 +489,138 @@ datasources:
 	}
 }
 
+func TestParseDatasourceHeaders(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: prod
+    type: prometheus
+    url: "https://prometheus.example.com"
+    timeout: 30s
+    default: true
+    headers:
+      - name: Authorization
+        value: "Bearer my-secret-token"
+      - name: X-Custom-Header
+        value: "custom-value"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(cfg.Datasources) != 1 {
+		t.Fatalf("expected 1 datasource, got %d", len(cfg.Datasources))
+	}
+	headers := cfg.Datasources[0].Headers
+	if len(headers) != 2 {
+		t.Fatalf("expected 2 headers, got %d", len(headers))
+	}
+	if headers[0].Name != "Authorization" || headers[0].Value != "Bearer my-secret-token" {
+		t.Errorf("expected Authorization: 'Bearer my-secret-token', got %q: %q", headers[0].Name, headers[0].Value)
+	}
+	if headers[1].Name != "X-Custom-Header" || headers[1].Value != "custom-value" {
+		t.Errorf("expected X-Custom-Header: 'custom-value', got %q: %q", headers[1].Name, headers[1].Value)
+	}
+}
+
+func TestParseDatasourceHeadersDuplicateKeys(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: prod
+    type: prometheus
+    url: "https://prometheus.example.com"
+    default: true
+    headers:
+      - name: X-Custom
+        value: "value1"
+      - name: X-Custom
+        value: "value2"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	headers := cfg.Datasources[0].Headers
+	if len(headers) != 2 {
+		t.Fatalf("expected 2 headers (duplicate keys allowed), got %d", len(headers))
+	}
+	if headers[0].Value != "value1" {
+		t.Errorf("expected first value 'value1', got %q", headers[0].Value)
+	}
+	if headers[1].Value != "value2" {
+		t.Errorf("expected second value 'value2', got %q", headers[1].Value)
+	}
+}
+
+func TestParseDatasourceHeadersEnvExpansion(t *testing.T) {
+	t.Setenv("DASHYARD_TEST_TOKEN", "expanded-secret")
+	input := []byte(`
+datasources:
+  - name: prod
+    type: prometheus
+    url: "https://prometheus.example.com"
+    default: true
+    headers:
+      - name: Authorization
+        value: "Bearer ${DASHYARD_TEST_TOKEN}"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	got := cfg.Datasources[0].Headers[0].Value
+	if got != "Bearer expanded-secret" {
+		t.Errorf("expected 'Bearer expanded-secret', got %q", got)
+	}
+}
+
+func TestParseDatasourceHeadersEnvUnset(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: prod
+    type: prometheus
+    url: "https://prometheus.example.com"
+    default: true
+    headers:
+      - name: Authorization
+        value: "Bearer ${DASHYARD_UNSET_VAR_12345}"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	got := cfg.Datasources[0].Headers[0].Value
+	if got != "Bearer " {
+		t.Errorf("expected 'Bearer ' (empty expansion), got %q", got)
+	}
+}
+
+func TestParseDatasourceNoHeaders(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: local
+    type: prometheus
+    url: "http://localhost:9090"
+    default: true
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if cfg.Datasources[0].Headers != nil {
+		t.Errorf("expected nil headers, got %v", cfg.Datasources[0].Headers)
+	}
+}
+
 func TestParseDatasourceValidationNoDefaultMultiple(t *testing.T) {
 	input := []byte(`
 datasources:

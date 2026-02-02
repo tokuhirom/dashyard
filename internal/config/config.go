@@ -40,13 +40,20 @@ type ServerConfig struct {
 	TrustedProxies []string `yaml:"trusted_proxies,omitempty"`
 }
 
+// HeaderConfig represents a single HTTP header as a name/value pair.
+type HeaderConfig struct {
+	Name  string `yaml:"name"`
+	Value string `yaml:"value"`
+}
+
 // DatasourceConfig holds settings for a single named datasource.
 type DatasourceConfig struct {
-	Name    string        `yaml:"name"`
-	Type    string        `yaml:"type"`
-	URL     string        `yaml:"url"`
-	Timeout time.Duration `yaml:"timeout"`
-	Default bool          `yaml:"default"`
+	Name    string         `yaml:"name"`
+	Type    string         `yaml:"type"`
+	URL     string         `yaml:"url"`
+	Timeout time.Duration  `yaml:"timeout"`
+	Default bool           `yaml:"default"`
+	Headers []HeaderConfig `yaml:"headers,omitempty"`
 }
 
 // DashboardsConfig holds dashboard directory settings.
@@ -114,6 +121,13 @@ func Parse(data []byte) (*Config, error) {
 
 	if err := validateDatasources(cfg.Datasources); err != nil {
 		return nil, err
+	}
+
+	// Expand environment variables in datasource header values
+	for i, ds := range cfg.Datasources {
+		for j, h := range ds.Headers {
+			cfg.Datasources[i].Headers[j].Value = os.ExpandEnv(h.Value)
+		}
 	}
 
 	return cfg, nil

@@ -22,7 +22,15 @@ func NewRegistry(datasources []config.DatasourceConfig) (*Registry, error) {
 	for _, ds := range datasources {
 		switch ds.Type {
 		case "prometheus":
-			clients[ds.Name] = prometheus.NewClient(ds.URL, ds.Timeout)
+			var opts []prometheus.ClientOption
+			if len(ds.Headers) > 0 {
+				headers := make([]prometheus.Header, len(ds.Headers))
+				for i, h := range ds.Headers {
+					headers[i] = prometheus.Header{Name: h.Name, Value: h.Value}
+				}
+				opts = append(opts, prometheus.WithHeaders(headers))
+			}
+			clients[ds.Name] = prometheus.NewClient(ds.URL, ds.Timeout, opts...)
 		default:
 			return nil, fmt.Errorf("unsupported datasource type %q for %q", ds.Type, ds.Name)
 		}
