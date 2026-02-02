@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.12.2](https://github.com/tokuhirom/dashyard/compare/v0.12.1...v0.12.2) - 2026-02-02
+- Add per-panel legend configuration options by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/166
+
 ## [v0.12.1](https://github.com/tokuhirom/dashyard/compare/v0.12.0...v0.12.1) - 2026-02-02
 - Add PromQL reference for aggregation and rate vs irate by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/163
 
