@@ -206,9 +206,14 @@ header_color: "#dc2626"        # Optional, any CSS color value
 server:
   session_secret: "change-me-in-production"
 
-prometheus:
-  url: "http://localhost:9090"
-  timeout: 30s
+datasources:
+  - name: default
+    type: prometheus
+    url: "http://localhost:9090"
+    timeout: 30s
+    default: true
+    # headers:                              # Optional custom HTTP headers
+    #   Authorization: "Bearer ${MY_TOKEN}" # Supports ${VAR} env expansion
 
 users:
   - id: "admin"
@@ -225,6 +230,23 @@ auth:
       # allowed_users: ["user1", "user2"]
       # allowed_orgs: ["my-org"]
 ```
+
+### Datasource Headers
+
+Custom HTTP headers can be set per datasource for authentication or multi-tenancy:
+
+```yaml
+datasources:
+  - name: prod
+    type: prometheus
+    url: "https://prometheus.example.com"
+    default: true
+    headers:
+      Authorization: "Bearer ${PROMETHEUS_TOKEN}"
+      X-Scope-OrgID: "my-tenant"
+```
+
+Header values support environment variable expansion using `${VAR}` or `$VAR` syntax, so credentials can be kept out of config files.
 
 The dashboards directory is specified via the `--dashboards-dir` CLI flag:
 
