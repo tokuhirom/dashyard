@@ -1,5 +1,5 @@
 # Default user: admin / {{.Password}}
-# Generate a new hash with: dashyard hash-password <password>
+# Generate a new hash with: dashyard mkpasswd <password>
 users:
   - id: "admin"
     password_hash: "{{.PasswordHash}}"
