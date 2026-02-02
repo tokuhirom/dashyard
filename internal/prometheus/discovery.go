@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 )
@@ -40,12 +41,15 @@ func (c *Client) doGet(ctx context.Context, path string, params url.Values) (jso
 	if err != nil {
 		return nil, fmt.Errorf("parsing base URL: %w", err)
 	}
-	u.Path = path
+	u = u.JoinPath(path)
 	if params != nil {
 		u.RawQuery = params.Encode()
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
+	requestURL := u.String()
+	slog.Debug("prometheus API request", "url", requestURL)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", requestURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
@@ -53,22 +57,22 @@ func (c *Client) doGet(ctx context.Context, path string, params url.Values) (jso
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("executing request: %w", err)
+		return nil, fmt.Errorf("executing request (%s): %w", requestURL, err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %w", err)
+		return nil, fmt.Errorf("reading response body (%s): %w", requestURL, err)
 	}
 
 	var apiResp promAPIResponse
 	if err := json.Unmarshal(body, &apiResp); err != nil {
-		return nil, fmt.Errorf("decoding response (status %d): %w", resp.StatusCode, err)
+		return nil, fmt.Errorf("decoding response (status %d, url %s): %w", resp.StatusCode, requestURL, err)
 	}
 
 	if apiResp.Status != "success" {
-		return nil, fmt.Errorf("prometheus API error: %s", apiResp.Error)
+		return nil, fmt.Errorf("prometheus API error (%s): %s", requestURL, apiResp.Error)
 	}
 
 	return apiResp.Data, nil
