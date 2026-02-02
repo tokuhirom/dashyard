@@ -168,11 +168,20 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
 
   const tickCallback = getYAxisTickCallback(unit);
 
+  const seriesCount = datasets.length;
+  // Reduce aspect ratio for many series so legend + chart both have room
+  const dynamicAspectRatio = seriesCount <= 5
+    ? 2.5
+    : Math.max(1.2, 2.5 - (seriesCount - 5) * 0.1);
+  const dynamicLegendMaxHeight = seriesCount <= 5
+    ? 60
+    : Math.min(200, 60 + (seriesCount - 5) * 15);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const buildOptions = (isExpanded: boolean): any => ({
     responsive: true,
     maintainAspectRatio: !isExpanded,
-    ...(isExpanded ? {} : { aspectRatio: 2.5 }),
+    ...(isExpanded ? {} : { aspectRatio: dynamicAspectRatio }),
     interaction: {
       mode: 'index' as const,
       intersect: false,
@@ -180,7 +189,7 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
     plugins: {
       legend: {
         position: 'bottom' as const,
-        ...(isExpanded ? {} : { maxHeight: 60 }),
+        ...(isExpanded ? {} : { maxHeight: dynamicLegendMaxHeight }),
         labels: {
           boxWidth: 12,
           usePointStyle: true,
