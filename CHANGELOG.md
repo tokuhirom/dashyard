@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.11.1](https://github.com/tokuhirom/dashyard/compare/v0.11.0...v0.11.1) - 2026-02-02
+- Add pipe functions to legend templates by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/162
+
 ## [v0.11.0](https://github.com/tokuhirom/dashyard/compare/v0.10.0...v0.11.0) - 2026-02-02
 - Detect port-already-in-use before entering serve loop by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/159
 - Show repeat variables as disabled in selector, add hide option by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/161
