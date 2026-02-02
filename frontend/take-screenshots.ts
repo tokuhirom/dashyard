@@ -171,6 +171,16 @@ async function main() {
   );
   console.log("Saved: screenshot-datasource-variable.png");
 
+  // Navigate to panel-layout dashboard (span/full_width demo)
+  await captureDashboard(
+    page,
+    dashboardUrl("panel-layout"),
+    ".graph-panel canvas",
+    path.join(OUTPUT_DIR, "docs", "screenshot-panel-layout.png"),
+    { fullPage: true }
+  );
+  console.log("Saved: screenshot-panel-layout.png");
+
   // Navigate to sidebar groups (infra/)
   const groupHeader = page.locator(".sidebar-group-header").first();
   if ((await groupHeader.count()) > 0) {

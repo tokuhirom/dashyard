@@ -78,6 +78,12 @@ Draw horizontal reference lines on graph panels to mark warning levels, SLA targ
 
 ![Thresholds](docs/screenshot-thresholds.png)
 
+### Panel Layout with Span
+
+Control panel widths using `span` in a 12-column grid. Use `span: 12` for full-width, `span: 6` for half-width, etc. When `span` is omitted, columns are auto-distributed equally.
+
+![Panel Layout](docs/screenshot-panel-layout.png)
+
 ### Sidebar Navigation with Groups
 
 Organize dashboards into subdirectories that become collapsible groups in the sidebar.
@@ -304,8 +310,8 @@ rows:
 
 | Type | Required Fields | Optional Fields |
 |------|----------------|-----------------|
-| `graph` | `title`, `type`, `query` | `chart_type`, `unit`, `legend`, `y_min`, `y_max`, `y_scale`, `thresholds`, `stacked` |
-| `markdown` | `title`, `type`, `content` | `full_width` |
+| `graph` | `title`, `type`, `query` | `chart_type`, `unit`, `legend`, `y_min`, `y_max`, `y_scale`, `thresholds`, `stacked`, `span` |
+| `markdown` | `title`, `type`, `content` | `span` |
 
 ### `chart_type`
 
@@ -378,6 +384,37 @@ Add horizontal reference lines to graph panels. Each threshold is drawn as a das
       label: "Critical"
 ```
 
+### `span`
+
+Controls how many columns a panel occupies in the 12-column grid (like Grafana). When omitted, columns are distributed equally among panels. Use `span: 12` for full-width panels.
+
+| Span | Width | Panels per row |
+|------|-------|----------------|
+| `12` | 100% | 1 (full-width) |
+| `6` | 50% | 2 |
+| `4` | 33% | 3 |
+| `3` | 25% | 4 |
+
+```yaml
+rows:
+  - title: "Overview"
+    panels:
+      - title: "Main Graph"
+        type: "graph"
+        query: "..."
+        span: 8          # 8/12 width
+      - title: "Side Graph"
+        type: "graph"
+        query: "..."
+        span: 4          # 4/12 width
+  - title: "Full Width"
+    panels:
+      - title: "Wide Graph"
+        type: "graph"
+        query: "..."
+        span: 12         # full-width
+```
+
 JSON schema: [`schemas/dashboard.schema.json`](schemas/dashboard.schema.json)
 
 ## Project Structure
@@ -411,7 +448,7 @@ cd frontend && npm run build     # TypeScript type checking + build
 
 ### E2E Tests
 
-Playwright-based end-to-end tests verify login, dashboard rendering, column selector, and Chart.js canvas resize behavior.
+Playwright-based end-to-end tests verify login, dashboard rendering, auto panel layout, and Chart.js canvas resize behavior.
 
 ```bash
 # Start all three services first:

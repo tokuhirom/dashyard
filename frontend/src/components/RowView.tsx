@@ -9,23 +9,30 @@ interface RowViewProps {
   row: Row;
   rowIndex: number;
   timeRange: TimeRange;
-  columns: number;
   variableValues?: Record<string, string>;
 }
 
-export function RowView({ row, rowIndex, timeRange, columns, variableValues }: RowViewProps) {
+export function RowView({ row, rowIndex, timeRange, variableValues }: RowViewProps) {
   const vars = variableValues || {};
   const title = substituteVariables(row.title, vars);
+
+  // Calculate default span for panels without explicit span.
+  // Uses remaining grid space after explicit spans, with minimum 3 (max 4 panels per row).
+  const explicitTotal = row.panels.reduce((sum, p) => sum + (p.span || 0), 0);
+  const nonExplicitCount = row.panels.filter(p => !p.span).length;
+  const defaultSpan = nonExplicitCount > 0
+    ? Math.max(3, Math.floor((12 - explicitTotal) / nonExplicitCount))
+    : 0;
 
   return (
     <div className="row">
       <h2 className="row-title">{title}</h2>
-      <div className="row-panels" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+      <div className="row-panels" style={{ gridTemplateColumns: 'repeat(12, 1fr)' }}>
         {row.panels.map((panel, idx) => {
           const panelId = `panel-${rowIndex}-${idx}`;
-          const style = panel.full_width ? { gridColumn: '1 / -1' } : undefined;
+          const span = panel.span || defaultSpan;
           return (
-            <div key={idx} style={style}>
+            <div key={idx} style={{ gridColumn: `span ${span}` }}>
               <PanelRenderer panel={panel} panelId={panelId} timeRange={timeRange} variableValues={vars} />
             </div>
           );

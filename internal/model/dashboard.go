@@ -29,7 +29,7 @@ type Panel struct {
 	Stacked    bool        `yaml:"stacked,omitempty" json:"stacked,omitempty"`
 	YScale     string      `yaml:"y_scale,omitempty" json:"y_scale,omitempty"` // "linear" or "log"
 	Content    string      `yaml:"content,omitempty" json:"content,omitempty"`
-	FullWidth  bool        `yaml:"full_width,omitempty" json:"full_width,omitempty"`
+	Span       int         `yaml:"span,omitempty" json:"span,omitempty"`
 }
 
 // Row represents a horizontal row of panels in a dashboard.
@@ -124,6 +124,9 @@ func (d *Dashboard) Validate() error {
 		}
 
 		for j, panel := range row.Panels {
+			if panel.Span < 0 || panel.Span > 12 {
+				return fmt.Errorf("panel[%d] %q in row %q has invalid span %d in dashboard %q (must be 0-12)", j, panel.Title, row.Title, panel.Span, d.Title)
+			}
 			switch panel.Type {
 			case "graph":
 				if panel.Query == "" {

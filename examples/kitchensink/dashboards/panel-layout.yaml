@@ -1,0 +1,71 @@
+title: "Panel Layout Demo"
+rows:
+  - title: "Span Layout (8:4 ratio)"
+    panels:
+      - title: "CPU Utilization (span: 8)"
+        type: "graph"
+        query: 'system_cpu_utilization_ratio'
+        unit: "percent"
+        span: 8
+      - title: "Load Average (span: 4)"
+        type: "graph"
+        query: "system_cpu_load_average_1m_ratio"
+        unit: "count"
+        span: 4
+  - title: "Equal Columns (3 panels, auto span: 4 each)"
+    panels:
+      - title: "CPU"
+        type: "graph"
+        query: 'system_cpu_utilization_ratio'
+        unit: "percent"
+      - title: "Memory"
+        type: "graph"
+        query: 'system_memory_usage_bytes{state="used"}'
+        unit: "bytes"
+      - title: "Load"
+        type: "graph"
+        query: "system_cpu_load_average_1m_ratio"
+        unit: "count"
+  - title: "Full Width (span: 12)"
+    panels:
+      - title: "CPU (span: 12)"
+        type: "graph"
+        query: 'system_cpu_utilization_ratio'
+        unit: "percent"
+        span: 12
+      - title: "Memory"
+        type: "graph"
+        query: 'system_memory_usage_bytes{state="used"}'
+        unit: "bytes"
+  - title: "Mixed Span (3:6:3)"
+    panels:
+      - title: "CPU (span: 3)"
+        type: "graph"
+        query: 'system_cpu_utilization_ratio'
+        unit: "percent"
+        span: 3
+      - title: "Memory (span: 6)"
+        type: "graph"
+        query: 'system_memory_usage_bytes{state="used"}'
+        unit: "bytes"
+        span: 6
+      - title: "Load (span: 3)"
+        type: "graph"
+        query: "system_cpu_load_average_1m_ratio"
+        unit: "count"
+        span: 3
+  - title: "Notes"
+    panels:
+      - title: "About Panel Layout"
+        type: "markdown"
+        span: 12
+        content: |
+          ## Panel Layout
+
+          This dashboard demonstrates the **span** layout option:
+
+          - **span: N** — panel occupies N of 12 grid columns (like Grafana)
+          - **span: 12** — full-width panel
+          - **span: 6** — half-width (2 panels per row)
+          - **span: 4** — one-third width (3 panels per row)
+          - When `span` is omitted, columns are auto-distributed equally

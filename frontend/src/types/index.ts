@@ -23,7 +23,7 @@ export interface Panel {
   stacked?: boolean;
   y_scale?: 'linear' | 'log';
   content?: string;
-  full_width?: boolean;
+  span?: number;
 }
 
 export interface Row {
