@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log/slog"
@@ -9,6 +10,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/tokuhirom/dashyard/internal/prometheus"
@@ -107,6 +109,8 @@ func (cmd *GenPromptCmd) Run() error {
 	if cmd.OutputDir != "" {
 		promptFile := filepath.Join(cmd.OutputDir, "prompt.md")
 		metricsFile := filepath.Join(cmd.OutputDir, "prompt-metrics.md")
+		readmeFile := filepath.Join(cmd.OutputDir, "README.md")
+		configFile := filepath.Join(cmd.OutputDir, "config.yaml")
 
 		if err := os.MkdirAll(cmd.OutputDir, 0755); err != nil {
 			return fmt.Errorf("creating output directory: %w", err)
@@ -129,6 +133,16 @@ func (cmd *GenPromptCmd) Run() error {
 			slog.Info("prompt file already exists, skipping", "file", promptFile)
 		}
 
+		// Write README.md (write-once, unless --force-prompt)
+		writeOnceFile(readmeFile, generateREADME(), "README", cmd.ForcePrompt)
+
+		// Write config.yaml (write-once, unless --force-prompt)
+		configContent, err := generateConfig(cmd.URL)
+		if err != nil {
+			return fmt.Errorf("generating config: %w", err)
+		}
+		writeOnceFile(configFile, configContent, "config", cmd.ForcePrompt)
+
 		// Always overwrite prompt-metrics.md
 		metricsDoc := generateMetricsDoc(metrics)
 		if err := os.WriteFile(metricsFile, []byte(metricsDoc), 0644); err != nil {
@@ -137,12 +151,57 @@ func (cmd *GenPromptCmd) Run() error {
 		slog.Info("wrote metrics file", "file", metricsFile)
 	} else {
 		// stdout: output everything in one stream
+		fmt.Print(generateREADME())
+		fmt.Print("\n---\n\n")
+		configContent, err := generateConfig(cmd.URL)
+		if err != nil {
+			return fmt.Errorf("generating config: %w", err)
+		}
+		fmt.Print(configContent)
+		fmt.Print("\n---\n\n")
 		fmt.Print(generatePromptDoc())
 		fmt.Print("\n---\n\n")
 		fmt.Print(generateMetricsDoc(metrics))
 	}
 
 	return nil
+}
+
+// writeOnceFile writes content to a file only if it doesn't exist, unless force is true.
+func writeOnceFile(path, content, label string, force bool) {
+	if force {
+		if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+			slog.Error("writing file", "file", path, "error", err)
+			return
+		}
+		slog.Info("wrote file (forced)", "type", label, "file", path)
+	} else if _, err := os.Stat(path); os.IsNotExist(err) {
+		if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+			slog.Error("writing file", "file", path, "error", err)
+			return
+		}
+		slog.Info("wrote file", "type", label, "file", path)
+	} else {
+		slog.Info("file already exists, skipping", "type", label, "file", path)
+	}
+}
+
+// generateREADME returns the README.md content.
+func generateREADME() string {
+	return prompt.ReadmeTemplate
+}
+
+// generateConfig generates config.yaml content with the Prometheus URL embedded.
+func generateConfig(prometheusURL string) (string, error) {
+	tmpl, err := template.New("config").Parse(prompt.ConfigTemplate)
+	if err != nil {
+		return "", fmt.Errorf("parsing config template: %w", err)
+	}
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, struct{ PrometheusURL string }{PrometheusURL: prometheusURL}); err != nil {
+		return "", fmt.Errorf("executing config template: %w", err)
+	}
+	return buf.String(), nil
 }
 
 // generatePromptDoc generates the static prompt template (guidelines + format reference).

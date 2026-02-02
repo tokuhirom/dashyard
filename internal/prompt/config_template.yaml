@@ -1,0 +1,10 @@
+datasources:
+  - name: default
+    type: prometheus
+    url: "{{.PrometheusURL}}"
+    timeout: 30s
+    default: true
+    # Uncomment to add custom HTTP headers (e.g. for authentication):
+    # headers:
+    #   - name: Authorization
+    #     value: "Bearer ${PROMETHEUS_TOKEN}"

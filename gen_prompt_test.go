@@ -166,6 +166,65 @@ func TestGroupMetricsByPrefix(t *testing.T) {
 	}
 }
 
+func TestGenerateREADME(t *testing.T) {
+	readme := generateREADME()
+
+	// Check that README is non-empty
+	if readme == "" {
+		t.Fatal("generateREADME returned empty string")
+	}
+
+	// Check key section headings
+	sections := []string{
+		"## Files",
+		"## Workflow",
+		"## Customizing the Prompt",
+		"## Configuring config.yaml",
+		"## Multiple Datasources",
+		"## Viewing Dashboards",
+	}
+	for _, section := range sections {
+		if !strings.Contains(readme, section) {
+			t.Errorf("README missing section: %s", section)
+		}
+	}
+}
+
+func TestGenerateConfig(t *testing.T) {
+	config, err := generateConfig("http://localhost:9090")
+	if err != nil {
+		t.Fatalf("generateConfig returned error: %v", err)
+	}
+
+	// Check that URL is embedded
+	if !strings.Contains(config, "http://localhost:9090") {
+		t.Error("config should contain the Prometheus URL")
+	}
+
+	// Check basic structure
+	if !strings.Contains(config, "datasources:") {
+		t.Error("config should contain datasources key")
+	}
+	if !strings.Contains(config, "name: default") {
+		t.Error("config should contain default datasource name")
+	}
+	if !strings.Contains(config, "default: true") {
+		t.Error("config should mark datasource as default")
+	}
+}
+
+func TestGenerateConfigDifferentURL(t *testing.T) {
+	url := "https://prometheus.example.com:9090"
+	config, err := generateConfig(url)
+	if err != nil {
+		t.Fatalf("generateConfig returned error: %v", err)
+	}
+
+	if !strings.Contains(config, url) {
+		t.Errorf("config should contain URL %q", url)
+	}
+}
+
 func TestMetricPrefix(t *testing.T) {
 	tests := []struct {
 		name     string
