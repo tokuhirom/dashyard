@@ -19,8 +19,13 @@ type Panel struct {
 	Unit       string      `yaml:"unit,omitempty" json:"unit,omitempty"` // "bytes", "percent", "count", "seconds"
 	YMin       *float64    `yaml:"y_min,omitempty" json:"y_min,omitempty"`
 	YMax       *float64    `yaml:"y_max,omitempty" json:"y_max,omitempty"`
-	Legend     string      `yaml:"legend,omitempty" json:"legend,omitempty"`
-	Thresholds []Threshold `yaml:"thresholds,omitempty" json:"thresholds,omitempty"`
+	Legend          string      `yaml:"legend,omitempty" json:"legend,omitempty"`
+	LegendDisplay  *bool       `yaml:"legend_display,omitempty" json:"legend_display,omitempty"`
+	LegendPosition string      `yaml:"legend_position,omitempty" json:"legend_position,omitempty"` // "top", "bottom", "left", "right"
+	LegendAlign    string      `yaml:"legend_align,omitempty" json:"legend_align,omitempty"`       // "start", "center", "end"
+	LegendMaxHeight *int       `yaml:"legend_max_height,omitempty" json:"legend_max_height,omitempty"`
+	LegendMaxWidth  *int       `yaml:"legend_max_width,omitempty" json:"legend_max_width,omitempty"`
+	Thresholds     []Threshold `yaml:"thresholds,omitempty" json:"thresholds,omitempty"`
 	Stacked    bool        `yaml:"stacked,omitempty" json:"stacked,omitempty"`
 	YScale     string      `yaml:"y_scale,omitempty" json:"y_scale,omitempty"` // "linear" or "log"
 	Content    string      `yaml:"content,omitempty" json:"content,omitempty"`
@@ -64,6 +69,14 @@ var validYScales = map[string]bool{
 
 var validUnits = map[string]bool{
 	"bytes": true, "percent": true, "count": true, "seconds": true,
+}
+
+var validLegendAligns = map[string]bool{
+	"start": true, "center": true, "end": true,
+}
+
+var validLegendPositions = map[string]bool{
+	"top": true, "bottom": true, "left": true, "right": true,
 }
 
 // Validate checks the dashboard for semantic correctness.
@@ -124,6 +137,12 @@ func (d *Dashboard) Validate() error {
 				}
 				if panel.Unit != "" && !validUnits[panel.Unit] {
 					return fmt.Errorf("graph panel[%d] %q in row %q has invalid unit %q in dashboard %q", j, panel.Title, row.Title, panel.Unit, d.Title)
+				}
+				if panel.LegendAlign != "" && !validLegendAligns[panel.LegendAlign] {
+					return fmt.Errorf("graph panel[%d] %q in row %q has invalid legend_align %q in dashboard %q (valid: start, center, end)", j, panel.Title, row.Title, panel.LegendAlign, d.Title)
+				}
+				if panel.LegendPosition != "" && !validLegendPositions[panel.LegendPosition] {
+					return fmt.Errorf("graph panel[%d] %q in row %q has invalid legend_position %q in dashboard %q (valid: top, bottom, left, right)", j, panel.Title, row.Title, panel.LegendPosition, d.Title)
 				}
 			case "markdown":
 				if panel.Content == "" {

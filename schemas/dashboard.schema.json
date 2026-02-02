@@ -127,6 +127,33 @@
           "type": "string",
           "description": "Go template string for formatting legend labels. Metric label names can be used as placeholders (e.g. \"{{device}} {{direction}}\")."
         },
+        "legend_display": {
+          "type": "boolean",
+          "description": "Whether to show the legend. Defaults to true.",
+          "default": true
+        },
+        "legend_position": {
+          "type": "string",
+          "description": "Position of the legend relative to the chart. Defaults to 'bottom'.",
+          "enum": ["top", "bottom", "left", "right"],
+          "default": "bottom"
+        },
+        "legend_align": {
+          "type": "string",
+          "description": "Alignment of legend labels within the legend box. Defaults to 'start' (left-aligned).",
+          "enum": ["start", "center", "end"],
+          "default": "start"
+        },
+        "legend_max_height": {
+          "type": "integer",
+          "description": "Maximum height of the legend area in pixels. Useful for panels with many series.",
+          "minimum": 0
+        },
+        "legend_max_width": {
+          "type": "integer",
+          "description": "Maximum width of the legend area in pixels. Useful when legend is positioned left or right.",
+          "minimum": 0
+        },
         "y_min": {
           "type": "number",
           "description": "Explicit minimum value for the Y axis. Overrides unit-based defaults (e.g. 0 for percent)."

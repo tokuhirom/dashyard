@@ -14,6 +14,11 @@ export interface Panel {
   y_min?: number;
   y_max?: number;
   legend?: string;
+  legend_display?: boolean;
+  legend_position?: 'top' | 'bottom' | 'left' | 'right';
+  legend_align?: 'start' | 'center' | 'end';
+  legend_max_height?: number;
+  legend_max_width?: number;
   thresholds?: Threshold[];
   stacked?: boolean;
   y_scale?: 'linear' | 'log';

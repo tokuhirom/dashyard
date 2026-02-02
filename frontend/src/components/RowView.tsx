@@ -75,6 +75,11 @@ function PanelRenderer({ panel, panelId, timeRange, variableValues }: PanelRende
       yMin={panel.y_min}
       yMax={panel.y_max}
       legend={panel.legend}
+      legendDisplay={panel.legend_display}
+      legendPosition={panel.legend_position}
+      legendAlign={panel.legend_align}
+      legendMaxHeight={panel.legend_max_height}
+      legendMaxWidth={panel.legend_max_width}
       thresholds={panel.thresholds}
       chartType={panel.chart_type}
       stacked={panel.stacked}

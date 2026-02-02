@@ -43,6 +43,11 @@ interface GraphPanelProps {
   yMin?: number;
   yMax?: number;
   legend?: string;
+  legendDisplay?: boolean;
+  legendPosition?: 'top' | 'bottom' | 'left' | 'right';
+  legendAlign?: 'start' | 'center' | 'end';
+  legendMaxHeight?: number;
+  legendMaxWidth?: number;
   thresholds?: Threshold[];
   chartType?: 'line' | 'bar' | 'area' | 'scatter';
   stacked?: boolean;
@@ -88,7 +93,7 @@ const COLORS = [
 ];
 
 
-export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, chartType, stacked, yScale, loading, error, id }: GraphPanelProps) {
+export function GraphPanel({ title, data, unit, yMin, yMax, legend, legendDisplay, legendPosition, legendAlign, legendMaxHeight, legendMaxWidth, thresholds, chartType, stacked, yScale, loading, error, id }: GraphPanelProps) {
   const [expanded, setExpanded] = useState(false);
   const [chartHeight, setChartHeight] = useState<number | null>(null);
   const panelChartRef = useRef<HTMLDivElement>(null);
@@ -204,8 +209,13 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
     },
     plugins: {
       legend: {
-        position: 'bottom' as const,
-        ...(isExpanded ? {} : { maxHeight: dynamicLegendMaxHeight }),
+        display: legendDisplay !== false,
+        position: (legendPosition || 'bottom') as 'top' | 'bottom' | 'left' | 'right',
+        align: (legendAlign || 'start') as 'start' | 'center' | 'end',
+        ...(legendMaxHeight !== undefined
+          ? { maxHeight: legendMaxHeight }
+          : isExpanded ? {} : { maxHeight: dynamicLegendMaxHeight }),
+        ...(legendMaxWidth !== undefined ? { maxWidth: legendMaxWidth } : {}),
         labels: {
           boxWidth: 12,
           usePointStyle: true,
