@@ -105,7 +105,6 @@ services:
       - http://prometheus:9090
       - -o
       - /output
-      - --overwrite
     depends_on:
       prometheus:
         condition: service_healthy

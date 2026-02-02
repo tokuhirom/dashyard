@@ -196,6 +196,32 @@ func TestGenerateREADME(t *testing.T) {
 			t.Errorf("README missing section: %s", section)
 		}
 	}
+
+	// Verify new file names are referenced
+	if !strings.Contains(readme, "prompt-system.md") {
+		t.Error("README should reference prompt-system.md")
+	}
+	if !strings.Contains(readme, "prompt-user.md") {
+		t.Error("README should reference prompt-user.md")
+	}
+	if !strings.Contains(readme, "DASHYARD-USAGE.md") {
+		t.Error("README should reference DASHYARD-USAGE.md")
+	}
+
+	// Verify old file names and --overwrite are not referenced
+	if strings.Contains(readme, "--overwrite") {
+		t.Error("README should not reference --overwrite flag")
+	}
+}
+
+func TestPromptUserTemplate(t *testing.T) {
+	tmpl := prompt.PromptUserTemplate
+	if tmpl == "" {
+		t.Fatal("PromptUserTemplate is empty")
+	}
+	if !strings.Contains(tmpl, "# Custom Prompt") {
+		t.Error("PromptUserTemplate should contain '# Custom Prompt' heading")
+	}
 }
 
 func TestGenerateConfig(t *testing.T) {
