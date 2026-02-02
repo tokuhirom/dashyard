@@ -28,7 +28,7 @@ The `gen-prompt` command reads metrics from your Prometheus server and produces 
 ./dashyard gen-prompt http://localhost:9090 --match "node_.*" -o .
 ```
 
-This writes `prompt.md` and `prompt-metrics.md` to the specified directory. `prompt.md` is a static template (guidelines + format reference) written only on first run — edit it freely to customize the LLM instructions. `prompt-metrics.md` is regenerated every time with the latest metrics. To reset `prompt.md` to the default, use `--force-prompt`.
+This writes `prompt.md` and `prompt-metrics.md` to the specified directory. `prompt.md` is a static template (guidelines + format reference) written only on first run — edit it freely to customize the LLM instructions. `prompt-metrics.md` is regenerated every time with the latest metrics. To reset `prompt.md` to the default, use `--overwrite`.
 
 Then ask an LLM to generate dashboards. For example, with Claude Code:
 

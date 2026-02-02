@@ -97,6 +97,14 @@ func TestGenerateMetricsDoc(t *testing.T) {
 	if !strings.Contains(doc, "**mode**: idle, system, user") {
 		t.Error("missing mode label values")
 	}
+
+	// Check legend candidates
+	if !strings.Contains(doc, "Legend candidates: mode, cpu") {
+		t.Errorf("missing or wrong legend candidates for node_cpu_seconds_total, got:\n%s", doc)
+	}
+	if !strings.Contains(doc, "Legend candidates: quantile") {
+		t.Error("missing legend candidates for go_gc_duration_seconds")
+	}
 }
 
 func TestGenerateMetricsDocEmpty(t *testing.T) {
@@ -252,6 +260,129 @@ func TestGenerateConfigRandomPassword(t *testing.T) {
 
 	if config1 == config2 {
 		t.Error("each call should generate a different random password")
+	}
+}
+
+func TestClassifyLabels(t *testing.T) {
+	tests := []struct {
+		name             string
+		metric           prometheus.MetricInfo
+		wantFixed        []string
+		wantVariable     []string
+		wantLegend       []string
+	}{
+		{
+			name: "mixed labels",
+			metric: prometheus.MetricInfo{
+				Name:   "lb_server_up_ratio",
+				Labels: []string{"sakuracloud_variant", "sakuracloud_publisher", "status", "server_id"},
+				LabelValues: map[string][]string{
+					"sakuracloud_variant":   {"lb_metrics"},                                     // 1 value → fixed
+					"sakuracloud_publisher": {"apprun-dedicated"},                               // 1 value → fixed
+					"status":               {"up", "down", "maintenance"},                       // 3 values → legend
+					"server_id":            {"s1", "s2", "s3", "s4", "s5", "s6", "s7"},         // 7 values → variable
+				},
+			},
+			wantFixed:    []string{"sakuracloud_variant", "sakuracloud_publisher"},
+			wantVariable: []string{"server_id"},
+			wantLegend:   []string{"status"},
+		},
+		{
+			name: "legend sorted by value count ascending",
+			metric: prometheus.MetricInfo{
+				Name:   "http_requests_total",
+				Labels: []string{"method", "status", "path"},
+				LabelValues: map[string][]string{
+					"method": {"GET", "POST", "PUT", "DELETE"}, // 4 values
+					"status": {"200", "404"},                   // 2 values → first
+					"path":   {"a", "b", "c"},                  // 3 values → second
+				},
+			},
+			wantFixed:    nil,
+			wantVariable: nil,
+			wantLegend:   []string{"status", "path", "method"},
+		},
+		{
+			name: "no label values known",
+			metric: prometheus.MetricInfo{
+				Name:   "some_metric",
+				Labels: []string{"instance", "job"},
+			},
+			wantFixed:    []string{"instance", "job"},
+			wantVariable: nil,
+			wantLegend:   nil,
+		},
+		{
+			name: "all fixed",
+			metric: prometheus.MetricInfo{
+				Name:   "singleton_metric",
+				Labels: []string{"env"},
+				LabelValues: map[string][]string{
+					"env": {"production"},
+				},
+			},
+			wantFixed:    []string{"env"},
+			wantVariable: nil,
+			wantLegend:   nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fixed, variable, legend := classifyLabels(tt.metric)
+			if !slicesEqual(fixed, tt.wantFixed) {
+				t.Errorf("fixed: got %v, want %v", fixed, tt.wantFixed)
+			}
+			if !slicesEqual(variable, tt.wantVariable) {
+				t.Errorf("variable: got %v, want %v", variable, tt.wantVariable)
+			}
+			if !slicesEqual(legend, tt.wantLegend) {
+				t.Errorf("legend: got %v, want %v", legend, tt.wantLegend)
+			}
+		})
+	}
+}
+
+func slicesEqual(a, b []string) bool {
+	if len(a) == 0 && len(b) == 0 {
+		return true
+	}
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func TestGenerateMetricsDocLabelClassification(t *testing.T) {
+	metrics := []prometheus.MetricInfo{
+		{
+			Name:   "lb_server_up_ratio",
+			Type:   "gauge",
+			Help:   "Server up ratio.",
+			Labels: []string{"variant", "publisher", "status"},
+			LabelValues: map[string][]string{
+				"variant":   {"lb_metrics"},
+				"publisher": {"apprun-dedicated"},
+				"status":    {"up", "down"},
+			},
+		},
+	}
+
+	doc := generateMetricsDoc(metrics)
+
+	if !strings.Contains(doc, `Fixed: variant="lb_metrics", publisher="apprun-dedicated"`) {
+		t.Errorf("missing fixed labels with values, got:\n%s", doc)
+	}
+	if !strings.Contains(doc, "Legend candidates: status") {
+		t.Errorf("missing legend candidates, got:\n%s", doc)
+	}
+	if strings.Contains(doc, "Variable candidates:") {
+		t.Error("should not have variable candidates")
 	}
 }
 

@@ -1,0 +1,16 @@
+# Default user: admin / a34cc469586ae5d862c3ca2db8ad45ff
+# Generate a new hash with: dashyard mkpasswd <password>
+users:
+  - id: "admin"
+    password_hash: "$6$QLNmmmxbKe2c2yKk$2KIVq8.I3aY6WS2ZRvvbr1ClpxAyy5ssi0Pj5krN9xZjDq43WiN4xbelwxsyrfCkOFf/uzN4Kij7XKh3gDAo11"
+
+datasources:
+  - name: default
+    type: prometheus
+    url: "http://prometheus:9090"
+    timeout: 30s
+    default: true
+    # Uncomment to add custom HTTP headers (e.g. for authentication):
+    # headers:
+    #   - name: Authorization
+    #     value: "Bearer ${PROMETHEUS_TOKEN}"
