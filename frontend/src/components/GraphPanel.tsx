@@ -162,6 +162,7 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
     plugins: {
       legend: {
         position: 'bottom' as const,
+        maxHeight: 60,
         labels: {
           boxWidth: 12,
           usePointStyle: true,
