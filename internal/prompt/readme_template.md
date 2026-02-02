@@ -26,7 +26,7 @@ This directory contains everything you need to generate and run Dashyard monitor
 claude
 
 # Example prompt inside Claude Code:
-# "Read prompt.md and prompt-metrics.md, then generate dashboards for all available metrics."
+# "Read prompt.md and prompt-metrics.md, then generate dashboards for all available metrics into the dashboards/ directory."
 ```
 
 Claude Code will read the prompt files, understand the available metrics, and create dashboard YAML files in the `dashboards/` directory.
