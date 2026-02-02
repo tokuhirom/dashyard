@@ -23,7 +23,7 @@ import (
 
 type GenPromptCmd struct {
 	URL       string        `arg:"" help:"Prometheus server URL."`
-	BearerToken string      `help:"Bearer token for authentication." env:"PROMETHEUS_BEARER_TOKEN"`
+	Header    []string      `help:"HTTP header in 'Name: Value' format. Can be specified multiple times." short:"H"`
 	Match     string        `help:"Regex to filter metric names." default:""`
 	Timeout   time.Duration `help:"HTTP timeout." default:"30s"`
 	OutputDir  string        `help:"Output directory for prompt.md and prompt-metrics.md (default: stdout)." short:"o" default:""`
@@ -34,8 +34,16 @@ func (cmd *GenPromptCmd) Run() error {
 	ctx := context.Background()
 
 	var opts []prometheus.ClientOption
-	if cmd.BearerToken != "" {
-		opts = append(opts, prometheus.WithBearerToken(cmd.BearerToken))
+	if len(cmd.Header) > 0 {
+		var headers []prometheus.Header
+		for _, h := range cmd.Header {
+			name, value, ok := strings.Cut(h, ":")
+			if !ok {
+				return fmt.Errorf("invalid header format %q: expected 'Name: Value'", h)
+			}
+			headers = append(headers, prometheus.Header{Name: strings.TrimSpace(name), Value: strings.TrimSpace(value)})
+		}
+		opts = append(opts, prometheus.WithHeaders(headers))
 	}
 	client := prometheus.NewClient(cmd.URL, cmd.Timeout, opts...)
 
