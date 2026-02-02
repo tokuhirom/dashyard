@@ -498,8 +498,10 @@ datasources:
     timeout: 30s
     default: true
     headers:
-      Authorization: "Bearer my-secret-token"
-      X-Custom-Header: "custom-value"
+      - name: Authorization
+        value: "Bearer my-secret-token"
+      - name: X-Custom-Header
+        value: "custom-value"
 `)
 
 	cfg, err := Parse(input)
@@ -514,11 +516,42 @@ datasources:
 	if len(headers) != 2 {
 		t.Fatalf("expected 2 headers, got %d", len(headers))
 	}
-	if headers["Authorization"] != "Bearer my-secret-token" {
-		t.Errorf("expected Authorization header 'Bearer my-secret-token', got %q", headers["Authorization"])
+	if headers[0].Name != "Authorization" || headers[0].Value != "Bearer my-secret-token" {
+		t.Errorf("expected Authorization: 'Bearer my-secret-token', got %q: %q", headers[0].Name, headers[0].Value)
 	}
-	if headers["X-Custom-Header"] != "custom-value" {
-		t.Errorf("expected X-Custom-Header 'custom-value', got %q", headers["X-Custom-Header"])
+	if headers[1].Name != "X-Custom-Header" || headers[1].Value != "custom-value" {
+		t.Errorf("expected X-Custom-Header: 'custom-value', got %q: %q", headers[1].Name, headers[1].Value)
+	}
+}
+
+func TestParseDatasourceHeadersDuplicateKeys(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: prod
+    type: prometheus
+    url: "https://prometheus.example.com"
+    default: true
+    headers:
+      - name: X-Custom
+        value: "value1"
+      - name: X-Custom
+        value: "value2"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	headers := cfg.Datasources[0].Headers
+	if len(headers) != 2 {
+		t.Fatalf("expected 2 headers (duplicate keys allowed), got %d", len(headers))
+	}
+	if headers[0].Value != "value1" {
+		t.Errorf("expected first value 'value1', got %q", headers[0].Value)
+	}
+	if headers[1].Value != "value2" {
+		t.Errorf("expected second value 'value2', got %q", headers[1].Value)
 	}
 }
 
@@ -531,7 +564,8 @@ datasources:
     url: "https://prometheus.example.com"
     default: true
     headers:
-      Authorization: "Bearer ${DASHYARD_TEST_TOKEN}"
+      - name: Authorization
+        value: "Bearer ${DASHYARD_TEST_TOKEN}"
 `)
 
 	cfg, err := Parse(input)
@@ -539,7 +573,7 @@ datasources:
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	got := cfg.Datasources[0].Headers["Authorization"]
+	got := cfg.Datasources[0].Headers[0].Value
 	if got != "Bearer expanded-secret" {
 		t.Errorf("expected 'Bearer expanded-secret', got %q", got)
 	}
@@ -553,7 +587,8 @@ datasources:
     url: "https://prometheus.example.com"
     default: true
     headers:
-      Authorization: "Bearer ${DASHYARD_UNSET_VAR_12345}"
+      - name: Authorization
+        value: "Bearer ${DASHYARD_UNSET_VAR_12345}"
 `)
 
 	cfg, err := Parse(input)
@@ -561,7 +596,7 @@ datasources:
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	got := cfg.Datasources[0].Headers["Authorization"]
+	got := cfg.Datasources[0].Headers[0].Value
 	if got != "Bearer " {
 		t.Errorf("expected 'Bearer ' (empty expansion), got %q", got)
 	}

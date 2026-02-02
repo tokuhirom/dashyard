@@ -124,9 +124,9 @@ func TestWithHeadersSent(t *testing.T) {
 	}))
 	defer server.Close()
 
-	headers := map[string]string{
-		"Authorization": "Bearer custom-token",
-		"X-Scope-OrgID": "my-org",
+	headers := []Header{
+		{Name: "Authorization", Value: "Bearer custom-token"},
+		{Name: "X-Scope-OrgID", Value: "my-org"},
 	}
 	client := NewClient(server.URL, 5*time.Second, WithHeaders(headers))
 	_, err := client.MetricNames(context.Background())

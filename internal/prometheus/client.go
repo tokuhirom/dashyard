@@ -14,26 +14,24 @@ import (
 // ClientOption configures optional Client settings.
 type ClientOption func(*Client)
 
+// Header represents a single HTTP header as a name/value pair.
+type Header struct {
+	Name  string
+	Value string
+}
+
 // WithBearerToken sets a bearer token for authentication.
-// This is a convenience wrapper that sets the Authorization header.
+// This is a convenience wrapper that adds an Authorization header.
 func WithBearerToken(token string) ClientOption {
 	return func(c *Client) {
-		if c.headers == nil {
-			c.headers = make(map[string]string)
-		}
-		c.headers["Authorization"] = "Bearer " + token
+		c.headers = append(c.headers, Header{Name: "Authorization", Value: "Bearer " + token})
 	}
 }
 
 // WithHeaders sets custom HTTP headers to include in every request.
-func WithHeaders(headers map[string]string) ClientOption {
+func WithHeaders(headers []Header) ClientOption {
 	return func(c *Client) {
-		if c.headers == nil {
-			c.headers = make(map[string]string)
-		}
-		for k, v := range headers {
-			c.headers[k] = v
-		}
+		c.headers = append(c.headers, headers...)
 	}
 }
 
@@ -41,7 +39,7 @@ func WithHeaders(headers map[string]string) ClientOption {
 type Client struct {
 	baseURL    string
 	httpClient *http.Client
-	headers    map[string]string
+	headers    []Header
 }
 
 // NewClient creates a new Prometheus client.
@@ -59,8 +57,8 @@ func NewClient(baseURL string, timeout time.Duration, opts ...ClientOption) *Cli
 }
 
 func (c *Client) applyAuth(req *http.Request) {
-	for k, v := range c.headers {
-		req.Header.Set(k, v)
+	for _, h := range c.headers {
+		req.Header.Add(h.Name, h.Value)
 	}
 }
 

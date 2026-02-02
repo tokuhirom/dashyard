@@ -212,8 +212,9 @@ datasources:
     url: "http://localhost:9090"
     timeout: 30s
     default: true
-    # headers:                              # Optional custom HTTP headers
-    #   Authorization: "Bearer ${MY_TOKEN}" # Supports ${VAR} env expansion
+    # headers:                                # Optional custom HTTP headers
+    #   - name: Authorization
+    #     value: "Bearer ${MY_TOKEN}"        # Supports ${VAR} env expansion
 
 users:
   - id: "admin"
@@ -242,8 +243,10 @@ datasources:
     url: "https://prometheus.example.com"
     default: true
     headers:
-      Authorization: "Bearer ${PROMETHEUS_TOKEN}"
-      X-Scope-OrgID: "my-tenant"
+      - name: Authorization
+        value: "Bearer ${PROMETHEUS_TOKEN}"
+      - name: X-Scope-OrgID
+        value: "my-tenant"
 ```
 
 Header values support environment variable expansion using `${VAR}` or `$VAR` syntax, so credentials can be kept out of config files.

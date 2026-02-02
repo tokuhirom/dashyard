@@ -72,10 +72,22 @@
             "default": false
           },
           "headers": {
-            "type": "object",
-            "description": "Custom HTTP headers to include in every request to this datasource. Values support environment variable expansion using ${VAR} syntax (e.g. Authorization: Bearer ${MY_TOKEN}).",
-            "additionalProperties": {
-              "type": "string"
+            "type": "array",
+            "description": "Custom HTTP headers to include in every request to this datasource. Values support environment variable expansion using ${VAR} syntax.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "HTTP header name (e.g. 'Authorization')."
+                },
+                "value": {
+                  "type": "string",
+                  "description": "HTTP header value. Supports ${VAR} environment variable expansion (e.g. 'Bearer ${MY_TOKEN}')."
+                }
+              },
+              "required": ["name", "value"],
+              "additionalProperties": false
             }
           }
         },

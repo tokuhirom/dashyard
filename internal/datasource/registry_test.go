@@ -97,9 +97,9 @@ func TestNewRegistryWithHeaders(t *testing.T) {
 			URL:     "http://prom:9090",
 			Timeout: 30 * time.Second,
 			Default: true,
-			Headers: map[string]string{
-				"Authorization": "Bearer secret",
-				"X-Scope-OrgID": "tenant-1",
+			Headers: []config.HeaderConfig{
+				{Name: "Authorization", Value: "Bearer secret"},
+				{Name: "X-Scope-OrgID", Value: "tenant-1"},
 			},
 		},
 	}
