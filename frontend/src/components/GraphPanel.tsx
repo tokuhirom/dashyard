@@ -19,6 +19,7 @@ import annotationPlugin from 'chartjs-plugin-annotation';
 import 'chartjs-adapter-date-fns';
 import type { QueryResponse, Threshold } from '../types';
 import { getYAxisTickCallback } from '../utils/units';
+import { buildLabel } from '../utils/legend';
 
 ChartJS.register(
   CategoryScale,
@@ -86,16 +87,6 @@ const COLORS = [
   '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1',
 ];
 
-function buildLabel(metric: Record<string, string>, legend?: string): string {
-  if (legend) {
-    return legend.replace(/\{([^}]+)\}/g, (_, key) => metric[key] ?? '');
-  }
-  const entries = Object.entries(metric).filter(([k]) => k !== '__name__');
-  if (entries.length === 0) {
-    return metric['__name__'] || 'value';
-  }
-  return entries.map(([k, v]) => `${k}="${v}"`).join(', ');
-}
 
 export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, chartType, stacked, yScale, loading, error, id }: GraphPanelProps) {
   const [expanded, setExpanded] = useState(false);
