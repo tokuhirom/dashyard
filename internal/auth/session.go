@@ -71,6 +71,21 @@ func (sm *SessionManager) ClearSession(r *http.Request, w http.ResponseWriter) e
 	return session.Save(r, w)
 }
 
+// ExpireCookie writes a Set-Cookie header that expires the session cookie.
+// Unlike ClearSession, this works even when the existing cookie is corrupt
+// or was created by a different instance with a different secret.
+func (sm *SessionManager) ExpireCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     sessionName,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   sm.store.Options.Secure,
+	})
+}
+
 // Store returns the underlying CookieStore (used by gothic).
 func (sm *SessionManager) Store() *sessions.CookieStore {
 	return sm.store

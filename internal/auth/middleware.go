@@ -14,6 +14,8 @@ func AuthMiddleware(sm *SessionManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, err := sm.ValidateSession(c.Request)
 		if err != nil {
+			// Clear the invalid/corrupt session cookie so re-login works cleanly
+			sm.ExpireCookie(c.Writer)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "unauthorized",
 			})
