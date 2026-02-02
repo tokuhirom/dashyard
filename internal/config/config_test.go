@@ -1,6 +1,7 @@
 package config
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
@@ -591,14 +592,12 @@ datasources:
         value: "Bearer ${DASHYARD_UNSET_VAR_12345}"
 `)
 
-	cfg, err := Parse(input)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	_, err := Parse(input)
+	if err == nil {
+		t.Fatal("expected error for unset environment variable")
 	}
-
-	got := cfg.Datasources[0].Headers[0].Value
-	if got != "Bearer " {
-		t.Errorf("expected 'Bearer ' (empty expansion), got %q", got)
+	if !strings.Contains(err.Error(), "DASHYARD_UNSET_VAR_12345") {
+		t.Errorf("expected error to mention variable name, got %q", err)
 	}
 }
 
@@ -618,6 +617,166 @@ datasources:
 
 	if cfg.Datasources[0].Headers != nil {
 		t.Errorf("expected nil headers, got %v", cfg.Datasources[0].Headers)
+	}
+}
+
+func TestParseDatasourceURLEnvExpansion(t *testing.T) {
+	t.Setenv("DASHYARD_TEST_URL", "http://expanded-prom:9090")
+	input := []byte(`
+datasources:
+  - name: prod
+    type: prometheus
+    url: "${DASHYARD_TEST_URL}"
+    default: true
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	got := cfg.Datasources[0].URL
+	if got != "http://expanded-prom:9090" {
+		t.Errorf("expected 'http://expanded-prom:9090', got %q", got)
+	}
+}
+
+func TestParseUserPasswordHashEnvExpansion(t *testing.T) {
+	t.Setenv("DASHYARD_TEST_HASH", "$6$rounds=5000$saltsalt$hashvalue")
+	input := []byte(`
+datasources:
+  - name: default
+    type: prometheus
+    url: "http://localhost:9090"
+users:
+  - id: admin
+    password_hash: "${DASHYARD_TEST_HASH}"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	got := cfg.Users[0].PasswordHash
+	if got != "$6$rounds=5000$saltsalt$hashvalue" {
+		t.Errorf("expected '$6$rounds=5000$saltsalt$hashvalue', got %q", got)
+	}
+}
+
+func TestParseOAuthEnvExpansion(t *testing.T) {
+	t.Setenv("DASHYARD_TEST_CLIENT_ID", "env-client-id")
+	t.Setenv("DASHYARD_TEST_CLIENT_SECRET", "env-client-secret")
+	t.Setenv("DASHYARD_TEST_REDIRECT_URL", "http://example.com/callback")
+	t.Setenv("DASHYARD_TEST_BASE_URL", "https://ghe.example.com")
+	input := []byte(`
+auth:
+  oauth:
+    - provider: github
+      client_id: "${DASHYARD_TEST_CLIENT_ID}"
+      client_secret: "${DASHYARD_TEST_CLIENT_SECRET}"
+      redirect_url: "${DASHYARD_TEST_REDIRECT_URL}"
+      base_url: "${DASHYARD_TEST_BASE_URL}"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	p := cfg.Auth.OAuth[0]
+	if p.ClientID != "env-client-id" {
+		t.Errorf("expected client_id 'env-client-id', got %q", p.ClientID)
+	}
+	if p.ClientSecret != "env-client-secret" {
+		t.Errorf("expected client_secret 'env-client-secret', got %q", p.ClientSecret)
+	}
+	if p.RedirectURL != "http://example.com/callback" {
+		t.Errorf("expected redirect_url 'http://example.com/callback', got %q", p.RedirectURL)
+	}
+	if p.BaseURL != "https://ghe.example.com" {
+		t.Errorf("expected base_url 'https://ghe.example.com', got %q", p.BaseURL)
+	}
+}
+
+func TestParseSessionSecretEnvExpansion(t *testing.T) {
+	t.Setenv("DASHYARD_TEST_SECRET", "my-env-session-secret")
+	input := []byte(`
+server:
+  session_secret: "${DASHYARD_TEST_SECRET}"
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if cfg.Server.SessionSecret != "my-env-session-secret" {
+		t.Errorf("expected 'my-env-session-secret', got %q", cfg.Server.SessionSecret)
+	}
+}
+
+func TestParseEnvExpansionDefault(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: prod
+    type: prometheus
+    url: "${DASHYARD_UNSET_99999:-http://fallback:9090}"
+    default: true
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	got := cfg.Datasources[0].URL
+	if got != "http://fallback:9090" {
+		t.Errorf("expected 'http://fallback:9090', got %q", got)
+	}
+}
+
+func TestParseEnvExpansionDefaultOverriddenByEnv(t *testing.T) {
+	t.Setenv("DASHYARD_TEST_WITH_DEFAULT", "from-env")
+	input := []byte(`
+datasources:
+  - name: prod
+    type: prometheus
+    url: "${DASHYARD_TEST_WITH_DEFAULT:-fallback}"
+    default: true
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	got := cfg.Datasources[0].URL
+	if got != "from-env" {
+		t.Errorf("expected 'from-env', got %q", got)
+	}
+}
+
+func TestParsePasswordHashLiteralNotExpanded(t *testing.T) {
+	input := []byte(`
+datasources:
+  - name: default
+    type: prometheus
+    url: "http://localhost:9090"
+users:
+  - id: admin
+    password_hash: "$6$D/BkIQYiHD.cKL4A$pbAApV8cWXOv3hTyITrHNmlWe3FyfIJyM2CVFuJxbmXwDZPIVbcXKJbM2dxmJqG/ZJZBtrt8e9bVxt0d7rQKK."
+`)
+
+	cfg, err := Parse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := "$6$D/BkIQYiHD.cKL4A$pbAApV8cWXOv3hTyITrHNmlWe3FyfIJyM2CVFuJxbmXwDZPIVbcXKJbM2dxmJqG/ZJZBtrt8e9bVxt0d7rQKK."
+	got := cfg.Users[0].PasswordHash
+	if got != expected {
+		t.Errorf("literal password hash was modified:\nexpected: %s\ngot:      %s", expected, got)
 	}
 }
 

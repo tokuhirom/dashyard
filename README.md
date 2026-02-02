@@ -220,7 +220,7 @@ datasources:
     default: true
     # headers:                                # Optional custom HTTP headers
     #   - name: Authorization
-    #     value: "Bearer ${MY_TOKEN}"        # Supports ${VAR} env expansion
+    #     value: "Bearer ${MY_TOKEN}"        # Supports ${VAR} and ${VAR:-default} env expansion
 
 users:
   - id: "admin"
@@ -255,7 +255,26 @@ datasources:
         value: "my-tenant"
 ```
 
-Header values support environment variable expansion using `${VAR}` or `$VAR` syntax, so credentials can be kept out of config files.
+Header values support environment variable expansion using `${VAR}` syntax, so credentials can be kept out of config files.
+
+### Environment Variable Expansion
+
+Several config fields support `${VAR}` environment variable expansion, allowing secrets and environment-specific values to be injected at startup. Only the `${VAR}` (brace) syntax is supported — bare `$VAR` references are **not** expanded. This ensures that values containing literal `$` characters (such as SHA-512 crypt password hashes like `$6$salt$hash`) are not corrupted.
+
+You can also provide default values using `${VAR:-default}` syntax. If the environment variable is not set, the default value is used instead.
+
+| Field | Example |
+|-------|---------|
+| `datasources[].url` | `url: "${PROMETHEUS_URL}"` |
+| `datasources[].headers[].value` | `value: "Bearer ${TOKEN}"` |
+| `users[].password_hash` | `password_hash: "${ADMIN_PASSWORD_HASH}"` |
+| `auth.oauth[].client_id` | `client_id: "${GITHUB_CLIENT_ID}"` |
+| `auth.oauth[].client_secret` | `client_secret: "${GITHUB_CLIENT_SECRET}"` |
+| `auth.oauth[].redirect_url` | `redirect_url: "${OAUTH_REDIRECT_URL}"` |
+| `auth.oauth[].base_url` | `base_url: "${GHE_BASE_URL}"` |
+| `server.session_secret` | `session_secret: "${SESSION_SECRET}"` |
+
+If a `${VAR}` reference is used and the environment variable is not set (and no `:-default` is provided), Dashyard will return a configuration error at startup.
 
 The dashboards directory is specified via the `--dashboards-dir` CLI flag:
 

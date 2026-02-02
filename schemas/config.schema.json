@@ -21,7 +21,7 @@
       "properties": {
         "session_secret": {
           "type": "string",
-          "description": "Secret key for session signing. Auto-generated if omitted."
+          "description": "Secret key for session signing. Auto-generated if omitted. Supports ${VAR} and ${VAR:-default} environment variable expansion."
         },
         "cookie_secure": {
           "type": "boolean",
@@ -58,7 +58,7 @@
           "url": {
             "type": "string",
             "format": "uri",
-            "description": "Datasource server URL."
+            "description": "Datasource server URL. Supports ${VAR} and ${VAR:-default} environment variable expansion."
           },
           "timeout": {
             "type": "string",
@@ -73,7 +73,7 @@
           },
           "headers": {
             "type": "array",
-            "description": "Custom HTTP headers to include in every request to this datasource. Values support environment variable expansion using ${VAR} syntax.",
+            "description": "Custom HTTP headers to include in every request to this datasource. Values support environment variable expansion using ${VAR} and ${VAR:-default} syntax.",
             "items": {
               "type": "object",
               "properties": {
@@ -83,7 +83,7 @@
                 },
                 "value": {
                   "type": "string",
-                  "description": "HTTP header value. Supports ${VAR} environment variable expansion (e.g. 'Bearer ${MY_TOKEN}')."
+                  "description": "HTTP header value. Supports ${VAR} and ${VAR:-default} environment variable expansion (e.g. 'Bearer ${MY_TOKEN}')."
                 }
               },
               "required": ["name", "value"],
@@ -120,7 +120,7 @@
           },
           "password_hash": {
             "type": "string",
-            "description": "SHA-512 crypt password hash. Generate with: go run ./cmd/genhash <password>"
+            "description": "SHA-512 crypt password hash. Generate with: go run ./cmd/genhash <password>. Supports ${VAR} and ${VAR:-default} environment variable expansion."
           }
         },
         "required": ["id", "password_hash"],
@@ -145,21 +145,21 @@
               },
               "client_id": {
                 "type": "string",
-                "description": "OAuth client ID."
+                "description": "OAuth client ID. Supports ${VAR} and ${VAR:-default} environment variable expansion."
               },
               "client_secret": {
                 "type": "string",
-                "description": "OAuth client secret."
+                "description": "OAuth client secret. Supports ${VAR} and ${VAR:-default} environment variable expansion."
               },
               "redirect_url": {
                 "type": "string",
                 "format": "uri",
-                "description": "OAuth callback URL (e.g. 'http://localhost:8080/auth/github/callback')."
+                "description": "OAuth callback URL (e.g. 'http://localhost:8080/auth/github/callback'). Supports ${VAR} and ${VAR:-default} environment variable expansion."
               },
               "base_url": {
                 "type": "string",
                 "format": "uri",
-                "description": "Base URL for GitHub Enterprise. When set, uses custom OAuth endpoints derived from this URL. Leave unset for github.com.",
+                "description": "Base URL for GitHub Enterprise. When set, uses custom OAuth endpoints derived from this URL. Leave unset for github.com. Supports ${VAR} and ${VAR:-default} environment variable expansion.",
                 "examples": ["https://ghe.example.com"]
               },
               "scopes": {

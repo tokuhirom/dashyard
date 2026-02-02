@@ -5,10 +5,41 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v3"
 )
+
+var envBracesRe = regexp.MustCompile(`\$\{([^}]+)\}`)
+
+// expandEnvBraces expands only ${VAR} and ${VAR:-default} syntax, leaving bare $VAR untouched.
+// This is safe for values like SHA-512 crypt hashes that contain literal $ characters.
+// Returns an error if a referenced environment variable is not set and no default is provided.
+func expandEnvBraces(s string) (string, error) {
+	var expandErr error
+	result := envBracesRe.ReplaceAllStringFunc(s, func(match string) string {
+		if expandErr != nil {
+			return match
+		}
+		inner := match[2 : len(match)-1]
+		name, defaultVal, hasDefault := strings.Cut(inner, ":-")
+		val, ok := os.LookupEnv(name)
+		if !ok {
+			if hasDefault {
+				return defaultVal
+			}
+			expandErr = fmt.Errorf("environment variable %q is not set", name)
+			return match
+		}
+		return val
+	})
+	if expandErr != nil {
+		return "", expandErr
+	}
+	return result, nil
+}
 
 // User represents an authenticated user in the config.
 type User struct {
@@ -102,6 +133,56 @@ func Parse(data []byte) (*Config, error) {
 		cfg.Server.SessionSecret = hex.EncodeToString(secret)
 	}
 
+	// Expand environment variables in config values (${VAR} syntax only)
+	for i, ds := range cfg.Datasources {
+		if v, err := expandEnvBraces(ds.URL); err != nil {
+			return nil, fmt.Errorf("datasources[%d].url: %w", i, err)
+		} else {
+			cfg.Datasources[i].URL = v
+		}
+		for j, h := range ds.Headers {
+			if v, err := expandEnvBraces(h.Value); err != nil {
+				return nil, fmt.Errorf("datasources[%d].headers[%d].value: %w", i, j, err)
+			} else {
+				cfg.Datasources[i].Headers[j].Value = v
+			}
+		}
+	}
+	for i, u := range cfg.Users {
+		if v, err := expandEnvBraces(u.PasswordHash); err != nil {
+			return nil, fmt.Errorf("users[%d].password_hash: %w", i, err)
+		} else {
+			cfg.Users[i].PasswordHash = v
+		}
+	}
+	for i, p := range cfg.Auth.OAuth {
+		if v, err := expandEnvBraces(p.ClientID); err != nil {
+			return nil, fmt.Errorf("auth.oauth[%d].client_id: %w", i, err)
+		} else {
+			cfg.Auth.OAuth[i].ClientID = v
+		}
+		if v, err := expandEnvBraces(p.ClientSecret); err != nil {
+			return nil, fmt.Errorf("auth.oauth[%d].client_secret: %w", i, err)
+		} else {
+			cfg.Auth.OAuth[i].ClientSecret = v
+		}
+		if v, err := expandEnvBraces(p.RedirectURL); err != nil {
+			return nil, fmt.Errorf("auth.oauth[%d].redirect_url: %w", i, err)
+		} else {
+			cfg.Auth.OAuth[i].RedirectURL = v
+		}
+		if v, err := expandEnvBraces(p.BaseURL); err != nil {
+			return nil, fmt.Errorf("auth.oauth[%d].base_url: %w", i, err)
+		} else {
+			cfg.Auth.OAuth[i].BaseURL = v
+		}
+	}
+	if v, err := expandEnvBraces(cfg.Server.SessionSecret); err != nil {
+		return nil, fmt.Errorf("server.session_secret: %w", err)
+	} else {
+		cfg.Server.SessionSecret = v
+	}
+
 	if err := validateOAuthConfig(cfg.Auth.OAuth); err != nil {
 		return nil, err
 	}
@@ -121,13 +202,6 @@ func Parse(data []byte) (*Config, error) {
 
 	if err := validateDatasources(cfg.Datasources); err != nil {
 		return nil, err
-	}
-
-	// Expand environment variables in datasource header values
-	for i, ds := range cfg.Datasources {
-		for j, h := range ds.Headers {
-			cfg.Datasources[i].Headers[j].Value = os.ExpandEnv(h.Value)
-		}
 	}
 
 	return cfg, nil
