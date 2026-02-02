@@ -115,6 +115,32 @@ func TestBearerTokenSent(t *testing.T) {
 	}
 }
 
+func TestWithHeadersSent(t *testing.T) {
+	var receivedHeaders http.Header
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedHeaders = r.Header
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"status":"success","data":["up"]}`))
+	}))
+	defer server.Close()
+
+	headers := map[string]string{
+		"Authorization": "Bearer custom-token",
+		"X-Scope-OrgID": "my-org",
+	}
+	client := NewClient(server.URL, 5*time.Second, WithHeaders(headers))
+	_, err := client.MetricNames(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got := receivedHeaders.Get("Authorization"); got != "Bearer custom-token" {
+		t.Errorf("expected Authorization 'Bearer custom-token', got %q", got)
+	}
+	if got := receivedHeaders.Get("X-Scope-OrgID"); got != "my-org" {
+		t.Errorf("expected X-Scope-OrgID 'my-org', got %q", got)
+	}
+}
+
 func TestBearerTokenNotSentWhenEmpty(t *testing.T) {
 	var receivedAuth string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

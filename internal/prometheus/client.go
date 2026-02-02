@@ -15,17 +15,33 @@ import (
 type ClientOption func(*Client)
 
 // WithBearerToken sets a bearer token for authentication.
+// This is a convenience wrapper that sets the Authorization header.
 func WithBearerToken(token string) ClientOption {
 	return func(c *Client) {
-		c.bearerToken = token
+		if c.headers == nil {
+			c.headers = make(map[string]string)
+		}
+		c.headers["Authorization"] = "Bearer " + token
+	}
+}
+
+// WithHeaders sets custom HTTP headers to include in every request.
+func WithHeaders(headers map[string]string) ClientOption {
+	return func(c *Client) {
+		if c.headers == nil {
+			c.headers = make(map[string]string)
+		}
+		for k, v := range headers {
+			c.headers[k] = v
+		}
 	}
 }
 
 // Client is an HTTP client for the Prometheus query_range API.
 type Client struct {
-	baseURL     string
-	httpClient  *http.Client
-	bearerToken string
+	baseURL    string
+	httpClient *http.Client
+	headers    map[string]string
 }
 
 // NewClient creates a new Prometheus client.
@@ -43,8 +59,8 @@ func NewClient(baseURL string, timeout time.Duration, opts ...ClientOption) *Cli
 }
 
 func (c *Client) applyAuth(req *http.Request) {
-	if c.bearerToken != "" {
-		req.Header.Set("Authorization", "Bearer "+c.bearerToken)
+	for k, v := range c.headers {
+		req.Header.Set(k, v)
 	}
 }
 

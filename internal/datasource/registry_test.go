@@ -89,6 +89,35 @@ func TestRegistryNames(t *testing.T) {
 	}
 }
 
+func TestNewRegistryWithHeaders(t *testing.T) {
+	datasources := []config.DatasourceConfig{
+		{
+			Name:    "authed",
+			Type:    "prometheus",
+			URL:     "http://prom:9090",
+			Timeout: 30 * time.Second,
+			Default: true,
+			Headers: map[string]string{
+				"Authorization": "Bearer secret",
+				"X-Scope-OrgID": "tenant-1",
+			},
+		},
+	}
+
+	reg, err := NewRegistry(datasources)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	client, err := reg.Get("authed")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if client == nil {
+		t.Fatal("expected non-nil client for 'authed'")
+	}
+}
+
 func TestNewRegistryUnsupportedType(t *testing.T) {
 	datasources := []config.DatasourceConfig{
 		{Name: "main", Type: "influxdb", URL: "http://main:8086", Timeout: 30 * time.Second, Default: true},

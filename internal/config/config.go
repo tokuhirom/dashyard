@@ -42,11 +42,12 @@ type ServerConfig struct {
 
 // DatasourceConfig holds settings for a single named datasource.
 type DatasourceConfig struct {
-	Name    string        `yaml:"name"`
-	Type    string        `yaml:"type"`
-	URL     string        `yaml:"url"`
-	Timeout time.Duration `yaml:"timeout"`
-	Default bool          `yaml:"default"`
+	Name    string            `yaml:"name"`
+	Type    string            `yaml:"type"`
+	URL     string            `yaml:"url"`
+	Timeout time.Duration     `yaml:"timeout"`
+	Default bool              `yaml:"default"`
+	Headers map[string]string `yaml:"headers,omitempty"`
 }
 
 // DashboardsConfig holds dashboard directory settings.
@@ -114,6 +115,13 @@ func Parse(data []byte) (*Config, error) {
 
 	if err := validateDatasources(cfg.Datasources); err != nil {
 		return nil, err
+	}
+
+	// Expand environment variables in datasource header values
+	for i, ds := range cfg.Datasources {
+		for k, v := range ds.Headers {
+			cfg.Datasources[i].Headers[k] = os.ExpandEnv(v)
+		}
 	}
 
 	return cfg, nil

@@ -70,6 +70,13 @@
             "type": "boolean",
             "description": "Mark this datasource as the default. Exactly one datasource must be default when multiple are defined. Auto-set when only one datasource exists.",
             "default": false
+          },
+          "headers": {
+            "type": "object",
+            "description": "Custom HTTP headers to include in every request to this datasource. Values support environment variable expansion using ${VAR} syntax (e.g. Authorization: Bearer ${MY_TOKEN}).",
+            "additionalProperties": {
+              "type": "string"
+            }
           }
         },
         "required": ["name", "type", "url"],
