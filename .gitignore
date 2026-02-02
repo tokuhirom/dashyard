@@ -13,8 +13,8 @@ frontend/e2e/.auth/
 frontend/test-results/
 frontend/playwright-report/
 
-# Devbox
-.devbox/
+# mise
+.mise/
 
 # IDE
 .idea/
@@ -27,6 +27,3 @@ frontend/playwright-report/
 
 # Build artifacts
 /dist/
-
-# Environment
-.devbox
