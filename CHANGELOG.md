@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.16.1](https://github.com/tokuhirom/dashyard/compare/v0.16.0...v0.16.1) - 2026-02-02
+- Cap default panel span to 6 for panels without explicit span by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/176
+
 ## [v0.15.1](https://github.com/tokuhirom/dashyard/compare/v0.15.0...v0.15.1) - 2026-02-02
 - Remove unnecessary needs dependencies from CI jobs by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/173
 - Extend environment variable expansion to more config fields by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/168
