@@ -84,7 +84,6 @@ function App() {
   const [currentPath, setCurrentPath] = useState<string | null>(parseDashboardPath);
   const [timeRange, setTimeRange] = useState<TimeRange>(parseTimeRange);
   const [variableValues, setVariableValues] = useState<Record<string, string>>(parseVariableValues);
-  const [columns, setColumns] = useState(2);
   const [refreshInterval, setRefreshInterval] = useState(0);
 
   useEffect(() => {
@@ -190,8 +189,6 @@ function App() {
       onNavigate={onNavigate}
       siteTitle={dashboardsData.site_title}
       headerColor={dashboardsData.header_color}
-      columns={columns}
-      onColumnsChange={setColumns}
       refreshInterval={refreshInterval}
       onRefreshIntervalChange={setRefreshInterval}
     >
@@ -199,7 +196,6 @@ function App() {
         path={activePath}
         timeRange={timeRange}
         onAuthError={handleAuthError}
-        columns={columns}
         variableValues={variableValues}
         onVariableValuesChange={onVariableValuesChange}
       />

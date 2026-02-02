@@ -179,6 +179,12 @@
           "description": "Y-axis scale type. Defaults to 'linear' if omitted.",
           "enum": ["linear", "log"],
           "default": "linear"
+        },
+        "span": {
+          "type": "integer",
+          "description": "Number of columns this panel occupies in the 12-column grid. When omitted, columns are distributed equally among panels. Use span: 12 for full-width.",
+          "minimum": 1,
+          "maximum": 12
         }
       },
       "required": ["title", "type", "query"],
@@ -220,10 +226,11 @@
           "type": "string",
           "description": "Markdown text to render."
         },
-        "full_width": {
-          "type": "boolean",
-          "description": "When true, the panel spans the full row width instead of sharing columns with sibling panels.",
-          "default": false
+        "span": {
+          "type": "integer",
+          "description": "Number of columns this panel occupies in the 12-column grid. When omitted, columns are distributed equally among panels. Use span: 12 for full-width.",
+          "minimum": 1,
+          "maximum": 12
         }
       },
       "required": ["title", "type", "content"],
