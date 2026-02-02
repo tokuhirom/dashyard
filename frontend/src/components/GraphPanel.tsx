@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Line, Bar, Scatter } from 'react-chartjs-2';
 import {
@@ -99,6 +99,8 @@ function buildLabel(metric: Record<string, string>, legend?: string): string {
 
 export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, chartType, stacked, yScale, loading, error, id }: GraphPanelProps) {
   const [expanded, setExpanded] = useState(false);
+  const [chartHeight, setChartHeight] = useState<number | null>(null);
+  const panelChartRef = useRef<HTMLDivElement>(null);
 
   const close = useCallback(() => setExpanded(false), []);
 
@@ -110,6 +112,27 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [expanded, close]);
+
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startHeight = panelChartRef.current?.offsetHeight ?? 200;
+
+    const onMouseMove = (ev: MouseEvent) => {
+      const newHeight = Math.max(100, startHeight + (ev.clientY - startY));
+      setChartHeight(newHeight);
+    };
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, []);
 
   const titleContent = (
     <h3 className="panel-title">
@@ -168,11 +191,22 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
 
   const tickCallback = getYAxisTickCallback(unit);
 
+  const seriesCount = datasets.length;
+  // Reduce aspect ratio for many series so legend + chart both have room
+  const dynamicAspectRatio = seriesCount <= 5
+    ? 2.5
+    : Math.max(1.2, 2.5 - (seriesCount - 5) * 0.1);
+  const dynamicLegendMaxHeight = seriesCount <= 5
+    ? 60
+    : Math.min(200, 60 + (seriesCount - 5) * 15);
+
+  const hasCustomHeight = chartHeight !== null;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const buildOptions = (isExpanded: boolean): any => ({
     responsive: true,
-    maintainAspectRatio: !isExpanded,
-    ...(isExpanded ? {} : { aspectRatio: 2.5 }),
+    maintainAspectRatio: isExpanded || hasCustomHeight ? false : true,
+    ...(!isExpanded && !hasCustomHeight ? { aspectRatio: dynamicAspectRatio } : {}),
     interaction: {
       mode: 'index' as const,
       intersect: false,
@@ -180,7 +214,7 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
     plugins: {
       legend: {
         position: 'bottom' as const,
-        ...(isExpanded ? {} : { maxHeight: 60 }),
+        ...(isExpanded ? {} : { maxHeight: dynamicLegendMaxHeight }),
         labels: {
           boxWidth: 12,
           usePointStyle: true,
@@ -227,9 +261,14 @@ export function GraphPanel({ title, data, unit, yMin, yMax, legend, thresholds, 
     <>
       <div className="panel graph-panel" id={id}>
         {titleContent}
-        <div className="panel-chart">
+        <div
+          ref={panelChartRef}
+          className="panel-chart"
+          style={hasCustomHeight ? { height: chartHeight } : undefined}
+        >
           {renderChart(false)}
         </div>
+        <div className="panel-resize-handle" onMouseDown={handleResizeStart} />
       </div>
       {expanded && createPortal(
         <div className="modal-backdrop" onClick={close}>

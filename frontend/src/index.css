@@ -455,6 +455,21 @@ body {
   overflow: hidden;
 }
 
+.panel-resize-handle {
+  height: 6px;
+  cursor: row-resize;
+  background: transparent;
+  transition: background 0.15s;
+  border-radius: 0 0 8px 8px;
+  margin: 0 -16px -16px;
+  padding: 0 16px;
+}
+
+.panel-resize-handle:hover,
+.panel-resize-handle:active {
+  background: var(--color-border);
+}
+
 .panel-loading,
 .panel-error,
 .panel-empty {
