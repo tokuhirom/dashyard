@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.18.2](https://github.com/tokuhirom/dashyard/compare/v0.18.1...v0.18.2) - 2026-02-03
+- Separate gen-prompt files into system/user, remove --overwrite by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/185
+- Rename CLAUDE.md to AGENTS.md by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/187
+- Clean up docs for password hash and changelog by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/194
+- gen-prompt again by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/195
+- Remove dashboards.dir from config, schema, and tests by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/196
+- Remove server.host and server.port from example configs by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/197
+- Align span validation with schema (1-12, 0 means omitted) by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/198
+
 ## [v0.18.1](https://github.com/tokuhirom/dashyard/compare/v0.18.0...v0.18.1) - 2026-02-02
 - Warn when session_secret is not configured by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/182
 - Migrate from devbox + direnv to mise by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/184
