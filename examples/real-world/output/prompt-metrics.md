@@ -33,7 +33,7 @@
 
 ## go_memstats
 
-- `go_memstats_alloc_bytes` (gauge) — Number of bytes allocated and still in use.
+- `go_memstats_alloc_bytes` (gauge) — Number of bytes allocated in heap and currently in use. Equals to /memory/classes/heap/objects:bytes.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
 - `go_memstats_alloc_bytes_total` (counter) — Total number of bytes allocated, even if freed.
@@ -45,13 +45,13 @@
 - `go_memstats_frees_total` (counter) — Total number of frees.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
-- `go_memstats_gc_sys_bytes` (gauge) — Number of bytes used for garbage collection system metadata.
+- `go_memstats_gc_sys_bytes` (gauge) — Number of bytes used for garbage collection system metadata. Equals to /memory/classes/metadata/other:bytes.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
 - `go_memstats_heap_alloc_bytes` (gauge) — Number of heap bytes allocated and still in use.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
-- `go_memstats_heap_idle_bytes` (gauge) — Number of heap bytes waiting to be used.
+- `go_memstats_heap_idle_bytes` (gauge) — Number of heap bytes waiting to be used. Equals to /memory/classes/heap/released:bytes + /memory/classes/heap/free:bytes.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
 - `go_memstats_heap_inuse_bytes` (gauge) — Number of heap bytes that are in use. Equals to /memory/classes/heap/objects:bytes + /memory/classes/heap/unused:bytes
@@ -60,10 +60,10 @@
 - `go_memstats_heap_objects` (gauge) — Number of allocated objects.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
-- `go_memstats_heap_released_bytes` (gauge) — Number of heap bytes released to OS.
+- `go_memstats_heap_released_bytes` (gauge) — Number of heap bytes released to OS. Equals to /memory/classes/heap/released:bytes.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
-- `go_memstats_heap_sys_bytes` (gauge) — Number of heap bytes obtained from system.
+- `go_memstats_heap_sys_bytes` (gauge) — Number of heap bytes obtained from system. Equals to /memory/classes/heap/objects:bytes + /memory/classes/heap/unused:bytes + /memory/classes/heap/released:bytes + /memory/classes/heap/free:bytes.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
 - `go_memstats_last_gc_time_seconds` (gauge) — Number of seconds since 1970 of last garbage collection.
@@ -81,13 +81,13 @@
 - `go_memstats_mcache_sys_bytes` (gauge) — Number of bytes used for mcache structures obtained from system.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
-- `go_memstats_mspan_inuse_bytes` (gauge) — Number of bytes in use by mspan structures. Equals to /memory/classes/metadata/mspan/inuse:bytes.
+- `go_memstats_mspan_inuse_bytes` (gauge) — Number of bytes in use by mspan structures.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
-- `go_memstats_mspan_sys_bytes` (gauge) — Number of bytes used for mspan structures obtained from system. Equals to /memory/classes/metadata/mspan/inuse:bytes + /memory/classes/metadata/mspan/free:bytes.
+- `go_memstats_mspan_sys_bytes` (gauge) — Number of bytes used for mspan structures obtained from system.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
-- `go_memstats_next_gc_bytes` (gauge) — Number of heap bytes when next garbage collection will take place. Equals to /gc/heap/goal:bytes.
+- `go_memstats_next_gc_bytes` (gauge) — Number of heap bytes when next garbage collection will take place.
   Labels: instance (2 values), job (2 values)
   Legend candidates: instance, job
 - `go_memstats_other_sys_bytes` (gauge) — Number of bytes used for other system allocations.
@@ -149,7 +149,7 @@
 ## myapp_errors
 
 - `myapp_errors_total` (counter) — Total errors by type.
-  Labels: instance (1 values), job (1 values), type (4 values)
+  Labels: instance (1 values), job (1 values), type (3 values)
   Fixed: instance="dummyapp:3000", job="dummyapp"
   Legend candidates: type
 
@@ -725,7 +725,7 @@ Full label value listings for each metric.
 
 - **instance**: dummyapp:3000
 - **job**: dummyapp
-- **type**: connection_refused, internal, timeout, validation
+- **type**: internal, timeout, validation
 
 ## myapp_http_request_duration_seconds_bucket
 

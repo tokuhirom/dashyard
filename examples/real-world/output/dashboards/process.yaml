@@ -1,0 +1,70 @@
+title: "Process Metrics"
+rows:
+  - title: "Overview"
+    panels:
+      - title: "Process Metrics"
+        type: markdown
+        content: |
+          OS-level process metrics for all monitored services (dummyapp, traefik).
+          Includes CPU usage, memory consumption, file descriptors, and network I/O.
+        span: 12
+
+  - title: "CPU"
+    panels:
+      - title: "Process CPU Usage"
+        type: graph
+        query: 'rate(process_cpu_seconds_total[5m]) * 100'
+        unit: percent
+        legend: "{job}"
+        y_min: 0
+
+  - title: "Memory"
+    panels:
+      - title: "Resident Memory"
+        type: graph
+        query: 'process_resident_memory_bytes'
+        unit: bytes
+        legend: "{job}"
+        y_min: 0
+      - title: "Virtual Memory"
+        type: graph
+        query: 'process_virtual_memory_bytes'
+        unit: bytes
+        legend: "{job}"
+        y_min: 0
+
+  - title: "File Descriptors"
+    panels:
+      - title: "Open File Descriptors"
+        type: graph
+        query: 'process_open_fds'
+        unit: count
+        legend: "{job}"
+        y_min: 0
+      - title: "File Descriptor Utilization"
+        type: graph
+        query: 'process_open_fds / process_max_fds * 100'
+        unit: percent
+        legend: "{job}"
+        y_min: 0
+        y_max: 100
+        thresholds:
+          - value: 80
+            color: "#f59e0b"
+            label: "Warning"
+          - value: 95
+            color: "#ef4444"
+            label: "Critical"
+
+  - title: "Process Network I/O"
+    panels:
+      - title: "Network Receive Rate"
+        type: graph
+        query: 'rate(process_network_receive_bytes_total[5m])'
+        unit: bytes
+        y_min: 0
+      - title: "Network Transmit Rate"
+        type: graph
+        query: 'rate(process_network_transmit_bytes_total[5m])'
+        unit: bytes
+        y_min: 0

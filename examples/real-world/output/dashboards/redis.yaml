@@ -2,96 +2,21 @@ title: "Redis"
 rows:
   - title: "Overview"
     panels:
-      - title: "About"
+      - title: "Redis"
         type: markdown
         content: |
-          Redis server metrics. Covers clients, commands, memory,
-          connections, keyspace, CPU, and network I/O.
-      - title: "Uptime"
-        type: graph
-        query: 'redis_uptime_seconds_total / 3600'
-        unit: count
-        y_min: 0
-
-  - title: "Clients"
-    panels:
-      - title: "Connected Clients"
-        type: graph
-        query: 'redis_clients_connected'
-        unit: count
-        y_min: 0
-      - title: "Blocked Clients"
-        type: graph
-        query: 'redis_clients_blocked'
-        unit: count
-        y_min: 0
-        thresholds:
-          - value: 1
-            color: "#f59e0b"
-            label: "Warning"
-      - title: "Max Input Buffer"
-        type: graph
-        query: 'redis_clients_max_input_buffer_bytes'
-        unit: bytes
-        y_min: 0
-      - title: "Max Output Buffer"
-        type: graph
-        query: 'redis_clients_max_output_buffer_bytes'
-        unit: bytes
-        y_min: 0
-
-  - title: "Commands"
-    panels:
-      - title: "Commands Per Second"
-        type: graph
-        query: 'redis_commands_per_second'
-        unit: count
-        chart_type: bar
-        y_min: 0
-      - title: "Commands Processed Rate"
-        type: graph
-        query: 'rate(redis_commands_processed_total[5m])'
-        unit: count
-        chart_type: bar
-        y_min: 0
-
-  - title: "Connections"
-    panels:
-      - title: "Connections Received Rate"
-        type: graph
-        query: 'rate(redis_connections_received_total[5m])'
-        unit: count
-        chart_type: bar
-        y_min: 0
-      - title: "Connections Rejected Rate"
-        type: graph
-        query: 'rate(redis_connections_rejected_total[5m])'
-        unit: count
-        chart_type: bar
-        y_min: 0
-        thresholds:
-          - value: 1
-            color: "#ef4444"
-            label: "Rejections"
-      - title: "Connected Slaves"
-        type: graph
-        query: 'redis_slaves_connected'
-        unit: count
-        y_min: 0
+          Redis server metrics from the Redis exporter.
+          Monitors memory, commands, connections, keyspace hit ratio, and CPU usage.
+        span: 12
 
   - title: "Memory"
     panels:
-      - title: "Memory Used"
+      - title: "Memory Usage"
         type: graph
         query: 'redis_memory_used_bytes'
         unit: bytes
         y_min: 0
-      - title: "Memory RSS"
-        type: graph
-        query: 'redis_memory_rss_bytes'
-        unit: bytes
-        y_min: 0
-      - title: "Memory Peak"
+      - title: "Peak Memory"
         type: graph
         query: 'redis_memory_peak_bytes'
         unit: bytes
@@ -104,28 +29,53 @@ rows:
         thresholds:
           - value: 1.5
             color: "#f59e0b"
-            label: "Warning"
-          - value: 2.0
-            color: "#ef4444"
-            label: "Critical"
-      - title: "Lua Memory"
+            label: "High Fragmentation"
+
+  - title: "Commands & Throughput"
+    panels:
+      - title: "Commands per Second"
         type: graph
-        query: 'redis_memory_lua_bytes'
-        unit: bytes
+        query: 'redis_commands_per_second'
+        unit: count
+        chart_type: bar
+        y_min: 0
+      - title: "Total Commands Processed Rate"
+        type: graph
+        query: 'rate(redis_commands_processed_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+
+  - title: "Connections"
+    panels:
+      - title: "Connected Clients"
+        type: graph
+        query: 'redis_clients_connected'
+        unit: count
+        y_min: 0
+      - title: "Blocked Clients"
+        type: graph
+        query: 'redis_clients_blocked'
+        unit: count
+        y_min: 0
+      - title: "New Connections Rate"
+        type: graph
+        query: 'rate(redis_connections_received_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+
+  - title: "Connection Errors"
+    panels:
+      - title: "Rejected Connections Rate"
+        type: graph
+        query: 'rate(redis_connections_rejected_total[5m])'
+        unit: count
+        chart_type: bar
         y_min: 0
 
   - title: "Keyspace"
     panels:
-      - title: "Keyspace Hit Rate"
-        type: graph
-        query: 'rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]) > 0) * 100'
-        unit: percent
-        y_min: 0
-        y_max: 100
-        thresholds:
-          - value: 90
-            color: "#f59e0b"
-            label: "Low Hit Rate"
       - title: "Keyspace Hits Rate"
         type: graph
         query: 'rate(redis_keyspace_hits_total[5m])'
@@ -138,6 +88,16 @@ rows:
         unit: count
         chart_type: bar
         y_min: 0
+      - title: "Keyspace Hit Ratio"
+        type: graph
+        query: 'rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]) > 0) * 100'
+        unit: percent
+        y_min: 0
+        y_max: 100
+        thresholds:
+          - value: 90
+            color: "#22c55e"
+            label: "Good (90%)"
 
   - title: "Keys"
     panels:
@@ -147,10 +107,6 @@ rows:
         unit: count
         chart_type: bar
         y_min: 0
-        thresholds:
-          - value: 1
-            color: "#f59e0b"
-            label: "Evictions"
       - title: "Expired Keys Rate"
         type: graph
         query: 'rate(redis_keys_expired_total[5m])'
@@ -160,12 +116,16 @@ rows:
 
   - title: "CPU"
     panels:
-      - title: "Redis CPU Time by State"
+      - title: "Redis CPU Time Rate"
         type: graph
         query: 'rate(redis_cpu_time_seconds_total[5m])'
         unit: seconds
+        chart_type: area
+        stacked: true
         legend: "{state}"
         y_min: 0
+        legend_position: right
+        legend_max_width: 150
 
   - title: "Network"
     panels:
@@ -180,28 +140,20 @@ rows:
         unit: bytes
         y_min: 0
 
-  - title: "Persistence"
+  - title: "Persistence & Replication"
     panels:
       - title: "RDB Changes Since Last Save"
         type: graph
         query: 'redis_rdb_changes_since_last_save'
         unit: count
         y_min: 0
-      - title: "Latest Fork Duration"
+      - title: "Connected Slaves"
         type: graph
-        query: 'redis_latest_fork_microseconds / 1000'
-        unit: seconds
+        query: 'redis_slaves_connected'
+        unit: count
         y_min: 0
-
-  - title: "Replication"
-    panels:
-      - title: "Replication Offset"
+      - title: "Lua Memory"
         type: graph
-        query: 'redis_replication_offset_bytes'
-        unit: bytes
-        y_min: 0
-      - title: "Replication Backlog First Byte Offset"
-        type: graph
-        query: 'redis_replication_backlog_first_byte_offset_bytes'
+        query: 'redis_memory_lua_bytes'
         unit: bytes
         y_min: 0

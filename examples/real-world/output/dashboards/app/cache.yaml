@@ -1,0 +1,41 @@
+title: "Application Cache"
+rows:
+  - title: "Overview"
+    panels:
+      - title: "Cache Metrics"
+        type: markdown
+        content: |
+          Application cache hit/miss metrics.
+          A high hit ratio indicates effective caching and reduced backend load.
+        span: 12
+
+  - title: "Cache Performance"
+    panels:
+      - title: "Cache Hit Rate"
+        type: graph
+        query: 'rate(myapp_cache_hits_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+      - title: "Cache Miss Rate"
+        type: graph
+        query: 'rate(myapp_cache_misses_total[5m])'
+        unit: count
+        chart_type: bar
+        y_min: 0
+
+  - title: "Cache Efficiency"
+    panels:
+      - title: "Cache Hit Ratio"
+        type: graph
+        query: 'rate(myapp_cache_hits_total[5m]) / (rate(myapp_cache_hits_total[5m]) + rate(myapp_cache_misses_total[5m]) > 0) * 100'
+        unit: percent
+        y_min: 0
+        y_max: 100
+        thresholds:
+          - value: 80
+            color: "#22c55e"
+            label: "Good (80%)"
+          - value: 50
+            color: "#f59e0b"
+            label: "Warning (50%)"
