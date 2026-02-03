@@ -134,7 +134,7 @@ Download the latest release from the [Releases page](https://github.com/tokuhiro
 
 ```bash
 # Example for Linux amd64 (replace VERSION with the desired release)
-VERSION=0.0.6
+VERSION=0.18.1
 curl -Lo dashyard.tar.gz "https://github.com/tokuhirom/dashyard/releases/download/v${VERSION}/dashyard_${VERSION}_linux_amd64.tar.gz"
 tar xzf dashyard.tar.gz
 ./dashyard serve --config config.yaml --dashboards-dir dashboards
