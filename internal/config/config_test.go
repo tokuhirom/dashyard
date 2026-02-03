@@ -21,9 +21,6 @@ datasources:
     timeout: 60s
     default: true
 
-dashboards:
-  dir: "/etc/dashboards"
-
 users:
   - id: "admin"
     password_hash: "$6$salt$hash"
@@ -54,9 +51,6 @@ users:
 	if cfg.Datasources[0].Timeout != 60*time.Second {
 		t.Errorf("expected timeout 60s, got %v", cfg.Datasources[0].Timeout)
 	}
-	if cfg.Dashboards.Dir != "/etc/dashboards" {
-		t.Errorf("expected dashboards dir '/etc/dashboards', got %q", cfg.Dashboards.Dir)
-	}
 	if len(cfg.Users) != 2 {
 		t.Fatalf("expected 2 users, got %d", len(cfg.Users))
 	}
@@ -78,9 +72,6 @@ func TestParseDefaults(t *testing.T) {
 	}
 	if cfg.HeaderColor != "" {
 		t.Errorf("expected default header_color '', got %q", cfg.HeaderColor)
-	}
-	if cfg.Dashboards.Dir != "dashboards" {
-		t.Errorf("expected default dashboards dir 'dashboards', got %q", cfg.Dashboards.Dir)
 	}
 	// Session secret should be auto-generated
 	if cfg.Server.SessionSecret == "" {

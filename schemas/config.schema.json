@@ -95,18 +95,6 @@
         "additionalProperties": false
       }
     },
-    "dashboards": {
-      "type": "object",
-      "description": "Dashboard directory settings.",
-      "properties": {
-        "dir": {
-          "type": "string",
-          "description": "Path to the directory containing dashboard YAML files.",
-          "default": "dashboards"
-        }
-      },
-      "additionalProperties": false
-    },
     "users": {
       "type": "array",
       "description": "List of authenticated users.",
