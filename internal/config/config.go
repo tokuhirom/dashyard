@@ -88,18 +88,12 @@ type DatasourceConfig struct {
 	Headers []HeaderConfig `yaml:"headers,omitempty"`
 }
 
-// DashboardsConfig holds dashboard directory settings.
-type DashboardsConfig struct {
-	Dir string `yaml:"dir"`
-}
-
 // Config is the top-level application configuration.
 type Config struct {
 	SiteTitle   string             `yaml:"site_title"`
 	HeaderColor string             `yaml:"header_color"`
 	Server      ServerConfig       `yaml:"server"`
 	Datasources []DatasourceConfig `yaml:"datasources"`
-	Dashboards  DashboardsConfig   `yaml:"dashboards"`
 	Users       []User             `yaml:"users"`
 	Auth        AuthConfig         `yaml:"auth"`
 }
@@ -117,9 +111,6 @@ func Load(path string) (*Config, error) {
 func Parse(data []byte) (*Config, error) {
 	cfg := &Config{
 		SiteTitle: "Dashyard",
-		Dashboards: DashboardsConfig{
-			Dir: "dashboards",
-		},
 	}
 
 	if err := yaml.Unmarshal(data, cfg); err != nil {

@@ -9,9 +9,6 @@ datasources:
     url: "http://localhost:9090"
     timeout: 30s
 
-dashboards:
-  dir: "testdata/dashboards"
-
 users:
   - id: "admin"
     password_hash: "$6$rounds=5000$testsalt$kPA7McSNMx/KMKaJIi0gTZSJv/MBSTMvOcPJzBViFZ3JNLNsEGBmm4GNWbMCl8Il.FlvrxDgiRs0NOvTHAFzp0"

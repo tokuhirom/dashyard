@@ -41,7 +41,7 @@ type ServeCmd struct {
 	Host          string `help:"Host to listen on." default:"0.0.0.0"`
 	Port          int    `help:"Port to listen on." default:"8080"`
 	Metrics       bool   `help:"Enable /metrics endpoint exposing Prometheus metrics." default:"false"`
-	DashboardsDir string `name:"dashboards-dir" help:"Path to dashboards directory. Overrides config file value." default:""`
+	DashboardsDir string `name:"dashboards-dir" help:"Path to dashboards directory." default:"dashboards"`
 }
 
 func (cmd *ServeCmd) Run() error {
@@ -52,12 +52,8 @@ func (cmd *ServeCmd) Run() error {
 		os.Exit(1)
 	}
 
-	if cmd.DashboardsDir != "" {
-		cfg.Dashboards.Dir = cmd.DashboardsDir
-	}
-
 	// Load dashboards
-	store, err := dashboard.LoadDir(cfg.Dashboards.Dir)
+	store, err := dashboard.LoadDir(cmd.DashboardsDir)
 	if err != nil {
 		slog.Error("failed to load dashboards", "error", err)
 		os.Exit(1)
@@ -86,7 +82,7 @@ func (cmd *ServeCmd) Run() error {
 	defer stop()
 
 	// Watch dashboards directory for changes
-	watcher := dashboard.NewWatcher(cfg.Dashboards.Dir, holder)
+	watcher := dashboard.NewWatcher(cmd.DashboardsDir, holder)
 	go func() {
 		if err := watcher.Watch(ctx); err != nil {
 			slog.Error("dashboard watcher error", "error", err)
