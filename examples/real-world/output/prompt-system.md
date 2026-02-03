@@ -159,6 +159,7 @@ variables:                          # optional
   - name: device                    # variable name used as $device in queries
     label: "Network Device"         # display label
     query: "label_values(metric_name, label_name)"
+    hide: false                     # when true, hide from selector bar
 rows:
   - title: "Row Title"
     repeat: device                  # optional: repeat row for each variable value
@@ -169,6 +170,11 @@ rows:
         unit: bytes                 # bytes, percent, count, seconds
         chart_type: line            # line, bar, area, scatter
         legend: "{label_name}"      # legend template
+        legend_display: true        # show/hide legend (default: true)
+        legend_position: bottom     # top, bottom, left, right (default: bottom)
+        legend_align: start         # start, center, end (default: start)
+        legend_max_height: 100      # max legend height in pixels
+        legend_max_width: 150       # max legend width in pixels
         y_min: 0                    # optional y-axis bounds
         y_max: 100
         stacked: false              # stack series
@@ -177,11 +183,12 @@ rows:
           - value: 80
             color: orange
             label: "Warning"
+        span: 8                     # occupy 8 of 12 grid columns
       - title: "Notes"
         type: markdown
         content: |
           Markdown content here.
-        full_width: true            # span entire row width (markdown only)
+        span: 12                    # full-width (12 of 12 columns)
 ```
 
 # Rules
@@ -195,6 +202,52 @@ rows:
 - **histogram** (`_bucket` suffix): use `histogram_quantile(0.99, rate(...[5m]))`
 - **gauge**: use directly, or apply `avg()`, `sum()`, `min()`, `max()`
 - **summary** (`_sum`/`_count`): `rate(sum[5m]) / rate(count[5m])` for average
+
+## rate vs irate
+
+- `rate(metric[5m])` — average per-second rate over the range window. Smooth, stable line. **Use this by default.**
+- `irate(metric[5m])` — instantaneous rate using the last two data points in the window. Shows spikes and dips more sharply. Use when you need to see short-lived bursts (e.g. traffic spikes, error bursts).
+- `increase(metric[5m])` — total increase over the range window (= `rate() * window_seconds`). Useful when you want "count per interval" instead of "per-second rate".
+
+Choose `rate` for dashboards (stable trends). Use `irate` only when short-lived spikes matter (e.g. alerting on sudden error bursts). Never use `irate` with long range windows — it ignores all data points except the last two.
+
+## Aggregation Functions
+
+Common aggregation functions for combining multiple time series:
+
+```
+sum(metric)                    # total across all series
+sum by (label)(metric)         # total grouped by label
+avg(metric)                    # average across all series
+avg by (label)(metric)         # average grouped by label
+min(metric) / max(metric)      # minimum / maximum across series
+count(metric)                  # number of series
+topk(5, metric)                # top 5 series by value
+bottomk(5, metric)             # bottom 5 series by value
+```
+
+### Aggregation with rate
+
+When combining `rate()` with aggregation, always apply `rate()` first, then aggregate:
+
+```
+# Correct: rate per series, then sum
+sum by (method)(rate(http_requests_total[5m]))
+
+# Wrong: sum raw counters, then rate — produces incorrect results when counters reset
+rate(sum(http_requests_total)[5m])
+```
+
+### without vs by
+
+- `by (label1, label2)` — keep only the listed labels, aggregate away everything else
+- `without (label1, label2)` — keep all labels except the listed ones
+
+Use `by` when you know exactly which labels matter. Use `without` when you want to drop a specific label (e.g. `instance`) while keeping everything else:
+
+```
+sum without (instance)(rate(http_requests_total[5m]))
+```
 
 ## Ratio and Percent Metrics
 
@@ -225,7 +278,82 @@ rate(hits_total[5m]) / (rate(hits_total[5m]) + rate(misses_total[5m]) > 0) * 100
 
 The `> 0` filter drops zero-denominator samples so the panel shows no data instead of `NaN`.
 
+## Legend Template Functions
+
+Legend templates support pipe-style functions for transforming label values:
+
+```yaml
+legend: "{instance_id | trunc(8)}"          # first 8 chars + "..."
+legend: "{request_id | suffix(8)}"          # "..." + last 8 chars
+legend: "{method | upper}"                  # uppercase
+legend: "{path | lower}"                    # lowercase
+legend: "{fqdn | replace(\".example.com\",\"\")}"  # remove substring
+legend: "{id | trunc(8) | upper}"           # chain multiple functions
+```
+
+Available functions:
+- `trunc(n)` — keep first N characters, append "..." if truncated
+- `suffix(n)` — keep last N characters, prepend "..." if truncated
+- `upper` — convert to uppercase
+- `lower` — convert to lowercase
+- `replace("old","new")` — replace all occurrences of a substring
+
+Use `trunc` for UUIDv4 labels (prefix is distinctive) and `suffix` for UUIDv7 labels (timestamp suffix is distinctive).
+
 ## Stacked Charts
 
 Use `stacked: true` when series represent parts of a whole that sum to a meaningful total (e.g. memory by state: used + cached + free + buffers = total). Do not stack independent series that overlap (e.g. CPU utilization per core).
+
+## Legend Options
+
+Control how the chart legend is displayed:
+
+| Option | Values | Default | Description |
+|--------|--------|---------|-------------|
+| `legend_display` | `true`, `false` | `true` | Show or hide the legend entirely |
+| `legend_position` | `top`, `bottom`, `left`, `right` | `bottom` | Position of the legend relative to the chart |
+| `legend_align` | `start`, `center`, `end` | `start` | Alignment of legend items within the legend box |
+| `legend_max_height` | integer (pixels) | auto | Maximum height of the legend area |
+| `legend_max_width` | integer (pixels) | auto | Maximum width of the legend area |
+
+- Use `legend_display: false` to hide the legend when series labels are not meaningful or when maximizing chart area.
+- Use `legend_position: right` with `legend_max_width` for panels with many series to avoid vertical compression.
+- The default `legend_align: start` (left-aligned) is recommended for most cases. Use `center` or `end` sparingly.
+
+## Panel Layout
+
+Rows use a **12-column grid** (like Grafana). Each panel's `span` sets how many of those 12 columns it occupies. When `span` is omitted, columns are distributed equally among panels (e.g. 2 panels = 6 each, 3 panels = 4 each).
+
+| Span | Width | Use case |
+|------|-------|----------|
+| `12` | 100% | Full-width panel |
+| `6` | 50% | Two equal panels per row |
+| `4` | 33% | Three equal panels per row |
+| `3` | 25% | Four equal panels per row |
+| `8` + `4` | 67% + 33% | Main + sidebar layout |
+
+```yaml
+rows:
+  - title: "Overview"
+    panels:
+      - title: "Main Graph"
+        type: graph
+        query: "..."
+        span: 8          # 8/12 = 2/3 width
+      - title: "Side Graph"
+        type: graph
+        query: "..."
+        span: 4          # 4/12 = 1/3 width
+  - title: "Equal"
+    panels:               # no span set → auto 6 each (12/2)
+      - title: "CPU"
+        type: graph
+        query: "..."
+      - title: "Memory"
+        type: graph
+        query: "..."
+```
+
+- If the sum of spans exceeds 12, panels wrap to the next line.
+- Use `span: 12` for full-width panels (replaces `full_width: true`).
 

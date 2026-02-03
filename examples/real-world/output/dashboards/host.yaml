@@ -1,40 +1,41 @@
 title: "Host Metrics"
 variables:
   - name: device
-    label: "Network Device"
-    query: "label_values(system_network_io_bytes_total, device)"
-  - name: disk
     label: "Disk Device"
     query: "label_values(system_disk_io_bytes_total, device)"
 rows:
   - title: "Overview"
     panels:
-      - title: "About"
+      - title: "Host Metrics"
         type: markdown
         content: |
-          Host-level metrics collected via OpenTelemetry system scrapers.
-          Covers CPU, memory, disk I/O, and network I/O.
+          Host-level resource metrics collected by the OpenTelemetry host metrics receiver.
+          Organized by the **USE method**: Utilization, Saturation, and Errors for each resource (CPU, Memory, Disk, Network).
+        span: 12
 
   - title: "CPU"
     panels:
       - title: "CPU Time by State"
         type: graph
-        query: 'sum by (state) (rate(system_cpu_time_seconds_total[5m]))'
+        query: 'sum by (state)(rate(system_cpu_time_seconds_total[5m]))'
         unit: count
         chart_type: area
         stacked: true
         legend: "{state}"
         y_min: 0
-      - title: "CPU User vs System"
+      - title: "CPU User + System Usage"
         type: graph
-        query: 'sum(rate(system_cpu_time_seconds_total{state="user"}[5m]))'
-        unit: count
+        query: 'sum(rate(system_cpu_time_seconds_total{state=~"user|system"}[5m])) / sum(rate(system_cpu_time_seconds_total[5m])) * 100'
+        unit: percent
         y_min: 0
-      - title: "CPU Idle"
-        type: graph
-        query: 'sum(rate(system_cpu_time_seconds_total{state="idle"}[5m]))'
-        unit: count
-        y_min: 0
+        y_max: 100
+        thresholds:
+          - value: 80
+            color: "#f59e0b"
+            label: "Warning"
+          - value: 95
+            color: "#ef4444"
+            label: "Critical"
 
   - title: "Memory"
     panels:
@@ -46,105 +47,88 @@ rows:
         stacked: true
         legend: "{state}"
         y_min: 0
-
-  - title: "Disk I/O - $disk"
-    repeat: disk
-    panels:
-      - title: "Disk Read Rate ($disk)"
+      - title: "Used Memory"
         type: graph
-        query: 'rate(system_disk_io_bytes_total{device="$disk", direction="read"}[5m])'
+        query: 'system_memory_usage_bytes{state="used"}'
         unit: bytes
-        y_min: 0
-      - title: "Disk Write Rate ($disk)"
-        type: graph
-        query: 'rate(system_disk_io_bytes_total{device="$disk", direction="write"}[5m])'
-        unit: bytes
-        y_min: 0
-      - title: "Disk IOPS ($disk)"
-        type: graph
-        query: 'rate(system_disk_operations_total{device="$disk"}[5m])'
-        unit: count
-        chart_type: bar
-        legend: "{direction}"
-        y_min: 0
-      - title: "Disk Merged Operations ($disk)"
-        type: graph
-        query: 'rate(system_disk_merged_total{device="$disk"}[5m])'
-        unit: count
-        chart_type: bar
-        legend: "{direction}"
-        y_min: 0
-      - title: "Disk Pending Operations ($disk)"
-        type: graph
-        query: 'system_disk_pending_operations{device="$disk"}'
-        unit: count
         y_min: 0
         thresholds:
-          - value: 10
+          - value: 1073741824
             color: "#f59e0b"
-            label: "Warning"
-          - value: 50
-            color: "#ef4444"
-            label: "Critical"
-      - title: "Disk I/O Time ($disk)"
-        type: graph
-        query: 'rate(system_disk_io_time_seconds_total{device="$disk"}[5m])'
-        unit: seconds
-        y_min: 0
-      - title: "Disk Weighted I/O Time ($disk)"
-        type: graph
-        query: 'rate(system_disk_weighted_io_time_seconds_total{device="$disk"}[5m])'
-        unit: seconds
-        y_min: 0
-      - title: "Disk Avg Operation Time ($disk)"
-        type: graph
-        query: 'rate(system_disk_operation_time_seconds_total{device="$disk"}[5m]) / (rate(system_disk_operations_total{device="$disk"}[5m]) > 0)'
-        unit: seconds
-        legend: "{direction}"
-        y_min: 0
+            label: "1 GB"
 
-  - title: "Network - $device"
+  - title: "Disk I/O - $device"
     repeat: device
     panels:
-      - title: "Bytes Received ($device)"
+      - title: "Disk I/O Throughput ($device)"
         type: graph
-        query: 'rate(system_network_io_bytes_total{device="$device", direction="receive"}[5m])'
+        query: 'rate(system_disk_io_bytes_total{device="$device"}[5m])'
         unit: bytes
+        chart_type: area
+        legend: "{direction}"
         y_min: 0
-      - title: "Bytes Transmitted ($device)"
+      - title: "Disk IOPS ($device)"
         type: graph
-        query: 'rate(system_network_io_bytes_total{device="$device", direction="transmit"}[5m])'
-        unit: bytes
-        y_min: 0
-      - title: "Packets ($device)"
-        type: graph
-        query: 'rate(system_network_packets_total{device="$device"}[5m])'
+        query: 'rate(system_disk_operations_total{device="$device"}[5m])'
         unit: count
         chart_type: bar
         legend: "{direction}"
         y_min: 0
-      - title: "Errors ($device)"
-        type: graph
-        query: 'rate(system_network_errors_total{device="$device"}[5m])'
-        unit: count
-        legend: "{direction}"
-        y_min: 0
-        thresholds:
-          - value: 1
-            color: "#f59e0b"
-            label: "Warning"
-      - title: "Dropped ($device)"
-        type: graph
-        query: 'rate(system_network_dropped_total{device="$device"}[5m])'
-        unit: count
-        legend: "{direction}"
-        y_min: 0
-        thresholds:
-          - value: 1
-            color: "#f59e0b"
-            label: "Warning"
 
-  - title: "Network Connections"
+  - title: "Disk Latency & Queue - $device"
+    repeat: device
+    panels:
+      - title: "Disk I/O Time ($device)"
+        type: graph
+        query: 'rate(system_disk_io_time_seconds_total{device="$device"}[5m])'
+        unit: seconds
+        y_min: 0
+      - title: "Pending Operations ($device)"
+        type: graph
+        query: 'system_disk_pending_operations{device="$device"}'
+        unit: count
+        y_min: 0
+      - title: "Weighted I/O Time ($device)"
+        type: graph
+        query: 'rate(system_disk_weighted_io_time_seconds_total{device="$device"}[5m])'
+        unit: seconds
+        y_min: 0
+
+  - title: "Network I/O"
+    panels:
+      - title: "Network Throughput"
+        type: graph
+        query: 'rate(system_network_io_bytes_total[5m])'
+        unit: bytes
+        chart_type: area
+        legend: "{device} {direction}"
+        y_min: 0
+      - title: "Network Packets"
+        type: graph
+        query: 'rate(system_network_packets_total[5m])'
+        unit: count
+        chart_type: area
+        legend: "{device} {direction}"
+        y_min: 0
+
+  - title: "Network Errors"
+    panels:
+      - title: "Network Errors"
+        type: graph
+        query: 'rate(system_network_errors_total[5m])'
+        unit: count
+        chart_type: bar
+        legend: "{device} {direction}"
+        y_min: 0
+      - title: "Network Drops"
+        type: graph
+        query: 'rate(system_network_dropped_total[5m])'
+        unit: count
+        chart_type: bar
+        legend: "{device} {direction}"
+        y_min: 0
+
+  - title: "TCP Connections"
     panels:
       - title: "TCP Connections by State"
         type: graph
@@ -154,3 +138,5 @@ rows:
         stacked: true
         legend: "{state}"
         y_min: 0
+        legend_position: right
+        legend_max_width: 120

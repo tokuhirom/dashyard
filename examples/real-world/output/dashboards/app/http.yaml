@@ -1,4 +1,4 @@
-title: "App HTTP"
+title: "Application HTTP"
 variables:
   - name: path
     label: "Path"
@@ -6,87 +6,83 @@ variables:
 rows:
   - title: "Overview"
     panels:
-      - title: "About"
+      - title: "Application HTTP"
         type: markdown
         content: |
-          HTTP service metrics from the application using the RED method
-          (Rate, Errors, Duration). Metrics are broken down by path, method, and status code.
+          HTTP request metrics from the application (dummyapp).
+          Organized by the **RED method**: Rate, Errors, and Duration.
+        span: 12
 
   - title: "Rate"
     panels:
-      - title: "Request Rate by Path"
-        type: graph
-        query: 'sum by (path) (rate(myapp_http_requests_total[5m]))'
-        unit: count
-        chart_type: bar
-        legend: "{path}"
-        y_min: 0
       - title: "Request Rate by Method"
         type: graph
-        query: 'sum by (method) (rate(myapp_http_requests_total[5m]))'
+        query: 'sum by (method)(rate(myapp_http_requests_total{path="$path"}[5m]))'
         unit: count
         chart_type: bar
         legend: "{method}"
         y_min: 0
-      - title: "Requests In Flight"
+      - title: "Request Rate by Status"
         type: graph
-        query: 'myapp_http_requests_in_flight'
+        query: 'sum by (status)(rate(myapp_http_requests_total{path="$path"}[5m]))'
         unit: count
+        chart_type: bar
+        legend: "{status}"
         y_min: 0
 
   - title: "Errors"
     panels:
       - title: "Error Rate (5xx)"
         type: graph
-        query: 'sum by (path) (rate(myapp_http_requests_total{status=~"5.."}[5m]))'
+        query: 'sum(rate(myapp_http_requests_total{status="500", path="$path"}[5m]))'
         unit: count
         chart_type: bar
-        legend: "{path}"
         y_min: 0
-        thresholds:
-          - value: 1
-            color: "#f59e0b"
-            label: "Warning"
-          - value: 10
-            color: "#ef4444"
-            label: "Critical"
-      - title: "Error Ratio by Path"
+      - title: "Error Ratio"
         type: graph
-        query: 'sum by (path) (rate(myapp_http_requests_total{status=~"5.."}[5m])) / (sum by (path) (rate(myapp_http_requests_total[5m])) > 0) * 100'
+        query: 'sum(rate(myapp_http_requests_total{status="500", path="$path"}[5m])) / (sum(rate(myapp_http_requests_total{path="$path"}[5m])) > 0) * 100'
         unit: percent
-        legend: "{path}"
-        y_min: 0
-        y_max: 100
-        thresholds:
-          - value: 5
-            color: "#f59e0b"
-            label: "Warning"
-          - value: 25
-            color: "#ef4444"
-            label: "Critical"
-
-  - title: "Duration - $path"
-    repeat: path
-    panels:
-      - title: "Request Duration p99 ($path)"
-        type: graph
-        query: 'histogram_quantile(0.99, sum by (le) (rate(myapp_http_request_duration_seconds_bucket{path="$path"}[5m])))'
-        unit: seconds
         y_min: 0
         thresholds:
           - value: 1
             color: "#f59e0b"
-            label: "Slow"
+            label: "1% Errors"
           - value: 5
             color: "#ef4444"
-            label: "Very Slow"
-      - title: "Request Duration p75 ($path)"
+            label: "5% Errors"
+
+  - title: "Duration"
+    panels:
+      - title: "Request Duration p99"
         type: graph
-        query: 'histogram_quantile(0.75, sum by (le) (rate(myapp_http_request_duration_seconds_bucket{path="$path"}[5m])))'
+        query: 'histogram_quantile(0.99, sum by (le)(rate(myapp_http_request_duration_seconds_bucket{path="$path"}[5m])))'
         unit: seconds
         y_min: 0
-      - title: "Avg Request Duration ($path)"
+      - title: "Request Duration p95"
         type: graph
-        query: 'rate(myapp_http_request_duration_seconds_sum{path="$path"}[5m]) / (rate(myapp_http_request_duration_seconds_count{path="$path"}[5m]) > 0)'
+        query: 'histogram_quantile(0.95, sum by (le)(rate(myapp_http_request_duration_seconds_bucket{path="$path"}[5m])))'
         unit: seconds
+        y_min: 0
+
+  - title: "Duration by Path"
+    panels:
+      - title: "p99 Latency by Path"
+        type: graph
+        query: 'histogram_quantile(0.99, sum by (le, path)(rate(myapp_http_request_duration_seconds_bucket[5m])))'
+        unit: seconds
+        legend: "{path}"
+        y_min: 0
+      - title: "Average Duration by Path"
+        type: graph
+        query: 'sum by (path)(rate(myapp_http_request_duration_seconds_sum[5m])) / (sum by (path)(rate(myapp_http_request_duration_seconds_count[5m])) > 0)'
+        unit: seconds
+        legend: "{path}"
+        y_min: 0
+
+  - title: "In-Flight"
+    panels:
+      - title: "Requests In-Flight"
+        type: graph
+        query: 'myapp_http_requests_in_flight'
+        unit: count
         y_min: 0

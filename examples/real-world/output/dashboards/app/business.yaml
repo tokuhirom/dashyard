@@ -1,12 +1,44 @@
-title: "App Business KPIs"
+title: "Business KPIs"
 rows:
   - title: "Overview"
     panels:
-      - title: "About"
+      - title: "Business KPIs"
         type: markdown
         content: |
-          Business-level key performance indicators: active users, registrations,
-          order volume, revenue, and application error breakdown.
+          Business-level key performance indicators.
+          Tracks orders, revenue, user activity, and application errors.
+        span: 12
+
+  - title: "Orders"
+    panels:
+      - title: "Orders Created by Status"
+        type: graph
+        query: 'sum by (status)(rate(myapp_orders_created_total[5m]))'
+        unit: count
+        chart_type: bar
+        legend: "{status}"
+        y_min: 0
+      - title: "Total Orders (increase per hour)"
+        type: graph
+        query: 'sum by (status)(increase(myapp_orders_created_total[1h]))'
+        unit: count
+        chart_type: area
+        stacked: true
+        legend: "{status}"
+        y_min: 0
+
+  - title: "Revenue"
+    panels:
+      - title: "Revenue Rate"
+        type: graph
+        query: 'rate(myapp_revenue_total[5m])'
+        unit: count
+        y_min: 0
+      - title: "Revenue (increase per hour)"
+        type: graph
+        query: 'increase(myapp_revenue_total[1h])'
+        unit: count
+        y_min: 0
 
   - title: "Users"
     panels:
@@ -15,58 +47,25 @@ rows:
         query: 'myapp_users_active'
         unit: count
         y_min: 0
-      - title: "Registration Rate"
+      - title: "User Registrations Rate"
         type: graph
         query: 'rate(myapp_users_registered_total[5m])'
         unit: count
         chart_type: bar
         y_min: 0
 
-  - title: "Orders"
+  - title: "Application Errors"
     panels:
-      - title: "Order Rate by Status"
+      - title: "Errors by Type"
         type: graph
-        query: 'sum by (status) (rate(myapp_orders_created_total[5m]))'
-        unit: count
-        chart_type: bar
-        legend: "{status}"
-        y_min: 0
-      - title: "Failed Order Rate"
-        type: graph
-        query: 'rate(myapp_orders_created_total{status="failed"}[5m])'
-        unit: count
-        chart_type: bar
-        y_min: 0
-        thresholds:
-          - value: 1
-            color: "#f59e0b"
-            label: "Warning"
-
-  - title: "Revenue"
-    panels:
-      - title: "Revenue Rate"
-        type: graph
-        query: 'rate(myapp_revenue_total[5m])'
-        unit: count
-        chart_type: bar
-        y_min: 0
-
-  - title: "Errors"
-    panels:
-      - title: "Error Rate by Type"
-        type: graph
-        query: 'sum by (type) (rate(myapp_errors_total[5m]))'
+        query: 'sum by (type)(rate(myapp_errors_total[5m]))'
         unit: count
         chart_type: bar
         legend: "{type}"
         y_min: 0
-        thresholds:
-          - value: 1
-            color: "#f59e0b"
-            label: "Warning"
-      - title: "Error Rate (Stacked)"
+      - title: "Total Errors (increase per hour)"
         type: graph
-        query: 'sum by (type) (rate(myapp_errors_total[5m]))'
+        query: 'sum by (type)(increase(myapp_errors_total[1h]))'
         unit: count
         chart_type: area
         stacked: true
