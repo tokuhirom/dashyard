@@ -120,7 +120,7 @@
           },
           "password_hash": {
             "type": "string",
-            "description": "SHA-512 crypt password hash. Generate with: go run ./cmd/genhash <password>. Supports ${VAR} and ${VAR:-default} environment variable expansion."
+            "description": "SHA-512 crypt password hash. Generate with: dashyard mkpasswd <password>. Supports ${VAR} and ${VAR:-default} environment variable expansion."
           }
         },
         "required": ["id", "password_hash"],

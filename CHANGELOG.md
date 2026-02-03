@@ -52,9 +52,6 @@
 ## [v0.7.0](https://github.com/tokuhirom/dashyard/compare/v0.6.1...v0.7.0) - 2026-02-02
 - Add custom HTTP headers support to datasource configuration by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/146
 
-## [v0.7.0](https://github.com/tokuhirom/dashyard/compare/v0.6.1...v0.7.0) - 2026-02-02
-- Add custom HTTP headers support to datasource configuration by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/146
-
 ## [v0.6.1](https://github.com/tokuhirom/dashyard/compare/v0.6.0...v0.6.1) - 2026-02-02
 - Fix discovery API URL construction and improve error logging by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/144
 
@@ -64,16 +61,6 @@
 ## [v0.4.3](https://github.com/tokuhirom/dashyard/compare/v0.4.2...v0.4.3) - 2026-02-01
 - Add tests for static handler SPA fallback by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/139
 - Add React Error Boundary by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/141
-
-## [v0.4.2](https://github.com/tokuhirom/dashyard/compare/v0.4.1...v0.4.2) - 2026-02-01
-- Sync variable selections with URL query parameters by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/119
-- Add datasource variable type by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/121
-- Introduce Datasource interface to decouple handlers from Prometheus by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/122
-- Standardize oauth.go logging to use log/slog by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/133
-- Add cookie_secure option to server config by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/134
-- Improve internal/auth test coverage from 63.8% to 94.7% by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/135
-- Buffer datasource response before writing HTTP headers by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/136
-- Add tests for internal/server package by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/138
 
 ## [v0.4.2](https://github.com/tokuhirom/dashyard/compare/v0.4.1...v0.4.2) - 2026-02-01
 - Sync variable selections with URL query parameters by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/119
@@ -181,12 +168,6 @@
 - Add branch creation step to git workflow by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/15
 - Add under-development caution to README by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/9
 - Replace flag with kong for CLI parsing by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/13
-
-## [v0.0.2](https://github.com/tokuhirom/dashyard/compare/v0.0.1...v0.0.2) - 2026-01-31
-- Add git workflow guidelines to CLAUDE.md by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/7
-- Add E2E testing section to README by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/8
-- Add MIT license by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/11
-- Add GoReleaser setup for automated releases by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/12
 
 ## [v0.0.2](https://github.com/tokuhirom/dashyard/compare/v0.0.1...v0.0.2) - 2026-01-31
 - Add git workflow guidelines to CLAUDE.md by @tokuhirom in https://github.com/tokuhirom/dashyard/pull/7

@@ -18,7 +18,7 @@ datasources:
     timeout: 30s
 
 # Default user: admin / admin
-# Generate a new hash with: go run ./cmd/genhash <password>
+# Generate a new hash with: dashyard mkpasswd <password>
 users:
   - id: "admin"
     password_hash: "$6$D/BkIQYiHD.cKL4A$pbAApV8cWXOv3hTyITrHNmlWe3FyfIJyM2CVFuJxbmXwDZPIVbcXKJbM2dxmJqG/ZJZBtrt8e9bVxt0d7rQKK."
