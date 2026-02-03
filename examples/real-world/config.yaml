@@ -1,8 +1,6 @@
 site_title: "Dashyard (gen-prompt real stack)"
 
 server:
-  host: "0.0.0.0"
-  port: 8080
   session_secret: "gen-prompt-demo-secret"
 
 datasources:
