@@ -124,8 +124,8 @@ func (d *Dashboard) Validate() error {
 		}
 
 		for j, panel := range row.Panels {
-			if panel.Span < 0 || panel.Span > 12 {
-				return fmt.Errorf("panel[%d] %q in row %q has invalid span %d in dashboard %q (must be 0-12)", j, panel.Title, row.Title, panel.Span, d.Title)
+			if panel.Span != 0 && (panel.Span < 1 || panel.Span > 12) {
+				return fmt.Errorf("panel[%d] %q in row %q has invalid span %d in dashboard %q (must be 1-12)", j, panel.Title, row.Title, panel.Span, d.Title)
 			}
 			switch panel.Type {
 			case "graph":
